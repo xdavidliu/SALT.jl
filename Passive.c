@@ -10,8 +10,8 @@ void FillBop(Geometry& geo, Mat Bop, dcomp w){
 	
 	Complexfun b;
 	CreateComplexfun(&b, geo.vscratch[0], geo.vscratch[1]);
-
-	for(int i=b.ns; i<b.ne; i++)
+	int i; 
+	for(i=b.ns; i<b.ne; i++)
 		setc(&b, i, sqr(w)* valc(&b, i) );
 
 	SetJacobian(&geo, Bop, geo.vscratch[0], -2, 0, 0);
@@ -33,11 +33,11 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 	CreateGeometry(&geo);
 	gettimeofday(&t1, NULL);
 
-	int	b[3][2], BCPeriod, bl[3];
+	int	i, b[3][2], BCPeriod, bl[3];
 	OptionsGetInt("-BCPeriod", &BCPeriod);
 	OptionsXYZInt("-b", bl);
 
-	for(int i=0; i<3; i++){ b[i][0]=bl[i]; b[i][1] = 0;}
+	for(i=0; i<3; i++){ b[i][0]=bl[i]; b[i][1] = 0;}
 
         Mat Mop;
 	CreateSquareMatrix(2*Nxyzc(&geo), 26, &Mop);
@@ -108,7 +108,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
         Vec v, vi;
         MatGetVecs(Mop, &v, &vi);
 
-	if(nconv>0) for(int i=0; i<nconv; i++){
+	if(nconv>0) for(i=0; i<nconv; i++){
 		double lr, li;
 		EPSGetEigenpair(evps, i, &lr, &li, v, vi);
 		w = std::sqrt(-lr - ComplexI * li);

@@ -12,8 +12,9 @@ void CreateMode(Mode *m, Geometry& geo, int ifix_, int b_[3][2], int BCPeriod_, 
 	m->lasing = 0;
 	m->ifix = ifix_;
 	m->BCPeriod = BCPeriod_;
-	for(int i=0; i<3; i++) for(int j=0; j<2; j++) m->b[i][j] = b_[i][j];
-	for(int i=0; i<3; i++) m->k[i] = k_[i];
+	int i, j;
+	for(i=0; i<3; i++) for(j=0; j<2; j++) m->b[i][j] = b_[i][j];
+	for(i=0; i<3; i++) m->k[i] = k_[i];
 }
 
 
@@ -29,7 +30,7 @@ void ModeRead(Mode *m, char *Name, Geometry& geo, double *Dout){
 
 	char w[PETSC_MAX_PATH_LEN], filename[PETSC_MAX_PATH_LEN];
 	sprintf(filename, "%s%s", m->name, Output_Suffix);
-	
+		int i;
 	FILE *fp = fopen(filename, "r");
 	
 
@@ -58,7 +59,9 @@ void ModeRead(Mode *m, char *Name, Geometry& geo, double *Dout){
 
 	fgets(w, PETSC_MAX_PATH_LEN, fp);
 	sscanf(w, "b=[%i %i %i];", &m->b[0][0], &m->b[1][0], &m->b[2][0]);
-	for(int i=0; i<3; i++) m->b[i][1] = 0;
+	
+
+	for(i=0; i<3; i++) m->b[i][1] = 0;
 
 	fgets(w, PETSC_MAX_PATH_LEN, fp);
 	sscanf(w, "BCPeriod=%i;", &m->BCPeriod); 	 
@@ -67,7 +70,7 @@ void ModeRead(Mode *m, char *Name, Geometry& geo, double *Dout){
 	sscanf(w, "D=%lf;", Dout); 	 
 
 	fgets(w, PETSC_MAX_PATH_LEN, fp); // k=[ line
-	for(int i=0; i<3; i++){ 
+	for(i=0; i<3; i++){ 
 		fgets(w, PETSC_MAX_PATH_LEN, fp);
 		sscanf(w, "%lf", &m->k[i]);
 	}
@@ -77,7 +80,7 @@ void ModeRead(Mode *m, char *Name, Geometry& geo, double *Dout){
 
 	MPI_Bcast(m->k, 3, MPI_DOUBLE, 0, PETSC_COMM_WORLD);
 	MPI_Bcast(&m->ifix, 1, MPI_INT, 0, PETSC_COMM_WORLD);
-	for(int i=0; i<3; i++) 
+	for(i=0; i<3; i++) 
 	   MPI_Bcast(m->b[i], 2, MPI_INT, 0, PETSC_COMM_WORLD);
 	MPI_Bcast(&m->BCPeriod, 1, MPI_INT, 0, PETSC_COMM_WORLD);
 	MPI_Bcast(Dout, 1, MPI_DOUBLE, 0, PETSC_COMM_WORLD);
@@ -105,7 +108,7 @@ void Fix(Mode *m, Geometry& geo){
 
 	int N;
 	VecGetSize(m->vpsi, &N);
-	int Nxyzc = (N-2)/2;
+	int Nxyzc = (N-2)/2, i;
 
 	double max;
 	VecMax(m->vpsi,&m->ifix, &max);
@@ -124,7 +127,7 @@ void Fix(Mode *m, Geometry& geo){
 	Vecfun psiket;
 	CreateVecfun(&psiket,m->vpsi);
 
-	for(int i=psiket.ns; i<psiket.ne; i++){
+	for(i=psiket.ns; i<psiket.ne; i++){
 
 		dcomp val = valc(&psi, i) * factor;
 		setr(&psiket, i, ir(&geo, i)? val.imag() : val.real() ); 
@@ -169,22 +172,22 @@ void Write(Mode *m, const Geometry& geo){
 
 void AddPlaceholders(Mat J, Geometry &geo){
 
-        int ns, ne,N;
+        int ns, ne,N, i, jh, j, jr, jc;
         MatGetOwnershipRange(J, &ns, &ne);
         MatGetSize(J, &N, NULL);
         int Nh = N/(Nxyzcr(&geo)+2);
 
-	for(int i=ns; i<ne; i++){ 
+	for(i=ns; i<ne; i++){ 
 	
 		if(Last2(&geo, i)) continue;		
 
-		for(int jh = 0; jh<Nh; jh++){
+		for(jh = 0; jh<Nh; jh++){
 			int offset =  jh*(Nxyzcr(&geo)+2);
 			
-			for(int j=0; j<2; j++) // columns
+			for(j=0; j<2; j++) // columns
 				MatSetValue(J, i, offset+Nxyzcr(&geo)+j, 0.0, ADD_VALUES);
 			
-			for(int jr=0; jr<2;jr++) for(int jc=0; jc<geo.Nc; jc++) // tensor
+			for(jr=0; jr<2;jr++) for(jc=0; jc<geo.Nc; jc++) // tensor
 				MatSetValue(J, i, offset+Nxyzc(&geo)*jr + Nxyz(&geo)*jc + i % NJ(&geo) % Nxyz(&geo), 0.0, ADD_VALUES);
 				
 		}		
@@ -197,8 +200,8 @@ void AddPlaceholders(Mat J, Geometry &geo){
 		PetscPrintf(PETSC_COMM_WORLD, "pastix detected, symmetrizing nonzero pattern...\n");
 	
 		MatSetOption(J,MAT_NEW_NONZERO_LOCATIONS, PETSC_TRUE);
-		for(int i=ns; i<ne; i++) if( Last2(&geo, i) ){
-			for(int j = 0; j < N; j++){
+		for(i=ns; i<ne; i++) if( Last2(&geo, i) ){
+			for(j = 0; j < N; j++){
 				if( Last2(&geo, j) ) continue;
 				MatSetValue(J, i, j, 0.0, ADD_VALUES);
 

@@ -13,7 +13,8 @@ void InterpolateVec(Geometry *geo, Vec vM, Vec vN){
 	int ms, me;
 	VecGetOwnershipRange(vM, &ms, &me);
 
-	for(int i=0; i< Nxyzcr(geo); i++){
+	int i;
+	for(i=0; i< Nxyzcr(geo); i++){
 		
 		Point p;
 		CreatePoint_i(&p, i, geo->gN);
@@ -36,7 +37,8 @@ void CollectVec(Geometry *geo, Vec vN, Vec vM){
 	VecGetOwnershipRange(vN, &ns, &ne);
 	if( ne > Nxyzcr(geo)-2) ne = Nxyzcr(geo)-2;
 	
-	for(int i=ns; i<ne; i++){
+	int i;
+	for(i=ns; i<ne; i++){
 		
 		Point p;
 		CreatePoint_i(&p, i, geo->gN);
@@ -92,8 +94,9 @@ void CreateGeometry(Geometry *geo){
 
 	Vecfun pml;
 	CreateVecfun(&pml,geo->vepspml);
-
-	for( int i=pml.ns; i<pml.ne; i++){
+	
+	int i;
+	for(i=pml.ns; i<pml.ne; i++){
 		Point p;
 		CreatePoint_i(&p, i, geo->gN);
 		project(&p, 3);
@@ -104,7 +107,7 @@ void CreateGeometry(Geometry *geo){
 	
 	CreateVec(Mxyz(geo), &geo->vMscratch[0]);
 
-	for(int i=1; i<SCRATCHNUM; i++) VecDuplicate(geo->vMscratch[0], &geo->vMscratch[i]);
+	for(i=1; i<SCRATCHNUM; i++) VecDuplicate(geo->vMscratch[0], &geo->vMscratch[i]);
 	char file[PETSC_MAX_PATH_LEN];
 	OptionsGetString("-epsfile", file);
 
@@ -122,7 +125,7 @@ void CreateGeometry(Geometry *geo){
 	CreateVec(2*Nxyzc(geo)+2, &geo->vH);
 	VecDuplicate(geo->vH, &geo->veps);
 	VecDuplicate(geo->vH, &geo->vIeps);
-	for(int i=0; i<SCRATCHNUM; i++) VecDuplicate(geo->vH, &geo->vscratch[i]);
+	for(i=0; i<SCRATCHNUM; i++) VecDuplicate(geo->vH, &geo->vscratch[i]);
 	VecSet(geo->vH, 1.0);	
 
 
@@ -165,7 +168,7 @@ void CreateGeometry(Geometry *geo){
 
 void DestroyGeometry(Geometry *geo){
 
-	for(int i=0; i<SCRATCHNUM; i++){
+	int i; for(i=0; i<SCRATCHNUM; i++){
 		DestroyVec(&geo->vscratch[i]);
 		DestroyVec(&geo->vNhscratch[i]);		
 		DestroyVec(&geo->vMscratch[i]);
@@ -193,7 +196,7 @@ void SetJacobian(Geometry *geo, Mat J, Vec v, int jc, int jr, int jh){
 	const double *vals;
 	VecGetArrayRead(v, &vals);
 	
-	for(int i=ns; i<ne; i++){
+	int i; for(i=ns; i<ne; i++){
 		if( Last2(geo, i) || vals[i-ns] == 0.0) continue;
 	
 		int col, offset = jh*(Nxyzcr(geo)+2),

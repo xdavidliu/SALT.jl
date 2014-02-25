@@ -20,11 +20,11 @@ int cyclic(Point& P, int ic, int* N){
 void MoperatorGeneralBlochFill(Geometry *geo, Mat A, int b[3][2], int DimPeriod, double k[3], int ih){
 
 
-	int N[3];
-	for(int i=0; i<3; i++) N[i] = geo->gN.N[i];
+	int N[3], i, j, l, ib, w, jr, ic;
+	for(i=0; i<3; i++) N[i] = geo->gN.N[i];
 
 	double blochbc[3];
-	for(int i=0; i<3; i++) blochbc[i] = k[i]*N[i]*geo->h[i];
+	for(i=0; i<3; i++) blochbc[i] = k[i]*N[i]*geo->h[i];
 
 	int NC = 3, offset = ih*(Nxyzcr(geo)+2);
 	int ns, ne;
@@ -42,8 +42,8 @@ void MoperatorGeneralBlochFill(Geometry *geo, Mat A, int b[3][2], int DimPeriod,
  
   /* set up b ... */
  
-	for(int ic=0; ic<3; ic++) for(int j=0; j<2; j++) for(int k=0; k<3; k++)
-		bc[ic][j][k] =  b[ic][j]*( k==ic ? -1 :1);
+	for(ic=0; ic<3; ic++) for(j=0; j<2; j++) for(l=0; l<3; l++)
+		bc[ic][j][l] =  b[ic][j]*( l==ic ? -1 :1);
 
 	
 	MatGetOwnershipRange(A, &ns, &ne);
@@ -55,7 +55,7 @@ for (int itrue = ns; itrue < ne && itrue < 2*Nxyzc(geo); ++itrue) {
 
 	project(&p, 3); int i = xyzcr(&p);
 	int cp[2], icp[2], cidu, cpidu[2],cpidl[2], cid, cpid[2];
-	for(int j=0; j<2;j++){
+	for(j=0; j<2;j++){
 
 		cp[j] = (p.ic+1+j) % NC;
 		icp[j] = i + (cp[j]-p.ic ) *Nxyz(geo);
@@ -71,7 +71,7 @@ for (int itrue = ns; itrue < ne && itrue < 2*Nxyzc(geo); ++itrue) {
 
 	cidu_phase = 1.0;
     
-   for(int jr=0; jr<2; jr++) { /* column real/imag parts */
+   for(jr=0; jr<2; jr++) { /* column real/imag parts */
    	int jrd =  (jr-p.ir)*NC*Nxyz(geo);            
    	magicnum = (p.ir==jr)*1.0 + (p.ir<jr)*1.0*ComplexI - (p.ir>jr)*1.0* ComplexI; 
 
@@ -79,7 +79,7 @@ for (int itrue = ns; itrue < ne && itrue < 2*Nxyzc(geo); ++itrue) {
 	Point prow;
 	CreatePoint_i(&prow, i, gC); 
 	project(&prow, geo->Nc);
-for(int ib=0; ib<2; ib++){
+for(ib=0; ib<2; ib++){
 
 
 	if(p.ix[p.ic] == N[p.ic]-1){
@@ -114,7 +114,7 @@ for(int ib=0; ib<2; ib++){
 
 
 
-	for(int w=0;w<4;w++){
+	for(w=0;w<4;w++){
 	Point pcol;
 	CreatePoint_i(&pcol, icp[ib] + jrd+dcol[w], gC );
 
@@ -146,7 +146,7 @@ for(int ib=0; ib<2; ib++){
 	dcol[1] = 0;
 	dcol[2] = -cpidl[ib];
 
-	for(int w=0;w<3;w++){
+	for(w=0;w<3;w++){
 	Point pcol;
 	CreatePoint_i(&pcol, i + jrd+dcol[w], gC );
 	project(&pcol, geo->Nc);

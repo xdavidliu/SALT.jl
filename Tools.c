@@ -31,10 +31,10 @@ void DestroyMat(Mat *A){
 void View(Vec x, PetscViewer viewer){ VecView(x, viewer); }
 
 void OptionsXYZDouble(const char* prefix, double* a){
-
+	int i;
 	char option[PETSC_MAX_PATH_LEN];
 	const char x[3] = {'x', 'y', 'z'};
-	for(int i=0; i<3; i++){
+	for(i=0; i<3; i++){
 		sprintf(option, "%s%c", prefix, x[i]);
 		OptionsGetDouble(option, &a[i]);
 	}
@@ -43,10 +43,10 @@ void OptionsXYZDouble(const char* prefix, double* a){
 
 
 void OptionsXYZInt(const char* prefix, int* a){
-
+	int i;
 	char option[PETSC_MAX_PATH_LEN];
 	const char x[3] = {'x', 'y', 'z'};
-	for(int i=0; i<3; i++){
+	for(i=0; i<3; i++){
 		sprintf(option, "%s%c", prefix, x[i]);
 		OptionsGetInt(option, &a[i]);
 	}
@@ -123,9 +123,9 @@ void CreateSquareMatrix(int N, int nz, Mat *A){
 
 double GetValue(Vec v, int i){
 
-	const int *ranges; int owner=0;
+	const int *ranges; int owner=0, j;
 	VecGetOwnershipRanges(v, &ranges);
-	for(int j=0; j<GetSize(); j++){
+	for(j=0; j<GetSize(); j++){
 		if( ranges[j] <= i && i < ranges[j+1]){
 			owner = j;
 			break;
@@ -144,9 +144,9 @@ double GetValue(Vec v, int i){
 void ReadVectorC(FILE *fp, int N, Vec v){
 
    double val;
-
+	int i;
    if(GetRank() ==0){
-	for(int i=0; i< N; i++){
+	for(i=0; i< N; i++){
 		fscanf(fp, "%lf", &val);
 		VecSetValue(v, i, val, INSERT_VALUES);
 	}
@@ -222,7 +222,9 @@ void Output(Vec A, const char* name, const char* variable_name){
 
 
 void CreatePoint_i(Point *p, int i, const Grid& H){
-	for(int j = 2; j>=0; j--){
+
+	int j;
+	for(j = 2; j>=0; j--){
 		p->G = H;
 		p->ix[j] = i % H.N[j]; 
 		i /= H.N[j];
@@ -260,8 +262,8 @@ int project(Point *p, int Nc){
 
 int projectmedium(Point *p, const Grid& gm, int LowerPML){
 
-	int medium =1;
-	for(int j=0; j<3; j++){ // position component
+	int medium =1, j;
+	for(j=0; j<3; j++){ // position component
 
 		double d = p->ix[j] - LowerPML*floor( (p->G.N[j]-gm.N[j])/2.0 ) + ( p->ic!=j)*0.5;
 		p->ix[j] = ceil(d-0.5);
@@ -273,7 +275,9 @@ int projectmedium(Point *p, const Grid& gm, int LowerPML){
 
 
 void CreateGrid(Grid *g, int* M, int Mc, int Mr){
-	for(int i=0; i<3; i++) g->N[i] = M[i];
+
+	int i;
+	for(i=0; i<3; i++) g->N[i] = M[i];
 	g->Nc = Mc;
 	g->Nr = Mr;
 }

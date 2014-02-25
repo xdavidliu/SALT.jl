@@ -9,12 +9,12 @@ void VecSetComplex(Vec vR, Vec vI, int i, int ir, dcomp val, InsertMode addv){
 
 void Isolate(Vec v, Grid& gN, int ic, int ir){
 
-	int ns, ne;
+	int ns, ne, i;
 	VecGetOwnershipRange(v, &ns, &ne);
 	double *a;
 	VecGetArray(v, &a);
 
-	for(int i=ns; i<ne && i<xyzcrGrid(&gN); i++){
+	for(i=ns; i<ne && i<xyzcrGrid(&gN); i++){
 
 		Point p;
 		CreatePoint_i(&p, i, gN);
@@ -43,7 +43,8 @@ void LinearDerivative(Mode& m, Geometry& geo, Vec dfR, Vec dfI, int ih){
 
 	dcomp mw = getw(&m), yw = gamma_w(&m, geo);
 
-	for(int i=eps.ns; i<eps.ne; i++){
+	int i;
+	for(i=eps.ns; i<eps.ne; i++){
 		dcomp val = sqr(mw) * (valc(&eps, i) + geo.D * yw * valr(&f, i) * valr(&H, i) );
 		VecSetComplex(dfR, dfI, i+offset(&geo, ih), ir(&geo, i), val, INSERT_VALUES);
 	}
@@ -66,7 +67,8 @@ void TensorDerivative(Mode& m, Mode &mj, Geometry& geo, int jc, int jr, Vec df, 
 	Complexfun psi;
 	CreateComplexfun(&psi, m.vpsi, vIpsi);
 
-	for(int i=f.ns; i<f.ne; i++){
+	int i;
+	for(i=f.ns; i<f.ne; i++){
 
 		if( valr(&f, i) == 0.0) continue;			
 		dcomp ket_term = -sqr(mw ) * sqr(mjc) * sqr(std::abs(yjw)) * 2.0
@@ -100,7 +102,8 @@ void ColumnDerivative(Mode* m, Mode* mj, Geometry& geo, Vec dfR, Vec dfI, Vec vI
 	CreateVecfun(&H, geo.vH);
 	CreateVecfun(&psisq, vpsisq);
 
-	for(int i=psi.ns; i<psi.ne; i++){
+	int i;
+	for(i=psi.ns; i<psi.ne; i++){
 
 		dcomp dfdk = 0.0, dfdc = 0.0, 
 			DfywHpsi = geo.D * valr(&f, i) * yw * valr(&H, i) * valc(&psi, i);
@@ -139,22 +142,24 @@ void ComputeGain(Geometry& geo, modelist& L){
 
 	Vecfun H;
 	CreateVecfun(&H, geo.vH);
-
+	int i;
 	FORMODES(L, it){
-	Mode *m = *it;
-	dcomp yw = gamma_w(m, geo);
-	double mc = getc(m);
+		Mode *m = *it;
+		dcomp yw = gamma_w(m, geo);
+		double mc = getc(m);
 
-	// do not change this from vscratch[3], or the hack below for single mode Column derivative will fail!
-	VecSqMedium(&geo, m->vpsi, geo.vscratch[3], geo.vMscratch[0]);
+		// do not change this from vscratch[3], or the hack below for single mode Column derivative will fail!
+		VecSqMedium(&geo, m->vpsi, geo.vscratch[3], geo.vMscratch[0]);
 
-	Vecfun psisq;
-	CreateVecfun(&psisq ,geo.vscratch[3]);
-	for(int i=H.ns; i<H.ne; i++)
-		setr(&H, i, valr(&H, i) + sqr(std::abs(yw)) *sqr(mc) * valr(&psisq, i) ) ;
+		Vecfun psisq;
+		CreateVecfun(&psisq ,geo.vscratch[3]);
+
+	
+		for(i=H.ns; i<H.ne; i++)
+			setr(&H, i, valr(&H, i) + sqr(std::abs(yw)) *sqr(mc) * valr(&psisq, i) ) ;
 	}
 
-	for(int i=H.ns; i<H.ne; i++)
+	for(i=H.ns; i<H.ne; i++)
 		setr(&H, i, 1.0 / (1.0 + valr(&H, i) ) );
 
 	DestroyVecfun(&H);
@@ -187,7 +192,7 @@ double FormJf(modelist& L, Geometry& geo, Vec v, Vec f){
 	// =========== linear J to compute residual ========= //
 	MatRetrieveValues(J);
 
-	int ih, jh;
+	int ih, jh, kh, ir, jr, jc;
 
 	ih = 0;
 	FORMODES(L, it){
@@ -209,7 +214,7 @@ double FormJf(modelist& L, Geometry& geo, Vec v, Vec f){
 
 	MatMult(J, v, f);
 
-	for(int kh = 0; kh<L.size(); kh++) for(int ir=0; ir<2; ir++)
+	for(kh = 0; kh<L.size(); kh++) for(ir=0; ir<2; ir++)
 		VecSetValue(f, kh*NJ(&geo) + Nxyzcr(&geo)+ir, 0.0, INSERT_VALUES);
 
 	AssembleVec(f);
@@ -264,7 +269,7 @@ double FormJf(modelist& L, Geometry& geo, Vec v, Vec f){
 	FORMODES(L, jt){
 		Mode *mj = *jt;
 
-		for(int jr=0; jr<2; jr++) for(int jc=0; jc< geo.gN.Nc; jc++){
+		for(jr=0; jr<2; jr++) for(jc=0; jc< geo.gN.Nc; jc++){
 
 			VecCopy(mj->vpsi, vpsibra);
 			Stamp(&geo, vpsibra, jc, jr, geo.vMscratch[0]);

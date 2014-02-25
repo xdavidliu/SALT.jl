@@ -8,7 +8,9 @@ PetscErrorCode ReadModes(modelist& L, Geometry& geo){
 	char modename[PETSC_MAX_PATH_LEN], 
 	     optionin[PETSC_MAX_PATH_LEN] = "-in0",
 	     optionout[PETSC_MAX_PATH_LEN] = "-out0";
-	for(int i=0; OptionsGetString(optionin, modename); i++){
+
+	int i;
+	for(i=0; OptionsGetString(optionin, modename); i++){
 
 		double D;
 		Mode* m = (Mode*) malloc(sizeof(struct Mode));
@@ -111,7 +113,7 @@ void Bundle(modelist &L, Geometry &geo){
 
 
 
-	int Nh = L.size(), Nj = 2*Nxyzc(&geo)+2;
+	int i, Nh = L.size(), Nj = 2*Nxyzc(&geo)+2;
 	if(Nh < 2) MyError("Bundle function is only for multimode!");
 	
 	Mat J; KSP ksp;
@@ -128,7 +130,7 @@ void Bundle(modelist &L, Geometry &geo){
 	// multimode version of Mode::Setup
 	
 
-	for(int i=0; i<SCRATCHNUM; i++){
+	for(i=0; i<SCRATCHNUM; i++){
 		DestroyVec(&geo.vNhscratch[i]);
 		MatGetVecs(J, &geo.vNhscratch[i], NULL);
 	}
