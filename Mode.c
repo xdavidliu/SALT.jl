@@ -119,9 +119,9 @@ void Mode::Fix(Geometry& geo){
 	VecCopy(vpsi, geo.vscratch[0]);
 	geo.TimesI(vpsi, geo.vscratch[1]);
 	
-	ComplexVecfun psi;
-	CreateComplexVecfun(&psi, geo.vscratch[0], geo.vscratch[1]);
-	{Vecfun psiket(vpsi);
+	Complexfun psi;
+	CreateComplexfun(&psi, geo.vscratch[0], geo.vscratch[1]);
+	Vecfun psiket(vpsi);
 
 	for(int i=psiket.ns; i<psiket.ne; i++){
 
@@ -129,9 +129,9 @@ void Mode::Fix(Geometry& geo){
 		setr(&psiket, i, ir(&geo, i)? val.imag() : val.real() ); 
 	}
 
-	}
+	DestroyVecfun(&psiket);
 
-	DestroyComplexVecfun(&psi);
+	DestroyComplexfun(&psi);
 }
 
 

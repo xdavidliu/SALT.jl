@@ -278,20 +278,20 @@ int ir(Geometry *geo, int i){ return i%NJ(geo) / Nxyzc(geo); }
 double valr(Vecfun *fun, int i) { return fun->a[i-fun->ns];}
 void setr(Vecfun *fun, int i, double val){ fun->a[i-fun->ns] = val;}
 
-dcomp valc(ComplexVecfun *fun, int i){
+dcomp valc(Complexfun *fun, int i){
 
 	dcomp z( fun->a[i-fun->ns], -fun->b[i-fun->ns] );
 	if(i/fun->Nxyzc) z*= ComplexI;
 	return z;
 }
-void setc(ComplexVecfun *fun,int i, dcomp val){
+void setc(Complexfun *fun,int i, dcomp val){
 	
 	if(i/fun->Nxyzc) val /= ComplexI;
 	fun->a[i-fun->ns] = val.real();
 	fun->b[i-fun->ns] = -val.imag();
 }
 
-void CreateComplexVecfun(ComplexVecfun *fun, Vec w, Vec x){
+void CreateComplexfun(Complexfun *fun, Vec w, Vec x){
 	fun->u = w;
 	fun->v = x;
 	VecGetArray(w, &fun->a);
@@ -303,7 +303,11 @@ void CreateComplexVecfun(ComplexVecfun *fun, Vec w, Vec x){
 	fun->Nxyzc = (N-2)/2;
 }
 
-void DestroyComplexVecfun(ComplexVecfun *fun){ 
+void DestroyComplexfun(Complexfun *fun){ 
 	VecRestoreArray(fun->u, &fun->a); 
 	VecRestoreArray(fun->v, &fun->b); 
+}
+
+void DestroyVecfun(Vecfun *fun){
+	VecRestoreArray(fun->u, &fun->a);
 }

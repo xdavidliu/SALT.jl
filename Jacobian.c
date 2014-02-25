@@ -34,8 +34,8 @@ void Geometry::Stamp(Vec vN, int ic, int ir, Vec scratchM){
 
 void LinearDerivative(Mode& m, Geometry& geo, Vec dfR, Vec dfI, int ih){
 
-	ComplexVecfun eps;
-	CreateComplexVecfun(&eps, geo.veps, geo.vIeps);
+	Complexfun eps;
+	CreateComplexfun(&eps, geo.veps, geo.vIeps);
 	Vecfun f(geo.vf), H(geo.vH);
 
 	dcomp mw = m.w(), yw = m.gamma_w(geo);
@@ -44,8 +44,9 @@ void LinearDerivative(Mode& m, Geometry& geo, Vec dfR, Vec dfI, int ih){
 		dcomp val = sqr(mw) * (valc(&eps, i) + geo.D * yw * valr(&f, i) * valr(&H, i) );
 		VecSetComplex(dfR, dfI, i+offset(&geo, ih), ir(&geo, i), val, INSERT_VALUES);
 	}
-
-	DestroyComplexVecfun(&eps);
+	DestroyVecfun(&f);
+	DestroyVecfun(&H);
+	DestroyComplexfun(&eps);
 }
 
 void TensorDerivative(Mode& m, Mode &mj, Geometry& geo, int jc, int jr, Vec df, Vec vpsibra, Vec vIpsi, int ih){
@@ -54,10 +55,9 @@ void TensorDerivative(Mode& m, Mode &mj, Geometry& geo, int jc, int jr, Vec df, 
 	double mjc = mj.c();
 	dcomp mw = m.w(), yw = m.gamma_w(geo), yjw = mj.gamma_w(geo);
 
-	Vecfun f(geo.vf), H(geo.vH);
-	ComplexVecfun psi;
-	CreateComplexVecfun(&psi, m.vpsi, vIpsi);
-	Vecfun psibra(vpsibra);
+	Vecfun f(geo.vf), H(geo.vH), psibra(vpsibra);
+	Complexfun psi;
+	CreateComplexfun(&psi, m.vpsi, vIpsi);
 
 	for(int i=f.ns; i<f.ne; i++){
 
@@ -68,7 +68,10 @@ void TensorDerivative(Mode& m, Mode &mj, Geometry& geo, int jc, int jr, Vec df, 
 		
 		VecSetValue(df, i+offset(&geo, ih), val, INSERT_VALUES);
 	}
-	DestroyComplexVecfun(&psi);
+	DestroyVecfun(&f);
+	DestroyVecfun(&H);
+	DestroyVecfun(&psibra);
+	DestroyComplexfun(&psi);
 }
 
 
@@ -81,9 +84,9 @@ void ColumnDerivative(Mode* m, Mode* mj, Geometry& geo, Vec dfR, Vec dfI, Vec vI
 	dcomp mw = m->w(), yw = m->gamma_w(geo),
 			mjw = mj->w(), yjw = mj->gamma_w(geo);
 	
-	ComplexVecfun psi, eps;
-	CreateComplexVecfun(&psi,m->vpsi, vIpsi);
-	CreateComplexVecfun(&eps,geo.veps, geo.vIeps);
+	Complexfun psi, eps;
+	CreateComplexfun(&psi,m->vpsi, vIpsi);
+	CreateComplexfun(&eps,geo.veps, geo.vIeps);
 
 	Vecfun f(geo.vf), H(geo.vH), psisq(vpsisq); 
 
@@ -113,17 +116,19 @@ void ColumnDerivative(Mode* m, Mode* mj, Geometry& geo, Vec dfR, Vec dfI, Vec vI
 		}
 	}
 
-	DestroyComplexVecfun(&eps);
-	DestroyComplexVecfun(&psi);
-
+	DestroyComplexfun(&eps);
+	DestroyComplexfun(&psi);
+	DestroyVecfun(&f);
+	DestroyVecfun(&H);
+	DestroyVecfun(&psisq);
 }
 
 void ComputeGain(Geometry& geo, modelist& L){
 
-  VecSet(geo.vH, 0.0);
+	VecSet(geo.vH, 0.0);
 
-  Vecfun H(geo.vH);
-  FORMODES(L, it){
+	Vecfun H(geo.vH);
+	FORMODES(L, it){
 	Mode *m = *it;
 	dcomp yw = m->gamma_w(geo);
 	double mc = m->c();
@@ -134,10 +139,12 @@ void ComputeGain(Geometry& geo, modelist& L){
 	Vecfun psisq(geo.vscratch[3]);
 	for(int i=H.ns; i<H.ne; i++)
 		setr(&H, i, valr(&H, i) + sqr(std::abs(yw)) *sqr(mc) * valr(&psisq, i) ) ;
-   }
+	}
 
-   for(int i=H.ns; i<H.ne; i++)
+	for(int i=H.ns; i<H.ne; i++)
 		setr(&H, i, 1.0 / (1.0 + valr(&H, i) ) );
+
+	DestroyVecfun(&H);
 }
 
 double FormJf(modelist& L, Geometry& geo, Vec v, Vec f){

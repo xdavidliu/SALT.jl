@@ -205,15 +205,16 @@ struct Vecfun{
 		
 		VecGetArray(u, &a);
 	}
-	~Vecfun(){ VecRestoreArray(u, &a); }
+
 
 };
 
 double valr(Vecfun *fun, int i);
 void setr(Vecfun *fun, int i, double val);
+void DestroyVecfun(Vecfun *fun);
 
 
-struct ComplexVecfun{
+struct Complexfun{
 
 	Vec u, v;
 	double *a, *b;
@@ -221,11 +222,11 @@ struct ComplexVecfun{
 
 };
 
-dcomp valc(ComplexVecfun *fun, int i);
-void setc(ComplexVecfun *fun,int i, dcomp val);
+dcomp valc(Complexfun *fun, int i);
+void setc(Complexfun *fun,int i, dcomp val);
 
-void CreateComplexVecfun(ComplexVecfun *fun, Vec w, Vec x);
-void DestroyComplexVecfun(ComplexVecfun *fun);
+void CreateComplexfun(Complexfun *fun, Vec w, Vec x);
+void DestroyComplexfun(Complexfun *fun);
 
 dcomp pmlval(int i, int* N, int* Npml, double* h, int LowerPML, int k);
 void AddPlaceholders(Mat J, Geometry &geo);

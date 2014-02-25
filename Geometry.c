@@ -89,14 +89,13 @@ Geometry::Geometry(){
 
 	Vecfun pml(vepspml);
 
-
-
 	for( int i=pml.ns; i<pml.ne; i++){
 		Point p(i, gN);
 		project(&p, 3);
 		dcomp eps_geoal = pmlval(xyzc(&p), N, Npml, h, LowerPML, 0);	
 		setr(&pml, i, p.ir? eps_geoal.imag() : eps_geoal.real() );
 	}
+	DestroyVecfun(&pml);
 	
 	CreateVec(Mxyz(this), &vMscratch[0]);
 
