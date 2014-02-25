@@ -143,7 +143,7 @@ struct Mode{
 	public:
 
 	Vec vpsi;
-	std::string name;
+	char name[PETSC_MAX_PATH_LEN];
 	double k[3];
 	int ifix, BCPeriod, b[3][2], lasing;
 	Mat J;

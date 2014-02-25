@@ -74,7 +74,7 @@ void NewtonSolve(modelist &L, Geometry& geo, Vec v, Vec f, Vec dv){
 		FORMODES(L, it){
 			dcomp w = (*it)->w();
 			PetscPrintf(PETSC_COMM_WORLD, "%s at D = %g: w = %g + i(%g)", 
-				(*it)->name.c_str(),  geo.D, w.real(), w.imag());
+				(*it)->name,  geo.D, w.real(), w.imag());
 				
 			if( (*it)->lasing )  PetscPrintf(PETSC_COMM_WORLD, ", |psi|^2_edge = %g", EdgeIntensity( **it, geo));
 				
@@ -96,7 +96,7 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 	dcomp mw = m.w();
 	if( std::abs(mw.imag()) < OptionsDouble("-thresholdw_tol") ){
 		SetLast2(m.vpsi, mw.real(), 0.0);
-		PetscPrintf(PETSC_COMM_WORLD, "Threshold found for mode \"%s\" at D = %1.10g\n", m.name.c_str(), geo.D);
+		PetscPrintf(PETSC_COMM_WORLD, "Threshold found for mode \"%s\" at D = %1.10g\n", m.name, geo.D);
 		m.lasing = 1;
 		return;
 	}

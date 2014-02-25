@@ -154,9 +154,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 
 		char s[PETSC_MAX_PATH_LEN];
 		OptionsGetString("-passiveout", s);
-		sprintf(s, "%s%i", s, j);
-
-		m.name = std::string(s);
+		sprintf(m.name, "%s%i", s, j);
 		m.Write(geo);
 	}
 	EPSDestroy(&evps);

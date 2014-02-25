@@ -20,7 +20,7 @@ Mode::Mode(Geometry& geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]){
 
 Mode::Mode(std::string Name, Geometry& geo, double *Dout){ // read constructor
 
-	name = Name;
+	sprintf(name, "%s", Name.c_str() );
 	CreateVec(2*geo.Nxyzc()+2, &vpsi);
 	CreateSquareMatrix(2*geo.Nxyzc()+2, 0, &J);
 		
@@ -132,7 +132,7 @@ void Mode::Fix(Geometry& geo){
 void Mode::Write(const Geometry& geo){
 
 
-	Output(vpsi, name.c_str(), "psi");
+	Output(vpsi, name, "psi");
 
 
    if(GetRank()==0){

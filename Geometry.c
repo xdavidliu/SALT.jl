@@ -106,9 +106,9 @@ Geometry::Geometry(){
 	std::ifstream is_eps(file);
 
 	if(!is_eps){
-		std::string s = "failed to read ";
-		s += file;
-		MyError(s.c_str() );
+		char message[PETSC_MAX_PATH_LEN];
+		sprintf(message, "failed to read %s", file);
+		MyError(message);
 	}
 
 
@@ -140,12 +140,13 @@ Geometry::Geometry(){
 
 	OptionsGetString("-fproffile", file);
 	std::ifstream is_fprof(file);
+
 	
 	if(!is_fprof){
-		std::string s = "failed to read ";
-		s += file;
-		MyError(s.c_str() );
-	}
+		char message[PETSC_MAX_PATH_LEN];
+		sprintf(message, "failed to read %s", file);
+		MyError(message);
+	}	
 	
 	ReadVector(is_fprof, Mxyz(), vMscratch[1]);
 	InterpolateVec(vMscratch[1], vf);

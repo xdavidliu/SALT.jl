@@ -19,7 +19,7 @@ PetscErrorCode ReadModes(modelist& L, Geometry& geo){
 
 		if( !OptionsGetString(optionout, modename) )
 			MyError("number of -out less than number of -in!");
-		m->name = modename;
+		sprintf(m->name, "%s", modename);
 
 		L.push_back(m);
 		m->Setup(geo);
@@ -49,7 +49,7 @@ int CountLasing(modelist L){ // makes copy
 void FirstStep(modelist Lh, Mode *m, Geometry& geo, Vec vNh, Vec f, Vec dv, double c){
 
 
-	PetscPrintf(PETSC_COMM_WORLD, "Taking first step for mode \"%s\"...\n", m->name.c_str() );
+	PetscPrintf(PETSC_COMM_WORLD, "Taking first step for mode \"%s\"...\n", m->name );
 
   int ih=0;
   FORMODES(Lh, it){ // find ih of m
@@ -97,7 +97,7 @@ void FirstStep(modelist Lh, Mode *m, Geometry& geo, Vec vNh, Vec f, Vec dv, doub
 
   }
   
-  	PetscPrintf(PETSC_COMM_WORLD, "First step for mode \"%s\" complete!\n", m->name.c_str() );  	
+  	PetscPrintf(PETSC_COMM_WORLD, "First step for mode \"%s\" complete!\n", m->name );  	
 
 
 }
