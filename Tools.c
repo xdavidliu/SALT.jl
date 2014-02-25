@@ -288,3 +288,20 @@ void setc(ComplexVecfun *fun,int i, dcomp val){
 	fun->a[i-fun->ns] = val.real();
 	fun->b[i-fun->ns] = -val.imag();
 }
+
+void CreateComplexVecfun(ComplexVecfun *fun, Vec w, Vec x){
+	fun->u = w;
+	fun->v = x;
+	VecGetArray(w, &fun->a);
+	VecGetArray(x, &fun->b);
+	VecGetOwnershipRange(w, &fun->ns, &fun->ne);
+
+	int N;
+	VecGetSize(w, &N);
+	fun->Nxyzc = (N-2)/2;
+}
+
+void DestroyComplexVecfun(ComplexVecfun *fun){ 
+	VecRestoreArray(fun->u, &fun->a); 
+	VecRestoreArray(fun->v, &fun->b); 
+}

@@ -216,32 +216,17 @@ struct Vecfun{
 
 struct ComplexVecfun{
 
-	
 	Vec u, v;
 	double *a, *b;
 	int Nxyzc, ns, ne;
-	
-	ComplexVecfun(Vec w, Vec x){
-		u = w;
-		v = x;
-		VecGetArray(u, &a);
-		VecGetArray(v, &b);
-		VecGetOwnershipRange(u, &ns, &ne);
-
-		int N;
-		VecGetSize(v, &N);
-		Nxyzc = (N-2)/2;
-	}
-
-	~ComplexVecfun(){ 
-		VecRestoreArray(u, &a); 
-		VecRestoreArray(v, &b); 
-	}
 
 };
 
 dcomp valc(ComplexVecfun *fun, int i);
 void setc(ComplexVecfun *fun,int i, dcomp val);
+
+void CreateComplexVecfun(ComplexVecfun *fun, Vec w, Vec x);
+void DestroyComplexVecfun(ComplexVecfun *fun);
 
 dcomp pmlval(int i, int* N, int* Npml, double* h, int LowerPML, int k);
 void AddPlaceholders(Mat J, Geometry &geo);

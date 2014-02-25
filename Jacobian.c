@@ -34,7 +34,8 @@ void Geometry::Stamp(Vec vN, int ic, int ir, Vec scratchM){
 
 void LinearDerivative(Mode& m, Geometry& geo, Vec dfR, Vec dfI, int ih){
 
-	ComplexVecfun eps(geo.veps, geo.vIeps);
+	ComplexVecfun eps;
+	CreateComplexVecfun(&eps, geo.veps, geo.vIeps);
 	Vecfun f(geo.vf), H(geo.vH);
 
 	dcomp mw = m.w(), yw = m.gamma_w(geo);
@@ -43,6 +44,8 @@ void LinearDerivative(Mode& m, Geometry& geo, Vec dfR, Vec dfI, int ih){
 		dcomp val = sqr(mw) * (valc(&eps, i) + geo.D * yw * f.valr(i) * H.valr(i) );
 		VecSetComplex(dfR, dfI, i+offset(&geo, ih), ir(&geo, i), val, INSERT_VALUES);
 	}
+
+	DestroyComplexVecfun(&eps);
 }
 
 void TensorDerivative(Mode& m, Mode &mj, Geometry& geo, int jc, int jr, Vec df, Vec vpsibra, Vec vIpsi, int ih){
@@ -52,7 +55,8 @@ void TensorDerivative(Mode& m, Mode &mj, Geometry& geo, int jc, int jr, Vec df, 
 	dcomp mw = m.w(), yw = m.gamma_w(geo), yjw = mj.gamma_w(geo);
 
 	Vecfun f(geo.vf), H(geo.vH);
-	ComplexVecfun psi(m.vpsi, vIpsi);
+	ComplexVecfun psi;
+	CreateComplexVecfun(&psi, m.vpsi, vIpsi);
 	Vecfun psibra(vpsibra);
 
 	for(int i=f.ns(); i<f.ne(); i++){
@@ -64,6 +68,7 @@ void TensorDerivative(Mode& m, Mode &mj, Geometry& geo, int jc, int jr, Vec df, 
 		
 		VecSetValue(df, i+offset(&geo, ih), val, INSERT_VALUES);
 	}
+	DestroyComplexVecfun(&psi);
 }
 
 
@@ -76,7 +81,10 @@ void ColumnDerivative(Mode* m, Mode* mj, Geometry& geo, Vec dfR, Vec dfI, Vec vI
 	dcomp mw = m->w(), yw = m->gamma_w(geo),
 			mjw = mj->w(), yjw = mj->gamma_w(geo);
 	
-	ComplexVecfun psi(m->vpsi, vIpsi), eps(geo.veps, geo.vIeps);
+	ComplexVecfun psi, eps;
+	CreateComplexVecfun(&psi,m->vpsi, vIpsi);
+	CreateComplexVecfun(&eps,geo.veps, geo.vIeps);
+
 	Vecfun f(geo.vf), H(geo.vH), psisq(vpsisq); 
 
 	for(int i=psi.ns; i<psi.ne; i++){
@@ -104,6 +112,9 @@ void ColumnDerivative(Mode* m, Mode* mj, Geometry& geo, Vec dfR, Vec dfI, Vec vI
 			VecSetValue(dfI, i+offset(&geo, ih), ir(&geo, i)? dfdc.imag() : dfdc.real(), INSERT_VALUES );
 		}
 	}
+
+	DestroyComplexVecfun(&eps);
+	DestroyComplexVecfun(&psi);
 
 }
 

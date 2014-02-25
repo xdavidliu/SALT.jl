@@ -8,7 +8,8 @@ void FillBop(Geometry& geo, Mat Bop, dcomp w){
 	VecCopy(geo.veps, geo.vscratch[0]);
 	geo.TimesI(geo.vscratch[0], geo.vscratch[1]);
 	
-	ComplexVecfun b(geo.vscratch[0], geo.vscratch[1]);
+	ComplexVecfun b;
+	CreateComplexVecfun(&b, geo.vscratch[0], geo.vscratch[1]);
 
 	for(int i=b.ns; i<b.ne; i++)
 		setc(&b, i, sqr(w)* valc(&b, i) );
@@ -16,8 +17,9 @@ void FillBop(Geometry& geo, Mat Bop, dcomp w){
 	geo.SetJacobian(Bop, geo.vscratch[0], -2, 0, 0);
 	geo.SetJacobian(Bop, geo.vscratch[1], -2, 1, 0);	
 	
+	DestroyComplexVecfun(&b);
 	
-		AssembleMat(Bop);
+	AssembleMat(Bop);
 
 }
 

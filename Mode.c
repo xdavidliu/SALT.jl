@@ -119,14 +119,19 @@ void Mode::Fix(Geometry& geo){
 	VecCopy(vpsi, geo.vscratch[0]);
 	geo.TimesI(vpsi, geo.vscratch[1]);
 	
-	{Vecfun psiket(vpsi); ComplexVecfun psi(geo.vscratch[0], geo.vscratch[1]);
+	ComplexVecfun psi;
+	CreateComplexVecfun(&psi, geo.vscratch[0], geo.vscratch[1]);
+	{Vecfun psiket(vpsi);
 
 	for(int i=psiket.ns(); i<psiket.ne(); i++){
 
 		dcomp val = valc(&psi, i) * factor;
 		psiket.setr(i, ir(&geo, i)? val.imag() : val.real() ); 
-	}}
+	}
 
+	}
+
+	DestroyComplexVecfun(&psi);
 }
 
 
