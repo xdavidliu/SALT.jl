@@ -30,6 +30,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 
     	tv t1, t2, t3;
 	Geometry geo;
+	CreateGeometry(&geo);
 	gettimeofday(&t1, NULL);
 
 	int	b[3][2], BCPeriod, bl[3];
@@ -164,7 +165,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 	EPSDestroy(&evps);
 	DestroyMat(&Mop);	DestroyMat(&Bop);
 	DestroyVec(&v);	DestroyVec(&vi);
-
+	DestroyGeometry(&geo);
 
 	gettimeofday(&t3, NULL);	
 	

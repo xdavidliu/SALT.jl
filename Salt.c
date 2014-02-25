@@ -161,7 +161,7 @@ bool AtThreshold(Mode *m){ return getc(m) == 0.0 && m->lasing;}
 
 int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC_NULL); {
 	Geometry geo;
-
+	CreateGeometry(&geo);
 
 	double dD, Dmax; 
 	OptionsGetDouble("-dD", &dD);
@@ -230,6 +230,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 
 	DestroyVec(&f);
 	DestroyVec(&dv);
+	DestroyGeometry(&geo);
 	PetscPrintf(PETSC_COMM_WORLD, "\n");
 	PetscPrintf(PETSC_COMM_WORLD, "TODO: a whole bunch of TODOs in Salt.c related to first step of multimode\n");	
 	PetscPrintf(PETSC_COMM_WORLD, "future todo: add artificial crashes to enforce all the assumptions I'm making. For example, crash if any file read fails.\n");		

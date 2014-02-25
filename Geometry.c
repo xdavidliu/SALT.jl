@@ -69,42 +69,42 @@ void VecSqMedium(Geometry *geo, Vec v, Vec vsq, Vec scratchM){
 }
 
 
-Geometry::Geometry(){
+void CreateGeometry(Geometry *geo){
 
 
 	int N[3], M[3];
 
 	OptionsXYZInt("-N", N);
 	OptionsXYZInt("-M", M);
-	OptionsXYZInt("-Npml", Npml);
-	OptionsXYZDouble("-h", h);
+	OptionsXYZInt("-Npml", geo->Npml);
+	OptionsXYZDouble("-h", geo->h);
 
-	OptionsGetInt("-Nc", &Nc);
-	OptionsGetInt("-LowerPML", &LowerPML);
+	OptionsGetInt("-Nc", &geo->Nc);
+	OptionsGetInt("-LowerPML", &geo->LowerPML);
 	
-	CreateGrid(&gN, N, Nc, 2);
-	CreateGrid(&gM, M, 1, 1);
+	CreateGrid(&geo->gN, N, geo->Nc, 2);
+	CreateGrid(&geo->gM, M, 1, 1);
 
 
-	CreateVec(2*Nxyzc(this)+2, &vepspml);
+	CreateVec(2*Nxyzc(geo)+2, &geo->vepspml);
 
 
 
 	Vecfun pml;
-	CreateVecfun(&pml,vepspml);
+	CreateVecfun(&pml,geo->vepspml);
 
 	for( int i=pml.ns; i<pml.ne; i++){
 		Point p;
-		CreatePoint_i(&p, i, gN);
+		CreatePoint_i(&p, i, geo->gN);
 		project(&p, 3);
-		dcomp eps_geoal = pmlval(xyzc(&p), N, Npml, h, LowerPML, 0);	
+		dcomp eps_geoal = pmlval(xyzc(&p), N, geo->Npml, geo->h, geo->LowerPML, 0);	
 		setr(&pml, i, p.ir? eps_geoal.imag() : eps_geoal.real() );
 	}
 	DestroyVecfun(&pml);
 	
-	CreateVec(Mxyz(this), &vMscratch[0]);
+	CreateVec(Mxyz(geo), &geo->vMscratch[0]);
 
-	for(int i=1; i<SCRATCHNUM; i++) VecDuplicate(vMscratch[0], &vMscratch[i]);
+	for(int i=1; i<SCRATCHNUM; i++) VecDuplicate(geo->vMscratch[0], &geo->vMscratch[i]);
 	char file[PETSC_MAX_PATH_LEN];
 	OptionsGetString("-epsfile", file);
 
@@ -116,32 +116,32 @@ Geometry::Geometry(){
 		sprintf(message, "failed to read %s", file);
 		MyError(message);
 	}
-	ReadVectorC(fp, Mxyz(this), vMscratch[0]);
+	ReadVectorC(fp, Mxyz(geo), geo->vMscratch[0]);
 	fclose(fp);
 	
-	CreateVec(2*Nxyzc(this)+2, &vH);
-	VecDuplicate(vH, &veps);
-	VecDuplicate(vH, &vIeps);
-	for(int i=0; i<SCRATCHNUM; i++) VecDuplicate(vH, &vscratch[i]);
-	VecSet(vH, 1.0);	
+	CreateVec(2*Nxyzc(geo)+2, &geo->vH);
+	VecDuplicate(geo->vH, &geo->veps);
+	VecDuplicate(geo->vH, &geo->vIeps);
+	for(int i=0; i<SCRATCHNUM; i++) VecDuplicate(geo->vH, &geo->vscratch[i]);
+	VecSet(geo->vH, 1.0);	
 
 
-	VecShift(vMscratch[0], -1.0); //hack, for background dielectric
-	InterpolateVec(this, vMscratch[0], vscratch[1]);
-	VecShift(vscratch[1], 1.0);
+	VecShift(geo->vMscratch[0], -1.0); //hack, for background dielectric
+	InterpolateVec(geo, geo->vMscratch[0], geo->vscratch[1]);
+	VecShift(geo->vscratch[1], 1.0);
 
 
-	VecPointwiseMult(veps, vscratch[1], vepspml);
-	TimesI(this, veps, vIeps); // vIeps for convenience only, make sure to update it later if eps ever changes!
+	VecPointwiseMult(geo->veps, geo->vscratch[1], geo->vepspml);
+	TimesI(geo, geo->veps, geo->vIeps); // vIeps for convenience only, make sure to update it later if eps ever changes!
 
 
 
-	D = 0.0;
-	OptionsGetDouble("-wa", &wa);
-	OptionsGetDouble("-gamma", &y);
+	geo->D = 0.0;
+	OptionsGetDouble("-wa", &geo->wa);
+	OptionsGetDouble("-gamma", &geo->y);
 
 
-	VecDuplicate(veps, &vf);
+	VecDuplicate(geo->veps, &geo->vf);
 
 	OptionsGetString("-fproffile", file);
 
@@ -151,10 +151,10 @@ Geometry::Geometry(){
 		sprintf(message, "failed to read %s", file);
 		MyError(message);
 	}	
-	ReadVectorC(fp, Mxyz(this), vMscratch[1]);
+	ReadVectorC(fp, Mxyz(geo), geo->vMscratch[1]);
 	fclose(fp);	
 	
-	InterpolateVec(this, vMscratch[1], vf);
+	InterpolateVec(geo, geo->vMscratch[1], geo->vf);
 
 
 
@@ -163,18 +163,18 @@ Geometry::Geometry(){
 
 
 
-Geometry::~Geometry(){
+void DestroyGeometry(Geometry *geo){
 
 	for(int i=0; i<SCRATCHNUM; i++){
-		DestroyVec(&vscratch[i]);
-		DestroyVec(&vNhscratch[i]);		
-		DestroyVec(&vMscratch[i]);
+		DestroyVec(&geo->vscratch[i]);
+		DestroyVec(&geo->vNhscratch[i]);		
+		DestroyVec(&geo->vMscratch[i]);
 	}
-	DestroyVec(&vH);
-	DestroyVec(&veps);
-	DestroyVec(&vIeps);
-	DestroyVec(&vepspml);
-	DestroyVec(&vf);
+	DestroyVec(&geo->vH);
+	DestroyVec(&geo->veps);
+	DestroyVec(&geo->vIeps);
+	DestroyVec(&geo->vepspml);
+	DestroyVec(&geo->vf);
 
 }
 

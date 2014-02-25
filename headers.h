@@ -94,11 +94,13 @@ struct Geometry{
 
 	Vec vscratch[SCRATCHNUM], vMscratch[SCRATCHNUM], vNhscratch[SCRATCHNUM], vH, veps, vIeps, vf;
 	double D, wa, y;
-	Geometry();
-	~Geometry();	
+
+
 
 
 };
+void CreateGeometry(Geometry *geo);
+void DestroyGeometry(Geometry *geo);	
 void InterpolateVec(Geometry *geo, Vec vM, Vec vN);
 void CollectVec(Geometry *geo, Vec vN, Vec vM);
 void Stamp(Geometry *geo, Vec vN, int ic, int ir, Vec scratchM);
