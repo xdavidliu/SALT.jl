@@ -247,3 +247,16 @@ int project(Point *p, int Nc){
 	p->G.setc(Nc);
 	return p->ic;
 }
+
+int projectmedium(Point *p, const Grid& gm, int LowerPML){
+
+	int medium =1;
+	for(int j=0; j<3; j++){ // position component
+
+		double d = p->ix[j] - LowerPML*floor( (p->G.x(j)-gm.x(j))/2.0 ) + ( p->ic!=j)*0.5;
+		p->ix[j] = ceil(d-0.5);
+		if(p->ix[j]<0 || p->ix[j]>= gm.x(j) ) medium = 0;
+	}
+	p->G = gm;
+	return medium;
+}

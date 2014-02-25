@@ -16,7 +16,7 @@ void Geometry::InterpolateVec(Vec vM, Vec vN){
 	for(int i=0; i< Nxyzcr(); i++){
 		
 		Point p(i, gN);
-		if( p.projectmedium(gM, LowerPML) )
+		if( projectmedium(&p, gM, LowerPML) )
 			VecSetValue(vN, i, vals[xyz(&p)-ms], ADD_VALUES);
 	}
 
@@ -38,7 +38,7 @@ void Geometry::CollectVec(Vec vN, Vec vM){
 	for(int i=ns; i<ne; i++){
 		
 		Point p(i, gN);
-		if( p.projectmedium(gM, LowerPML) )
+		if( projectmedium(&p, gM, LowerPML) )
 			VecSetValue(vM, xyz(&p), vals[i-ns], ADD_VALUES);
 	}
 	

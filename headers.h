@@ -91,37 +91,13 @@ struct Point{
 		ir = jr;
 	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-	int projectmedium(const Grid& gm, int LowerPML){
-
-		int medium =1;
-		for(int j=0; j<3; j++){ // position component
-
-			double d = ix[j] - LowerPML*floor( (G.x(j)-gm.x(j))/2.0 ) + ( ic!=j)*0.5;
-			ix[j] = ceil(d-0.5);
-			if(ix[j]<0 || ix[j]>= gm.x(j) ) medium = 0;
-		}
-		G = gm;
-		return medium;
-	}
-
 	int ix[3], ir, ic;
 	Grid G;
 };
 
 int convert(Point *p, int Nc);
 int project(Point *p, int Nc);
+int projectmedium(Point *p, const Grid& gm, int LowerPML);
 int xyz(Point *p);
 int xyzc(Point *p);
 int xyzcr(Point *p);
