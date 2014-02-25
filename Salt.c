@@ -8,7 +8,7 @@ PetscErrorCode ReadModes(modelist& L, Geometry& geo){
 	char modename[PETSC_MAX_PATH_LEN], 
 	     optionin[PETSC_MAX_PATH_LEN] = "-in0",
 	     optionout[PETSC_MAX_PATH_LEN] = "-out0";
-	for(int i=0; OptionsGet(optionin, modename); i++){
+	for(int i=0; OptionsGetString(optionin, modename); i++){
 
 		double D;
 		Mode* m = new Mode(modename, geo, &D);
@@ -17,7 +17,7 @@ PetscErrorCode ReadModes(modelist& L, Geometry& geo){
 		else if(D != geo.D)
 			MyError("The input modes should all be at the same pump strength!");		
 
-		if( !OptionsGet(optionout, modename) )
+		if( !OptionsGetString(optionout, modename) )
 			MyError("number of -out less than number of -in!");
 		m->name = modename;
 
@@ -163,8 +163,8 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 
 
 	double dD, Dmax; 
-	OptionsGet("-dD", &dD);
-	OptionsGet("-Dmax", &Dmax);
+	OptionsGetDouble("-dD", &dD);
+	OptionsGetDouble("-Dmax", &Dmax);
 
 
 	

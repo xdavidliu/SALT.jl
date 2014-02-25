@@ -31,8 +31,8 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 	gettimeofday(&t1, NULL);
 
 	int	b[3][2], BCPeriod, bl[3];
-	OptionsGet("-BCPeriod", &BCPeriod);
-	OptionsXYZ("-b", bl);
+	OptionsGetInt("-BCPeriod", &BCPeriod);
+	OptionsXYZInt("-b", bl);
 
 	for(int i=0; i<3; i++){ b[i][0]=bl[i]; b[i][1] = 0;}
 
@@ -43,7 +43,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 
 
 	double k[3] = {0, 0, 0};
-	OptionsXYZ("-k", k);
+	OptionsXYZDouble("-k", k);
 
 
 
@@ -60,8 +60,8 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 
 
 	double wguess_real, wguess_imag;
-	OptionsGet("-wreal", &wguess_real);
-	OptionsGet("-wimag", &wguess_imag);
+	OptionsGetDouble("-wreal", &wguess_real);
+	OptionsGetDouble("-wimag", &wguess_imag);
 	dcomp guess = -sqr(wguess_real + ComplexI * wguess_imag);
 
 
@@ -153,7 +153,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 
 
 		char s[PETSC_MAX_PATH_LEN];
-		OptionsGet("-passiveout", s);
+		OptionsGetString("-passiveout", s);
 		sprintf(s, "%s%i", s, j);
 
 		m.name = std::string(s);

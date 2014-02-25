@@ -31,14 +31,36 @@ void Destroy(Mat *A){
 void View(Mat A, PetscViewer viewer){ MatView(A, viewer); }
 void View(Vec x, PetscViewer viewer){ VecView(x, viewer); }
 
+void OptionsXYZDouble(const char* prefix, double* a){
 
-int OptionsGet(const char* c, char* a){ 
+	char option[PETSC_MAX_PATH_LEN];
+	const char x[3] = {'x', 'y', 'z'};
+	for(int i=0; i<3; i++){
+		sprintf(option, "%s%c", prefix, x[i]);
+		OptionsGetDouble(option, &a[i]);
+	}
+
+}
+
+
+void OptionsXYZInt(const char* prefix, int* a){
+
+	char option[PETSC_MAX_PATH_LEN];
+	const char x[3] = {'x', 'y', 'z'};
+	for(int i=0; i<3; i++){
+		sprintf(option, "%s%c", prefix, x[i]);
+		OptionsGetInt(option, &a[i]);
+	}
+
+}
+
+int OptionsGetString(const char* c, char* a){ 
 	PetscBool flg;
 	PetscOptionsGetString(PETSC_NULL,c, a, PETSC_MAX_PATH_LEN, &flg); 
 	return flg;
 }
 
-int OptionsGet(const char* c, int* a){
+int OptionsGetInt(const char* c, int* a){
 	PetscBool flg;
 	PetscOptionsGetInt(PETSC_NULL,c,a,&flg);
 	return flg;
@@ -46,25 +68,25 @@ int OptionsGet(const char* c, int* a){
 
 int OptionsInt(const char* c){
 	int out;
-	OptionsGet(c, &out);
+	OptionsGetInt(c, &out);
 	return out;
 }
 
 std::string OptionsString(const char *c){
 
 	char a[PETSC_MAX_PATH_LEN];
-	OptionsGet(c, a);
+	OptionsGetString(c, a);
 	return std::string(a);
 
 }
 
 double OptionsDouble(const char* c){
 	double out;
-	OptionsGet(c, &out);
+	OptionsGetDouble(c, &out);
 	return out;
 }
 
-int OptionsGet(const char* c, double* a){
+int OptionsGetDouble(const char* c, double* a){
 	PetscBool flg;
 	PetscOptionsGetReal(PETSC_NULL,c,a,&flg); 
 	return flg;
@@ -191,4 +213,17 @@ int GetSize(){
 
 int LastProcess(){ 
 	return GetRank() == GetSize()-1;
+}
+
+void Output(Vec A, const char* name, const char* variable_name){
+
+	char filename[PETSC_MAX_PATH_LEN];
+	sprintf(filename, "%s%s", name, Output_Suffix.c_str());
+
+	PetscViewer viewer;
+	PetscViewerASCIIOpen(PETSC_COMM_WORLD, filename, &viewer);
+	PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);
+	PetscObjectSetName((PetscObject) A, strncmp(variable_name, "", PETSC_MAX_PATH_LEN) ?variable_name : name);
+	View(A, viewer);
+	PetscViewerDestroy(&viewer);
 }

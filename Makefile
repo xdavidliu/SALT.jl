@@ -22,9 +22,6 @@ Passive: Passive.o ${BASIC_OFILES}
 Salt: Salt.o ${BASIC_OFILES} ${NEWTON_OFILES}
 	${COMMAND}
 
-Opt: Opt.o ${BASIC_OFILES} ${NEWTON_OFILES}
-	${COMMAND}
-
 
 Test: Test.o
 	${COMMAND}

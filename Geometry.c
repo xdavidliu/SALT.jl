@@ -72,13 +72,13 @@ Geometry::Geometry(){
 
 	int N[3], M[3];
 
-	OptionsXYZ("-N", N);
-	OptionsXYZ("-M", M);
-	OptionsXYZ("-Npml", Npml);
-	OptionsXYZ("-h", h);
+	OptionsXYZInt("-N", N);
+	OptionsXYZInt("-M", M);
+	OptionsXYZInt("-Npml", Npml);
+	OptionsXYZDouble("-h", h);
 
-	OptionsGet("-Nc", &Nc);
-	OptionsGet("-LowerPML", &LowerPML);
+	OptionsGetInt("-Nc", &Nc);
+	OptionsGetInt("-LowerPML", &LowerPML);
 	gN = Grid(N, Nc, 2);
 	gM = Grid(M, 1, 1);
 
@@ -102,7 +102,7 @@ Geometry::Geometry(){
 
 	for(int i=1; i<SCRATCHNUM; i++) VecDuplicate(vMscratch[0], &vMscratch[i]);
 	char file[PETSC_MAX_PATH_LEN];
-	OptionsGet("-epsfile", file);
+	OptionsGetString("-epsfile", file);
 	std::ifstream is_eps(file);
 
 	if(!is_eps){
@@ -132,13 +132,13 @@ Geometry::Geometry(){
 
 
 	D = 0.0;
-	OptionsGet("-wa", &wa);
-	OptionsGet("-gamma", &y);
+	OptionsGetDouble("-wa", &wa);
+	OptionsGetDouble("-gamma", &y);
 
 
 	VecDuplicate(veps, &vf);
 
-	OptionsGet("-fproffile", file);
+	OptionsGetString("-fproffile", file);
 	std::ifstream is_fprof(file);
 	
 	if(!is_fprof){

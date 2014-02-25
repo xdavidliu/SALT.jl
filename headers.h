@@ -38,21 +38,13 @@ int OptionsInt(const char* c);
 double OptionsDouble(const char* c);
 std::string OptionsString(const char *c);
 
-int OptionsGet(const char* c, int* a);
-int OptionsGet(const char* c, double* a);
-int OptionsGet(const char* c, char* a);
+int OptionsGetInt(const char* c, int* a);
+int OptionsGetDouble(const char* c, double* a);
+int OptionsGetString(const char* c, char* a);
 
 
-template<class T> void OptionsXYZ(const char* prefix, T* a){
-
-	char option[PETSC_MAX_PATH_LEN];
-	const char x[3] = {'x', 'y', 'z'};
-	for(int i=0; i<3; i++){
-		sprintf(option, "%s%c", prefix, x[i]);
-		OptionsGet(option, &a[i]);
-	}
-
-}
+void OptionsXYZDouble(const char* prefix, double* a);
+void OptionsXYZInt(const char* prefix, int* a);
 
 
 
@@ -235,19 +227,7 @@ dcomp sqr(dcomp a);
 void View(Mat A, PetscViewer viewer);
 void View(Vec x, PetscViewer viewer);
 
-// odd, if I put this in Tools.c, it works for Vec but not Mat. Perhaps something about the Petsc type differences between the two
-template<class T> void Output(T A, const char* name, const char* variable_name = ""){
-
-	char filename[PETSC_MAX_PATH_LEN];
-	sprintf(filename, "%s%s", name, Output_Suffix.c_str());
-
-	PetscViewer viewer;
-	PetscViewerASCIIOpen(PETSC_COMM_WORLD, filename, &viewer);
-	PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);
-	PetscObjectSetName((PetscObject) A, strncmp(variable_name, "", PETSC_MAX_PATH_LEN) ?variable_name : name);
-	View(A, viewer);
-	PetscViewerDestroy(&viewer);
-}
+void Output(Vec A, const char* name, const char* variable_name);
 
 
 void NewtonSolve(modelist &L, Geometry& geo, Vec v, Vec f, Vec dv);
