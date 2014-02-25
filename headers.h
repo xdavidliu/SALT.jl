@@ -36,7 +36,6 @@ void DestroyMat(Mat *A);
 
 int OptionsInt(const char* c);
 double OptionsDouble(const char* c);
-std::string OptionsString(const char *c);
 
 int OptionsGetInt(const char* c, int* a);
 int OptionsGetDouble(const char* c, double* a);
@@ -48,7 +47,7 @@ void OptionsXYZInt(const char* prefix, int* a);
 
 
 
-class Grid{	
+struct Grid{	
 	public:
 	Grid(){}
 	Grid(int* M, int Mc, int Mr){
@@ -65,14 +64,14 @@ class Grid{
 
 	void setc(int Mc){ Nc = Mc;}
 
-	private:
+	
 	int N[3], Nc, Nr;
 };
 
 
 
 
-class Point{
+struct Point{
 
 	public:
 	Point(int i, const Grid& H){
@@ -139,7 +138,6 @@ class Point{
 		return medium;
 	}
 
-	private:
 	int ix[3], ir, ic;
 	Grid G;
 };
@@ -150,7 +148,7 @@ class Point{
 
 
 #define SCRATCHNUM 5
-class Geometry{
+struct Geometry{
 
 	public:
 
@@ -187,7 +185,7 @@ class Geometry{
 
 };
 
-class Mode{
+struct Mode{
 
 	public:
 
@@ -224,7 +222,6 @@ void ReadVector(std::ifstream& is, int N, Vec v);
 PetscErrorCode MyError(const char* message);
 double sqr(const double a);
 dcomp sqr(dcomp a);
-void View(Mat A, PetscViewer viewer);
 void View(Vec x, PetscViewer viewer);
 
 void Output(Vec A, const char* name, const char* variable_name);
@@ -235,9 +232,9 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 double FormJf(modelist& L, Geometry& geo, Vec v, Vec f);
 
 
-class Vecfun{
+struct Vecfun{
 // always Nxyzcr()+2!	
-	private:
+	
 	Vec u;
 	int ms, me; // should keep these, since they are used by the val() function
 				// every single time.
@@ -264,9 +261,9 @@ class Vecfun{
 
 };
 
-class ComplexVecfun: public Vecfun{
+struct ComplexVecfun: public Vecfun{
 
-	private:
+	
 	Vec v;
 	double* b;
 	int Nxyzc;

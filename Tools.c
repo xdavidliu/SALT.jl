@@ -28,7 +28,6 @@ void DestroyMat(Mat *A){
 	A = 0;
 }
 
-void View(Mat A, PetscViewer viewer){ MatView(A, viewer); }
 void View(Vec x, PetscViewer viewer){ VecView(x, viewer); }
 
 void OptionsXYZDouble(const char* prefix, double* a){
@@ -72,13 +71,6 @@ int OptionsInt(const char* c){
 	return out;
 }
 
-std::string OptionsString(const char *c){
-
-	char a[PETSC_MAX_PATH_LEN];
-	OptionsGetString(c, a);
-	return std::string(a);
-
-}
 
 double OptionsDouble(const char* c){
 	double out;

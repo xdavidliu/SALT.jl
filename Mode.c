@@ -176,7 +176,9 @@ void AddPlaceholders(Mat J, Geometry &geo){
 
 	}
 
-	if( 0==strcmp(OptionsString("-pc_factor_mat_solver_package").c_str(), "pastix" ) ){
+	char solver[PETSC_MAX_PATH_LEN];
+	OptionsGetString("-pc_factor_mat_solver_package", solver);
+	if( 0==strcmp(solver, "pastix" ) ){
 		PetscPrintf(PETSC_COMM_WORLD, "pastix detected, symmetrizing nonzero pattern...\n");
 	
 		MatSetOption(J,MAT_NEW_NONZERO_LOCATIONS, PETSC_TRUE);
