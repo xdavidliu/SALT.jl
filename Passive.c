@@ -2,20 +2,20 @@
 
 
 
-void FillBop(Geometry& geo, Mat Bop, dcomp w){
+void FillBop(Geometry *geo, Mat Bop, dcomp w){
 
 
-	VecCopy(geo.veps, geo.vscratch[0]);
-	TimesI(&geo, geo.vscratch[0], geo.vscratch[1]);
+	VecCopy(geo->veps, geo->vscratch[0]);
+	TimesI(geo, geo->vscratch[0], geo->vscratch[1]);
 	
 	Complexfun b;
-	CreateComplexfun(&b, geo.vscratch[0], geo.vscratch[1]);
+	CreateComplexfun(&b, geo->vscratch[0], geo->vscratch[1]);
 	int i; 
 	for(i=b.ns; i<b.ne; i++)
 		setc(&b, i, sqr(w)* valc(&b, i) );
 
-	SetJacobian(&geo, Bop, geo.vscratch[0], -2, 0, 0);
-	SetJacobian(&geo, Bop, geo.vscratch[1], -2, 1, 0);	
+	SetJacobian(geo, Bop, geo->vscratch[0], -2, 0, 0);
+	SetJacobian(geo, Bop, geo->vscratch[1], -2, 1, 0);	
 	
 	DestroyComplexfun(&b);
 	
@@ -29,8 +29,10 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 
 
     	tv t1, t2, t3;
-	Geometry geo;
-	CreateGeometry(&geo);
+	Geometry Geo;
+	CreateGeometry(&Geo);
+	Geometry *geo = &Geo; // to make consistent with other functions
+	
 	gettimeofday(&t1, NULL);
 
 	int	i, b[3][2], BCPeriod, bl[3];
@@ -40,7 +42,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 	for(i=0; i<3; i++){ b[i][0]=bl[i]; b[i][1] = 0;}
 
         Mat Mop;
-	CreateSquareMatrix(2*Nxyzc(&geo), 26, &Mop);
+	CreateSquareMatrix(2*Nxyzc(geo), 26, &Mop);
 
 
 
@@ -51,7 +53,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 
 
 
-	MoperatorGeneralBlochFill(&geo, Mop, b, BCPeriod, k);
+	MoperatorGeneralBlochFill(geo, Mop, b, BCPeriod, k);
 	AssembleMat(Mop);
 
 
@@ -68,7 +70,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 	dcomp guess = -sqr(wguess_real + ComplexI * wguess_imag);
 
 
-	Mat Bop; CreateSquareMatrix(2*Nxyzc(&geo), 2, &Bop);
+	Mat Bop; CreateSquareMatrix(2*Nxyzc(geo), 2, &Bop);
 
 
 
@@ -119,16 +121,16 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 		// then || TimesI(v) + vi || > 1e-5 or something
 		
 
-		ScatterRange(v, geo.vscratch[0], 0, 0, xyzcrGrid(&geo.gN) );
-		TimesI(&geo, geo.vscratch[0], geo.vscratch[2]);
+		ScatterRange(v, geo->vscratch[0], 0, 0, xyzcrGrid(&geo->gN) );
+		TimesI(geo, geo->vscratch[0], geo->vscratch[2]);
 		
-		VecSet(geo.vscratch[1], 0.0); // annoying last two elements
-		ScatterRange(vi, geo.vscratch[1], 0, 0, xyzcrGrid(&geo.gN) );
-		VecAXPY(geo.vscratch[2], -1.0, geo.vscratch[1]);
+		VecSet(geo->vscratch[1], 0.0); // annoying last two elements
+		ScatterRange(vi, geo->vscratch[1], 0, 0, xyzcrGrid(&geo->gN) );
+		VecAXPY(geo->vscratch[2], -1.0, geo->vscratch[1]);
 		
 		double dvnorm, vnorm;
-		VecNorm(geo.vscratch[2], NORM_2, &dvnorm);
-		VecNorm(geo.vscratch[0], NORM_2, &vnorm);
+		VecNorm(geo->vscratch[2], NORM_2, &dvnorm);
+		VecNorm(geo->vscratch[0], NORM_2, &vnorm);
 		int fake = dvnorm / vnorm < 1e-5;
 		//==============
 
@@ -142,15 +144,15 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 
 		Mode m;
 		CreateMode(&m, geo, 0, b, BCPeriod, k);
-		ScatterRange(v, m.vpsi, 0, 0, xyzcrGrid(&geo.gN) );
+		ScatterRange(v, m.vpsi, 0, 0, xyzcrGrid(&geo->gN) );
 
 
 		Fix(&m, geo);
 		
 		double psinorm, psifnorm;
 		VecNorm(m.vpsi, NORM_2, &psinorm);
-		VecPointwiseMult(geo.vscratch[0], m.vpsi, geo.vf);
-		VecNorm(geo.vscratch[0], NORM_2, &psifnorm);
+		VecPointwiseMult(geo->vscratch[0], m.vpsi, geo->vf);
+		VecNorm(geo->vscratch[0], NORM_2, &psifnorm);
 
 		PetscPrintf(PETSC_COMM_WORLD, "found mode #%i: w = %1.8g + (%1.8g) i; pumped fraction = %g\n", j, w.real(), w.imag(), psifnorm/psinorm );
 		SetLast2(m.vpsi, w.real(), w.imag() ); // make sure to get psinorm before doing this
@@ -165,7 +167,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 	EPSDestroy(&evps);
 	DestroyMat(&Mop);	DestroyMat(&Bop);
 	DestroyVec(&v);	DestroyVec(&vi);
-	DestroyGeometry(&geo);
+	DestroyGeometry(geo);
 
 	gettimeofday(&t3, NULL);	
 	

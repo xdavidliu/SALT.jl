@@ -33,35 +33,35 @@ void Stamp(Geometry *geo, Vec vN, int ic, int ir, Vec scratchM){
 
 }
 
-void LinearDerivative(Mode& m, Geometry& geo, Vec dfR, Vec dfI, int ih){
+void LinearDerivative(Mode& m, Geometry *geo, Vec dfR, Vec dfI, int ih){
 
 	Complexfun eps;
-	CreateComplexfun(&eps, geo.veps, geo.vIeps);
+	CreateComplexfun(&eps, geo->veps, geo->vIeps);
 	Vecfun f, H;
-	CreateVecfun(&f, geo.vf);
-	CreateVecfun(&H, geo.vH);
+	CreateVecfun(&f, geo->vf);
+	CreateVecfun(&H, geo->vH);
 
 	dcomp mw = getw(&m), yw = gamma_w(&m, geo);
 
 	int i;
 	for(i=eps.ns; i<eps.ne; i++){
-		dcomp val = sqr(mw) * (valc(&eps, i) + geo.D * yw * valr(&f, i) * valr(&H, i) );
-		VecSetComplex(dfR, dfI, i+offset(&geo, ih), ir(&geo, i), val, INSERT_VALUES);
+		dcomp val = sqr(mw) * (valc(&eps, i) + geo->D * yw * valr(&f, i) * valr(&H, i) );
+		VecSetComplex(dfR, dfI, i+offset(geo, ih), ir(geo, i), val, INSERT_VALUES);
 	}
 	DestroyVecfun(&f);
 	DestroyVecfun(&H);
 	DestroyComplexfun(&eps);
 }
 
-void TensorDerivative(Mode& m, Mode &mj, Geometry& geo, int jc, int jr, Vec df, Vec vpsibra, Vec vIpsi, int ih){
+void TensorDerivative(Mode& m, Mode &mj, Geometry *geo, int jc, int jr, Vec df, Vec vpsibra, Vec vIpsi, int ih){
 
 
 	double mjc = getc(&mj);
 	dcomp mw = getw(&m), yw = gamma_w(&m, geo), yjw = gamma_w(&mj, geo);
 
 	Vecfun f, H, psibra;
-	CreateVecfun(&f, geo.vf);
-	CreateVecfun(&H, geo.vH);
+	CreateVecfun(&f, geo->vf);
+	CreateVecfun(&H, geo->vH);
 	CreateVecfun(&psibra, vpsibra);
 
 	Complexfun psi;
@@ -72,10 +72,10 @@ void TensorDerivative(Mode& m, Mode &mj, Geometry& geo, int jc, int jr, Vec df, 
 
 		if( valr(&f, i) == 0.0) continue;			
 		dcomp ket_term = -sqr(mw ) * sqr(mjc) * sqr(std::abs(yjw)) * 2.0
-			* sqr(valr(&H, i) ) * geo.D * valr(&f, i) * yw * valc(&psi, i);		
-		double val = valr(&psibra, i) * (ir(&geo, i)? ket_term.imag() : ket_term.real() );
+			* sqr(valr(&H, i) ) * geo->D * valr(&f, i) * yw * valc(&psi, i);		
+		double val = valr(&psibra, i) * (ir(geo, i)? ket_term.imag() : ket_term.real() );
 		
-		VecSetValue(df, i+offset(&geo, ih), val, INSERT_VALUES);
+		VecSetValue(df, i+offset(geo, ih), val, INSERT_VALUES);
 	}
 	DestroyVecfun(&f);
 	DestroyVecfun(&H);
@@ -84,7 +84,7 @@ void TensorDerivative(Mode& m, Mode &mj, Geometry& geo, int jc, int jr, Vec df, 
 }
 
 
-void ColumnDerivative(Mode* m, Mode* mj, Geometry& geo, Vec dfR, Vec dfI, Vec vIpsi, Vec vpsisq, int ih){
+void ColumnDerivative(Mode* m, Mode* mj, Geometry *geo, Vec dfR, Vec dfI, Vec vIpsi, Vec vpsisq, int ih){
 	// vIpsi is for m, vpsisq is for mj	
 	// use pointers so can check whether ih = jh
 
@@ -95,25 +95,25 @@ void ColumnDerivative(Mode* m, Mode* mj, Geometry& geo, Vec dfR, Vec dfI, Vec vI
 	
 	Complexfun psi, eps;
 	CreateComplexfun(&psi,m->vpsi, vIpsi);
-	CreateComplexfun(&eps,geo.veps, geo.vIeps);
+	CreateComplexfun(&eps,geo->veps, geo->vIeps);
 
 	Vecfun f,H, psisq;
-	CreateVecfun(&f, geo.vf);
-	CreateVecfun(&H, geo.vH);
+	CreateVecfun(&f, geo->vf);
+	CreateVecfun(&H, geo->vH);
 	CreateVecfun(&psisq, vpsisq);
 
 	int i;
 	for(i=psi.ns; i<psi.ne; i++){
 
 		dcomp dfdk = 0.0, dfdc = 0.0, 
-			DfywHpsi = geo.D * valr(&f, i) * yw * valr(&H, i) * valc(&psi, i);
+			DfywHpsi = geo->D * valr(&f, i) * yw * valr(&H, i) * valc(&psi, i);
 
 		if(m == mj)
-			dfdk += ( -sqr(mw)*yw / geo.y +2.0*mw ) * DfywHpsi + 2.0*mw* valc(&eps, i)*valc(&psi, i);
+			dfdk += ( -sqr(mw)*yw / geo->y +2.0*mw ) * DfywHpsi + 2.0*mw* valc(&eps, i)*valc(&psi, i);
 
 		if(m->lasing && valr(&f, i) != 0.0){
-			dcomp dHdk_term = -sqr(mjc) * -2.0*(mjw-geo.wa)
-			 /sqr(geo.y) * sqr(sqr(std::abs(yjw)));
+			dcomp dHdk_term = -sqr(mjc) * -2.0*(mjw-geo->wa)
+			 /sqr(geo->y) * sqr(sqr(std::abs(yjw)));
 			dHdk_term *= sqr(mw)*DfywHpsi * valr(&H, i) * valr(&psisq, i);
 			dfdk += dHdk_term;
 
@@ -122,10 +122,10 @@ void ColumnDerivative(Mode* m, Mode* mj, Geometry& geo, Vec dfR, Vec dfI, Vec vI
 		}
 		
 		if( !m->lasing)
-			VecSetComplex(dfR, dfI, i+offset(&geo, ih), ir(&geo, i), dfdk, INSERT_VALUES);
+			VecSetComplex(dfR, dfI, i+offset(geo, ih), ir(geo, i), dfdk, INSERT_VALUES);
 		else{
-			VecSetValue(dfR, i+offset(&geo, ih), ir(&geo, i)? dfdk.imag() : dfdk.real(), INSERT_VALUES );
-			VecSetValue(dfI, i+offset(&geo, ih), ir(&geo, i)? dfdc.imag() : dfdc.real(), INSERT_VALUES );
+			VecSetValue(dfR, i+offset(geo, ih), ir(geo, i)? dfdk.imag() : dfdk.real(), INSERT_VALUES );
+			VecSetValue(dfI, i+offset(geo, ih), ir(geo, i)? dfdc.imag() : dfdc.real(), INSERT_VALUES );
 		}
 	}
 
@@ -136,12 +136,12 @@ void ColumnDerivative(Mode* m, Mode* mj, Geometry& geo, Vec dfR, Vec dfI, Vec vI
 	DestroyVecfun(&psisq);
 }
 
-void ComputeGain(Geometry& geo, modelist& L){
+void ComputeGain(Geometry *geo, modelist& L){
 
-	VecSet(geo.vH, 0.0);
+	VecSet(geo->vH, 0.0);
 
 	Vecfun H;
-	CreateVecfun(&H, geo.vH);
+	CreateVecfun(&H, geo->vH);
 	int i;
 	FORMODES(L, it){
 		Mode *m = *it;
@@ -149,10 +149,10 @@ void ComputeGain(Geometry& geo, modelist& L){
 		double mc = getc(m);
 
 		// do not change this from vscratch[3], or the hack below for single mode Column derivative will fail!
-		VecSqMedium(&geo, m->vpsi, geo.vscratch[3], geo.vMscratch[0]);
+		VecSqMedium(geo, m->vpsi, geo->vscratch[3], geo->vMscratch[0]);
 
 		Vecfun psisq;
-		CreateVecfun(&psisq ,geo.vscratch[3]);
+		CreateVecfun(&psisq ,geo->vscratch[3]);
 
 	
 		for(i=H.ns; i<H.ne; i++)
@@ -165,7 +165,7 @@ void ComputeGain(Geometry& geo, modelist& L){
 	DestroyVecfun(&H);
 }
 
-double FormJf(modelist& L, Geometry& geo, Vec v, Vec f){
+double FormJf(modelist& L, Geometry *geo, Vec v, Vec f){
 
 	Mode *m = *(L.begin());
 	bool lasing = m->lasing;
@@ -176,16 +176,16 @@ double FormJf(modelist& L, Geometry& geo, Vec v, Vec f){
 
 	// ================== name scratch vectors ================== //
 
-	Vec vpsisq = geo.vscratch[3], // only form this later if needed
-		vIpsi = geo.vscratch[2];
+	Vec vpsisq = geo->vscratch[3], // only form this later if needed
+		vIpsi = geo->vscratch[2];
 
 	Vec dfR, dfI;
 	if(L.size() == 1){
-		dfR = geo.vscratch[0];
-		dfI = geo.vscratch[1];
+		dfR = geo->vscratch[0];
+		dfI = geo->vscratch[1];
 	}else{
-		dfR = geo.vNhscratch[0];
-		dfI = geo.vNhscratch[1];
+		dfR = geo->vNhscratch[0];
+		dfI = geo->vNhscratch[1];
 	}
 
 
@@ -202,8 +202,8 @@ double FormJf(modelist& L, Geometry& geo, Vec v, Vec f){
 	
 		LinearDerivative(*m, geo, dfR, dfI, ih);
 
-	  	SetJacobian(&geo, J, dfR, -2, 0, ih);
-		SetJacobian(&geo, J, dfI, -2, 1, ih); 
+	  	SetJacobian(geo, J, dfR, -2, 0, ih);
+		SetJacobian(geo, J, dfI, -2, 1, ih); 
 
 		ih++;
 	}
@@ -215,7 +215,7 @@ double FormJf(modelist& L, Geometry& geo, Vec v, Vec f){
 	MatMult(J, v, f);
 
 	for(kh = 0; kh<L.size(); kh++) for(ir=0; ir<2; ir++)
-		VecSetValue(f, kh*NJ(&geo) + Nxyzcr(&geo)+ir, 0.0, INSERT_VALUES);
+		VecSetValue(f, kh*NJ(geo) + Nxyzcr(geo)+ir, 0.0, INSERT_VALUES);
 
 	AssembleVec(f);
 
@@ -241,20 +241,20 @@ double FormJf(modelist& L, Geometry& geo, Vec v, Vec f){
 		VecSet(dfI, 0.0);
 
 		if(L.size() > 1)  // hack: only recompute vpsisq if ComputeGain didn't already do it, i.e. for multimode
-			VecSqMedium(&geo, mj->vpsi, vpsisq, geo.vMscratch[0]);
+			VecSqMedium(geo, mj->vpsi, vpsisq, geo->vMscratch[0]);
 
 		ih = 0;
 		FORMODES(L, it){
 			Mode *mi = *it;
 
-			TimesI(&geo, mi->vpsi, vIpsi);
+			TimesI(geo, mi->vpsi, vIpsi);
 			ColumnDerivative(mi, mj, geo, dfR, dfI, vIpsi, vpsisq, ih);
 
 			ih++;
 		}
 
-		SetJacobian(&geo, J, dfR, -1, 0, jh);
-		SetJacobian(&geo, J, dfI, -1, 1, jh);
+		SetJacobian(geo, J, dfR, -1, 0, jh);
+		SetJacobian(geo, J, dfI, -1, 1, jh);
 
 
 		jh++;
@@ -269,22 +269,22 @@ double FormJf(modelist& L, Geometry& geo, Vec v, Vec f){
 	FORMODES(L, jt){
 		Mode *mj = *jt;
 
-		for(jr=0; jr<2; jr++) for(jc=0; jc< geo.gN.Nc; jc++){
+		for(jr=0; jr<2; jr++) for(jc=0; jc< geo->gN.Nc; jc++){
 
 			VecCopy(mj->vpsi, vpsibra);
-			Stamp(&geo, vpsibra, jc, jr, geo.vMscratch[0]);
+			Stamp(geo, vpsibra, jc, jr, geo->vMscratch[0]);
 
 			VecSet(dfR, 0.0);
 			ih = 0;
 			FORMODES(L, it){
 				Mode *mi = *it;
-				TimesI(&geo, mi->vpsi, vIpsi);
+				TimesI(geo, mi->vpsi, vIpsi);
 	
 				TensorDerivative(*mi, *mj, geo, jc, jr, dfR, vpsibra, vIpsi, ih);
 				ih++;
 			}
 
-			SetJacobian(&geo, J, dfR, jc, jr, jh);
+			SetJacobian(geo, J, dfR, jc, jr, jh);
 		}
 
 		jh++;

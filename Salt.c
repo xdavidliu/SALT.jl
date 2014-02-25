@@ -3,7 +3,7 @@
 
 
 
-PetscErrorCode ReadModes(modelist& L, Geometry& geo){
+PetscErrorCode ReadModes(modelist& L, Geometry *geo){
 
 	char modename[PETSC_MAX_PATH_LEN], 
 	     optionin[PETSC_MAX_PATH_LEN] = "-in0",
@@ -16,8 +16,8 @@ PetscErrorCode ReadModes(modelist& L, Geometry& geo){
 		Mode* m = (Mode*) malloc(sizeof(struct Mode));
 		ModeRead(m, modename, geo, &D);
 
-		if(i==0) geo.D = D;
-		else if(D != geo.D)
+		if(i==0) geo->D = D;
+		else if(D != geo->D)
 			MyError("The input modes should all be at the same pump strength!");		
 
 		if( !OptionsGetString(optionout, modename) )
@@ -49,7 +49,7 @@ int CountLasing(modelist L){ // makes copy
 
 
 
-void FirstStep(modelist Lh, Mode *m, Geometry& geo, Vec vNh, Vec f, Vec dv, double c){
+void FirstStep(modelist Lh, Mode *m, Geometry *geo, Vec vNh, Vec f, Vec dv, double c){
 
 
 	PetscPrintf(PETSC_COMM_WORLD, "Taking first step for mode \"%s\"...\n", m->name );
@@ -63,7 +63,7 @@ void FirstStep(modelist Lh, Mode *m, Geometry& geo, Vec vNh, Vec f, Vec dv, doub
 	if(vNh != m->vpsi){ // update vpsi's from v
 		int ih =0;
 		FORMODES(Lh, it){
-			ScatterRange((*it)->vpsi, vNh, 0, ih*NJ(&geo), NJ(&geo) );
+			ScatterRange((*it)->vpsi, vNh, 0, ih*NJ(geo), NJ(geo) );
 			ih++;
 		}
 	}
@@ -71,8 +71,8 @@ void FirstStep(modelist Lh, Mode *m, Geometry& geo, Vec vNh, Vec f, Vec dv, doub
   while(1){
 
 	if( LastProcess() ){ // try new c
-		VecSetValue(vNh, offset(&geo, ih)+Nxyzcr(&geo)+1, c, INSERT_VALUES);	
-		if( vNh != m->vpsi) VecSetValue(m->vpsi, Nxyzcr(&geo)+1, c, INSERT_VALUES);
+		VecSetValue(vNh, offset(geo, ih)+Nxyzcr(geo)+1, c, INSERT_VALUES);	
+		if( vNh != m->vpsi) VecSetValue(m->vpsi, Nxyzcr(geo)+1, c, INSERT_VALUES);
 	}
 	AssembleVec(vNh);
 	AssembleVec(m->vpsi);
@@ -81,7 +81,7 @@ void FirstStep(modelist Lh, Mode *m, Geometry& geo, Vec vNh, Vec f, Vec dv, doub
 	KSPSolve( (*Lh.begin())->ksp, f, dv);
 	PetscPrintf(PETSC_COMM_WORLD, "\n");
 
-	double dc = -GetValue(dv, offset(&geo, ih)+Nxyzcr(&geo)+1 );
+	double dc = -GetValue(dv, offset(geo, ih)+Nxyzcr(geo)+1 );
 
 	if( std::abs(dc)/c < 0.5){
 		VecAXPY(vNh, -1.0, dv);
@@ -89,7 +89,7 @@ void FirstStep(modelist Lh, Mode *m, Geometry& geo, Vec vNh, Vec f, Vec dv, doub
 		if(vNh != m->vpsi){ // update vpsi's from v
 			int ih =0;
 			FORMODES(Lh, it){
-				ScatterRange(vNh, (*it)->vpsi, ih*NJ(&geo), 0, NJ(&geo) );
+				ScatterRange(vNh, (*it)->vpsi, ih*NJ(geo), 0, NJ(geo) );
 				ih++;
 			}
 		}
@@ -108,12 +108,12 @@ void FirstStep(modelist Lh, Mode *m, Geometry& geo, Vec vNh, Vec f, Vec dv, doub
 
 
 
-void Bundle(modelist &L, Geometry &geo){
+void Bundle(modelist &L, Geometry *geo){
 
 
 
 
-	int i, Nh = L.size(), Nj = 2*Nxyzc(&geo)+2;
+	int i, Nh = L.size(), Nj = 2*Nxyzc(geo)+2;
 	if(Nh < 2) MyError("Bundle function is only for multimode!");
 	
 	Mat J; KSP ksp;
@@ -131,8 +131,8 @@ void Bundle(modelist &L, Geometry &geo){
 	
 
 	for(i=0; i<SCRATCHNUM; i++){
-		DestroyVec(&geo.vNhscratch[i]);
-		MatGetVecs(J, &geo.vNhscratch[i], NULL);
+		DestroyVec(&geo->vNhscratch[i]);
+		MatGetVecs(J, &geo->vNhscratch[i], NULL);
 	}
 
 
@@ -146,7 +146,7 @@ void Bundle(modelist &L, Geometry &geo){
 		KSPDestroy(&m->ksp);
 		m->ksp = ksp;
 		
-		MoperatorGeneralBlochFill(&geo, J, m->b, m->BCPeriod, m->k, ih);
+		MoperatorGeneralBlochFill(geo, J, m->b, m->BCPeriod, m->k, ih);
 		AddRowDerivatives(J, geo, m->ifix, ih);
 		ih++;
 	}	
@@ -162,8 +162,9 @@ void Bundle(modelist &L, Geometry &geo){
 bool AtThreshold(Mode *m){ return getc(m) == 0.0 && m->lasing;}
 
 int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC_NULL); {
-	Geometry geo;
-	CreateGeometry(&geo);
+	Geometry Geo, *geo = &Geo;
+	CreateGeometry(geo);
+	
 
 	double dD, Dmax; 
 	OptionsGetDouble("-dD", &dD);
@@ -178,7 +179,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
     Vec f, dv;
     MatGetVecs( m->J, &dv, &f);
 
-	for(; geo.D <= Dmax; geo.D = (geo.D+dD < Dmax? geo.D+dD: Dmax)){
+	for(; geo->D <= Dmax; geo->D = (geo->D+dD < Dmax? geo->D+dD: Dmax)){
 
 	  modelist Ll = L, Ln = L; // lasing and nonlasing
 	  Ll.remove_if(not_lasing() );
@@ -191,14 +192,14 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 		  if( it != Ll.end() && Ll.size() > 1) Bundle(Ll, geo);
 
 		  if(Ll.size() > 1){	 // these vectors will have been properly created in the last block
-			vNh = geo.vNhscratch[2];
-			fNh = geo.vNhscratch[3];
-			dvNh = geo.vNhscratch[4];
+			vNh = geo->vNhscratch[2];
+			fNh = geo->vNhscratch[3];
+			dvNh = geo->vNhscratch[4];
 		  }
 
 		  if( it != Ll.end() ){
-		  		geo.D += 0.5*dD;
-				if(geo.D > Dmax) geo.D = Dmax;
+		  		geo->D += 0.5*dD;
+				if(geo->D > Dmax) geo->D = Dmax;
 		  		FirstStep(Ll, *it, geo, vNh, fNh, dvNh, 1.0);
 		  }
 		  NewtonSolve(Ll, geo,  vNh, fNh, dvNh);  
@@ -215,12 +216,12 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 		double wi_new = getw(m).imag();
 
 		if(wi_new > -OptionsDouble("-thresholdw_tol") && !m->lasing)
-			ThresholdSearch(  wi_old, wi_new, geo.D-dD, geo.D, 
+			ThresholdSearch(  wi_old, wi_new, geo->D-dD, geo->D, 
 			Ll, vNh, *m, geo, f, dv); // todo: replace with vNh
 
 	  }
 	  
-	  if(geo.D==Dmax) break;
+	  if(geo->D==Dmax) break;
 	}
 
 	FORMODES(L, it){
@@ -232,7 +233,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 
 	DestroyVec(&f);
 	DestroyVec(&dv);
-	DestroyGeometry(&geo);
+	DestroyGeometry(geo);
 	PetscPrintf(PETSC_COMM_WORLD, "\n");
 	PetscPrintf(PETSC_COMM_WORLD, "TODO: a whole bunch of TODOs in Salt.c related to first step of multimode\n");	
 	PetscPrintf(PETSC_COMM_WORLD, "future todo: add artificial crashes to enforce all the assumptions I'm making. For example, crash if any file read fails.\n");		

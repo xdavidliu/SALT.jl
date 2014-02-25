@@ -3,10 +3,10 @@
 
 
 
-void CreateMode(Mode *m, Geometry& geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]){
+void CreateMode(Mode *m, Geometry *geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]){
 
-	CreateVec(2*Nxyzc(&geo)+2, &m->vpsi);
-	CreateSquareMatrix(2*Nxyzc(&geo)+2, 0, &m->J);
+	CreateVec(2*Nxyzc(geo)+2, &m->vpsi);
+	CreateSquareMatrix(2*Nxyzc(geo)+2, 0, &m->J);
 	KSPCreate(PETSC_COMM_WORLD,&m->ksp);
 
 	m->lasing = 0;
@@ -19,11 +19,11 @@ void CreateMode(Mode *m, Geometry& geo, int ifix_, int b_[3][2], int BCPeriod_, 
 
 
 
-void ModeRead(Mode *m, char *Name, Geometry& geo, double *Dout){
+void ModeRead(Mode *m, char *Name, Geometry *geo, double *Dout){
 
 	sprintf(m->name, "%s", Name );
-	CreateVec(2*Nxyzc(&geo)+2, &m->vpsi);
-	CreateSquareMatrix(2*Nxyzc(&geo)+2, 0, &m->J);
+	CreateVec(2*Nxyzc(geo)+2, &m->vpsi);
+	CreateSquareMatrix(2*Nxyzc(geo)+2, 0, &m->J);
 		
 	KSPCreate(PETSC_COMM_WORLD,&m->ksp);
 
@@ -44,7 +44,7 @@ void ModeRead(Mode *m, char *Name, Geometry& geo, double *Dout){
 
 
 
-	ReadVectorC(fp, 2*Nxyzc(&geo)+2, m->vpsi);
+	ReadVectorC(fp, 2*Nxyzc(geo)+2, m->vpsi);
 
    if(GetRank()==0){
 
@@ -104,7 +104,7 @@ void DestroyMode(Mode *m){
 }
 
 
-void Fix(Mode *m, Geometry& geo){
+void Fix(Mode *m, Geometry *geo){
 
 	int N;
 	VecGetSize(m->vpsi, &N);
@@ -119,18 +119,18 @@ void Fix(Mode *m, Geometry& geo){
 
 	dcomp factor = OptionsDouble("-norm") / (psifix_real+ ComplexI * psifix_imag);
 
-	VecCopy(m->vpsi, geo.vscratch[0]);
-	TimesI(&geo, m->vpsi, geo.vscratch[1]);
+	VecCopy(m->vpsi, geo->vscratch[0]);
+	TimesI(geo, m->vpsi, geo->vscratch[1]);
 	
 	Complexfun psi;
-	CreateComplexfun(&psi, geo.vscratch[0], geo.vscratch[1]);
+	CreateComplexfun(&psi, geo->vscratch[0], geo->vscratch[1]);
 	Vecfun psiket;
 	CreateVecfun(&psiket,m->vpsi);
 
 	for(i=psiket.ns; i<psiket.ne; i++){
 
 		dcomp val = valc(&psi, i) * factor;
-		setr(&psiket, i, ir(&geo, i)? val.imag() : val.real() ); 
+		setr(&psiket, i, ir(geo, i)? val.imag() : val.real() ); 
 	}
 
 	DestroyVecfun(&psiket);
@@ -140,7 +140,7 @@ void Fix(Mode *m, Geometry& geo){
 
 
 
-void Write(Mode *m, const Geometry& geo){
+void Write(Mode *m, const Geometry *geo){
 
 
 	Output(m->vpsi, m->name, "psi");
@@ -159,7 +159,7 @@ void Write(Mode *m, const Geometry& geo){
 	fprintf(fp, "b=[%i %i %i];\n", m->b[0][0], m->b[1][0], m->b[2][0]);
 	fprintf(fp, "BCPeriod=%i;\n", m->BCPeriod);
 
-	fprintf(fp, "D=%1.15g;\n", geo.D);
+	fprintf(fp, "D=%1.15g;\n", geo->D);
 	fprintf(fp, "k=[\n%1.15g\n%1.15g\n%1.15g\n];\n", m->k[0], m->k[1], m->k[2]);	
 	// "read" constructor for Mode depends on this
 	
@@ -170,25 +170,25 @@ void Write(Mode *m, const Geometry& geo){
 }
 
 
-void AddPlaceholders(Mat J, Geometry &geo){
+void AddPlaceholders(Mat J, Geometry *geo){
 
         int ns, ne,N, i, jh, j, jr, jc;
         MatGetOwnershipRange(J, &ns, &ne);
         MatGetSize(J, &N, NULL);
-        int Nh = N/(Nxyzcr(&geo)+2);
+        int Nh = N/(Nxyzcr(geo)+2);
 
 	for(i=ns; i<ne; i++){ 
 	
-		if(Last2(&geo, i)) continue;		
+		if(Last2(geo, i)) continue;		
 
 		for(jh = 0; jh<Nh; jh++){
-			int offset =  jh*(Nxyzcr(&geo)+2);
+			int offset =  jh*(Nxyzcr(geo)+2);
 			
 			for(j=0; j<2; j++) // columns
-				MatSetValue(J, i, offset+Nxyzcr(&geo)+j, 0.0, ADD_VALUES);
+				MatSetValue(J, i, offset+Nxyzcr(geo)+j, 0.0, ADD_VALUES);
 			
-			for(jr=0; jr<2;jr++) for(jc=0; jc<geo.Nc; jc++) // tensor
-				MatSetValue(J, i, offset+Nxyzc(&geo)*jr + Nxyz(&geo)*jc + i % NJ(&geo) % Nxyz(&geo), 0.0, ADD_VALUES);
+			for(jr=0; jr<2;jr++) for(jc=0; jc<geo->Nc; jc++) // tensor
+				MatSetValue(J, i, offset+Nxyzc(geo)*jr + Nxyz(geo)*jc + i % NJ(geo) % Nxyz(geo), 0.0, ADD_VALUES);
 				
 		}		
 
@@ -200,9 +200,9 @@ void AddPlaceholders(Mat J, Geometry &geo){
 		PetscPrintf(PETSC_COMM_WORLD, "pastix detected, symmetrizing nonzero pattern...\n");
 	
 		MatSetOption(J,MAT_NEW_NONZERO_LOCATIONS, PETSC_TRUE);
-		for(i=ns; i<ne; i++) if( Last2(&geo, i) ){
+		for(i=ns; i<ne; i++) if( Last2(geo, i) ){
 			for(j = 0; j < N; j++){
-				if( Last2(&geo, j) ) continue;
+				if( Last2(geo, j) ) continue;
 				MatSetValue(J, i, j, 0.0, ADD_VALUES);
 
 			}
@@ -211,32 +211,32 @@ void AddPlaceholders(Mat J, Geometry &geo){
 
 }
 
-void AddRowDerivatives(Mat J, Geometry& geo, int ifix, int ih){
+void AddRowDerivatives(Mat J, Geometry *geo, int ifix, int ih){
 
-	int offset =  ih*(Nxyzcr(&geo)+2);
+	int offset =  ih*(Nxyzcr(geo)+2);
 
 	// last two rows; just put the row derivatives here!
 	if(LastProcess()){
-		MatSetValue(J, Nxyzcr(&geo)+offset, 
+		MatSetValue(J, Nxyzcr(geo)+offset, 
 		ifix+offset, 1.0, ADD_VALUES);
 	// putting these here takes care of last two residual elements
 	// up to scaling of the first one (done below)
-		MatSetValue(J, Nxyzcr(&geo) + 1+offset, 
-		Nxyzc(&geo)+ ifix+offset, 1.0, ADD_VALUES);
+		MatSetValue(J, Nxyzcr(geo) + 1+offset, 
+		Nxyzc(geo)+ ifix+offset, 1.0, ADD_VALUES);
 	}	
 	
 
 }
 
-void AllocateJacobian(Mat J, Geometry& geo){
+void AllocateJacobian(Mat J, Geometry *geo){
 
 
 	int N, ns, ne;
 	MatGetSize(J, &N, NULL);
 	MatGetOwnershipRange(J, &ns, &ne);
-	int Nh = N / (2*Nxyzc(&geo)+2);
+	int Nh = N / (2*Nxyzc(geo)+2);
 	
-	int nnz = 26+Nh*(2+2*geo.Nc);
+	int nnz = 26+Nh*(2+2*geo->Nc);
 	// in parenthesis: 2 column derivatives plus 2Nc tensor derivatives
 
 	if(GetSize() > 1) MatMPIAIJSetPreallocation(J, nnz, NULL, nnz, NULL);
@@ -245,12 +245,12 @@ void AllocateJacobian(Mat J, Geometry& geo){
 
 }
 
-void Setup(Mode *m, Geometry& geo){
+void Setup(Mode *m, Geometry *geo){
 
 
 	AllocateJacobian(m->J, geo);
 	
-    MoperatorGeneralBlochFill(&geo, m->J, m->b, m->BCPeriod, m->k);
+    MoperatorGeneralBlochFill(geo, m->J, m->b, m->BCPeriod, m->k);
 
 
 	AddPlaceholders(m->J, geo);
@@ -283,9 +283,9 @@ dcomp getw(Mode *m){
 	else return GetFromLast(m->vpsi, 0) + ComplexI * GetFromLast(m->vpsi, 1);
 }
 
-dcomp gamma_w(Mode *m, Geometry& geo){
+dcomp gamma_w(Mode *m, Geometry *geo){
 	
-	return geo.y/( getw(m) -geo.wa + ComplexI*geo.y);
+	return geo->y/( getw(m) -geo->wa + ComplexI*geo->y);
 	
 }
 

@@ -135,22 +135,22 @@ struct Mode{
 
 };
 
-void CreateMode(Mode *m, Geometry& geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]);
-void ModeRead(Mode *m, char *Name, Geometry& geo, double *Dout);
+void CreateMode(Mode *m, Geometry *geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]);
+void ModeRead(Mode *m, char *Name, Geometry *geo, double *Dout);
 void DestroyMode(Mode *m);
-void Setup(Mode *m, Geometry& geo);
+void Setup(Mode *m, Geometry *geo);
 
-void Write(Mode *m, const Geometry& geo);
+void Write(Mode *m, const Geometry *geo);
 double getc(Mode *m);
 dcomp getw(Mode *m);
-dcomp gamma_w(Mode *m, Geometry& geo);
-void Fix(Mode *m, Geometry& geo);
+dcomp gamma_w(Mode *m, Geometry *geo);
+void Fix(Mode *m, Geometry *geo);
 
 typedef std::list<Mode*> modelist;
 #define FORMODES(L, it)   for(modelist::iterator it=L.begin(); it!= L.end(); it++) 
 // note no ; at end of macro!
 
-void ComputeGain(Geometry& geo, modelist& L);
+void ComputeGain(Geometry *geo, modelist& L);
 // not sure how to define this as a member function of Geometry, since Mode is defined after geometry
 
 void CreateSquareMatrix(int N, int nz, Mat *A);
@@ -165,9 +165,9 @@ void View(Vec x, PetscViewer viewer);
 void Output(Vec A, const char* name, const char* variable_name);
 
 
-void NewtonSolve(modelist &L, Geometry& geo, Vec v, Vec f, Vec dv);
-void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, modelist &Lh, Vec vNh, Mode& m, Geometry& geo, Vec f, Vec dv);
-double FormJf(modelist& L, Geometry& geo, Vec v, Vec f);
+void NewtonSolve(modelist &L, Geometry *geo, Vec v, Vec f, Vec dv);
+void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, modelist &Lh, Vec vNh, Mode& m, Geometry *geo, Vec f, Vec dv);
+double FormJf(modelist& L, Geometry *geo, Vec v, Vec f);
 
 
 struct Vecfun{
@@ -205,9 +205,9 @@ void CreateComplexfun(Complexfun *fun, Vec w, Vec x);
 void DestroyComplexfun(Complexfun *fun);
 
 dcomp pmlval(int i, int* N, int* Npml, double* h, int LowerPML, int k);
-void AddPlaceholders(Mat J, Geometry &geo);
-void AllocateJacobian(Mat J, Geometry& geo);
-void AddRowDerivatives(Mat J, Geometry& geo, int ifix, int ih=0);
+void AddPlaceholders(Mat J, Geometry *geo);
+void AllocateJacobian(Mat J, Geometry *geo);
+void AddRowDerivatives(Mat J, Geometry *geo, int ifix, int ih=0);
 
 
 
