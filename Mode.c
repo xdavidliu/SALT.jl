@@ -267,22 +267,22 @@ void Mode::Setup(Geometry& geo){
 }
 
 
-double Mode::c(){
+double getc(Mode *m){
 
-	if( !lasing) return 0.0;
-	else return GetFromLast(vpsi, 1);
+	if( !m->lasing) return 0.0;
+	else return GetFromLast(m->vpsi, 1);
 
 }
 
-dcomp Mode::w(){
+dcomp getw(Mode *m){
 
-	if( lasing) return GetFromLast(vpsi, 0);
-	else return GetFromLast(vpsi, 0) + ComplexI * GetFromLast(vpsi, 1);
+	if( m->lasing) return GetFromLast(m->vpsi, 0);
+	else return GetFromLast(m->vpsi, 0) + ComplexI * GetFromLast(m->vpsi, 1);
 }
 
-dcomp Mode::gamma_w(Geometry& geo){
+dcomp gamma_w(Mode *m, Geometry& geo){
 	
-	return geo.y/( w() -geo.wa + ComplexI*geo.y);
+	return geo.y/( getw(m) -geo.wa + ComplexI*geo.y);
 	
 }
 

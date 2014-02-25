@@ -152,11 +152,11 @@ struct Mode{
 
 	void Setup(Geometry& geo);
 	void Write(const Geometry& geo);
-	double c();
-	dcomp w();
-	dcomp gamma_w(Geometry& geo);
 
 };
+double getc(Mode *m);
+dcomp getw(Mode *m);
+dcomp gamma_w(Mode *m, Geometry& geo);
 void Fix(Mode *m, Geometry& geo);
 
 typedef std::list<Mode*> modelist;

@@ -156,7 +156,7 @@ void Bundle(modelist &L, Geometry &geo){
 }
 
 
-bool AtThreshold(Mode *m){ return m->c() == 0.0 && m->lasing;}
+bool AtThreshold(Mode *m){ return getc(m) == 0.0 && m->lasing;}
 
 int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC_NULL); {
 	Geometry geo;
@@ -206,9 +206,9 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 		modelist Lm;
 		Lm.push_back(m); // for non-lasing modes, do one by one
 
-		double wi_old = m->w().imag();
+		double wi_old = getw(m).imag();
 		NewtonSolve(Lm, geo,  m->vpsi, f, dv);
-		double wi_new = m->w().imag();
+		double wi_new = getw(m).imag();
 
 		if(wi_new > -OptionsDouble("-thresholdw_tol") && !m->lasing)
 			ThresholdSearch(  wi_old, wi_new, geo.D-dD, geo.D, 
