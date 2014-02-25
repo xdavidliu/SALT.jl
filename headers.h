@@ -92,12 +92,7 @@ struct Point{
 	}
 
 
-	int x(int jc) const{return ix[jc];}
-	int c() const{return ic;}
-	int r() const{return ir;}
-	int xyz() const{return x(0)*G.x(2)*G.x(1) + x(1)*G.x(2) + x(2);}
-	int xyzc() const{return ic*G.xyz() + xyz();}
-	int xyzcr() const{return ir*G.xyzc() + ic*G.xyz() + xyz();}
+
 
 	void setc(int jc){ ic = jc;}
 	void setr(int jr){ ir = jr;}
@@ -130,9 +125,9 @@ struct Point{
 		int medium =1;
 		for(int j=0; j<3; j++){ // position component
 
-			double d = x(j) - LowerPML*floor( (G.x(j)-gm.x(j))/2.0 ) + ( c()!=j)*0.5;
+			double d = ix[j] - LowerPML*floor( (G.x(j)-gm.x(j))/2.0 ) + ( ic!=j)*0.5;
 			ix[j] = ceil(d-0.5);
-			if(x(j)<0 || x(j)>= gm.x(j) ) medium = 0;
+			if(ix[j]<0 || ix[j]>= gm.x(j) ) medium = 0;
 		}
 		G = gm;
 		return medium;
@@ -142,7 +137,9 @@ struct Point{
 	Grid G;
 };
 
-
+int xyz(Point *p);
+int xyzc(Point *p);
+int xyzcr(Point *p);
 
 
 

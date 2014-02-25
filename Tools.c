@@ -219,3 +219,10 @@ void Output(Vec A, const char* name, const char* variable_name){
 	View(A, viewer);
 	PetscViewerDestroy(&viewer);
 }
+
+
+
+
+int xyz(Point *p) {return p->ix[0]*p->G.x(2)*p->G.x(1) + p->ix[1]*p->G.x(2) + p->ix[2];}
+int xyzc(Point *p) {return p->ic*p->G.xyz() + xyz(p);}
+int xyzcr(Point *p) {return p->ir*p->G.xyzc() + p->ic*p->G.xyz() + xyz(p);}

@@ -17,7 +17,7 @@ void Geometry::InterpolateVec(Vec vM, Vec vN){
 		
 		Point p(i, gN);
 		if( p.projectmedium(gM, LowerPML) )
-			VecSetValue(vN, i, vals[p.xyz()-ms], ADD_VALUES);
+			VecSetValue(vN, i, vals[xyz(&p)-ms], ADD_VALUES);
 	}
 
 	VecRestoreArrayRead(vM, &vals);	
@@ -39,7 +39,7 @@ void Geometry::CollectVec(Vec vN, Vec vM){
 		
 		Point p(i, gN);
 		if( p.projectmedium(gM, LowerPML) )
-			VecSetValue(vM, p.xyz(), vals[i-ns], ADD_VALUES);
+			VecSetValue(vM, xyz(&p), vals[i-ns], ADD_VALUES);
 	}
 	
 	VecRestoreArrayRead(vN, &vals);
@@ -94,8 +94,8 @@ Geometry::Geometry(){
 	for( int i=pml.ns(); i<pml.ne(); i++){
 		Point p(i, gN);
 		p.project(3);
-		dcomp eps_geoal = pmlval(p.xyzc(), N, Npml, h, LowerPML, 0);	
-		pml.set(i, p.r()? eps_geoal.imag() : eps_geoal.real() );
+		dcomp eps_geoal = pmlval(xyzc(&p), N, Npml, h, LowerPML, 0);	
+		pml.set(i, p.ir? eps_geoal.imag() : eps_geoal.real() );
 	}
 	
 	CreateVec(Mxyz(), &vMscratch[0]);
@@ -198,9 +198,9 @@ void Geometry::SetJacobian(Mat J, Vec v, int jc, int jr, int jh){
 		if(jc == -1) //columns
 			col = Nxyzcr()+jr;
 		else if(jc == -2) //blocks
-			col = jr*Nxyzc() + p.xyzc();
+			col = jr*Nxyzc() + xyzc(&p);
 		else // tensors
-			col = jr*Nxyzc() + jc*Nxyz() + p.xyz();
+			col = jr*Nxyzc() + jc*Nxyz() + xyz(&p);
 		
 		MatSetValue(J, i, col+offset, vals[i-ns], ADD_VALUES);
 		
