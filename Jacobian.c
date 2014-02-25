@@ -197,8 +197,8 @@ double FormJf(modelist& L, Geometry& geo, Vec v, Vec f){
 	
 		LinearDerivative(*m, geo, dfR, dfI, ih);
 
-	  	geo.SetJacobian(J, dfR, -2, 0, ih);
-		geo.SetJacobian(J, dfI, -2, 1, ih); 
+	  	SetJacobian(&geo, J, dfR, -2, 0, ih);
+		SetJacobian(&geo, J, dfI, -2, 1, ih); 
 
 		ih++;
 	}
@@ -248,8 +248,8 @@ double FormJf(modelist& L, Geometry& geo, Vec v, Vec f){
 			ih++;
 		}
 
-		geo.SetJacobian(J, dfR, -1, 0, jh);
-		geo.SetJacobian(J, dfI, -1, 1, jh);
+		SetJacobian(&geo, J, dfR, -1, 0, jh);
+		SetJacobian(&geo, J, dfI, -1, 1, jh);
 
 
 		jh++;
@@ -279,7 +279,7 @@ double FormJf(modelist& L, Geometry& geo, Vec v, Vec f){
 				ih++;
 			}
 
-			geo.SetJacobian(J, dfR, jc, jr, jh);
+			SetJacobian(&geo, J, dfR, jc, jr, jh);
 		}
 
 		jh++;

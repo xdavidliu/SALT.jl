@@ -14,8 +14,8 @@ void FillBop(Geometry& geo, Mat Bop, dcomp w){
 	for(int i=b.ns; i<b.ne; i++)
 		setc(&b, i, sqr(w)* valc(&b, i) );
 
-	geo.SetJacobian(Bop, geo.vscratch[0], -2, 0, 0);
-	geo.SetJacobian(Bop, geo.vscratch[1], -2, 1, 0);	
+	SetJacobian(&geo, Bop, geo.vscratch[0], -2, 0, 0);
+	SetJacobian(&geo, Bop, geo.vscratch[1], -2, 1, 0);	
 	
 	DestroyComplexfun(&b);
 	

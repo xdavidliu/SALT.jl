@@ -10,10 +10,10 @@ RUN="${MPI} -n 3";
 # for kraken, should be "time aprun -n 12"
 # for valgrind, put valgrind after -n 2
 
-GEO="-Nc 1 -Nx 300 -Ny 1 -Nz 1 
--Npmlx 50 -Npmly 0 -Npmlz 0 -LowerPML 0
--hx 0.00333333333 -hy 0.1 -hz 0.2 
--Mx 150 -My 1 -Mz 1 
+GEO="-Nc 1 -Nx 100 -Ny 1 -Nz 1 
+-Npmlx 20 -Npmly 0 -Npmlz 0 -LowerPML 0
+-hx 0.01 -hy 0.1 -hz 0.2 
+-Mx 50 -My 1 -Mz 1 
 -epsfile eps1d.txt -fproffile fprof1d.txt
 -wa 15.0 -gamma 3.0";
 

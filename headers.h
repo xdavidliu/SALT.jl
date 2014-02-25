@@ -104,9 +104,9 @@ struct Geometry{
 	void VecSqMedium(Vec v, Vec vsq, Vec scratchM);
 
 	int Last2(int i);
-	void SetJacobian(Mat J, Vec v, int jc, int jr, int jh);
 
 };
+void SetJacobian(Geometry *geo, Mat J, Vec v, int jc, int jr, int jh);
 
 void MoperatorGeneralBlochFill(Geometry *geo, Mat A,  int b[3][2], int DimPeriod, double k[3], int ih=0);	
 

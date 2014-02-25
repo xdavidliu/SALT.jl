@@ -196,6 +196,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 
 		  if( it != Ll.end() ){
 		  		geo.D += 0.5*dD;
+				if(geo.D > Dmax) geo.D = Dmax;
 		  		FirstStep(Ll, *it, geo, vNh, fNh, dvNh, 1.0);
 		  }
 		  NewtonSolve(Ll, geo,  vNh, fNh, dvNh);  

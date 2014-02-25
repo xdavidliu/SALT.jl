@@ -183,7 +183,7 @@ int Geometry::Last2(int i){
 }
 
 
-void Geometry::SetJacobian(Mat J, Vec v, int jc, int jr, int jh){
+void SetJacobian(Geometry *geo, Mat J, Vec v, int jc, int jr, int jh){
 // use jc = -1 for last 2 columns, and jc = -2 for blocks (all jc)
 
 	AssembleVec(v);
@@ -194,20 +194,20 @@ void Geometry::SetJacobian(Mat J, Vec v, int jc, int jr, int jh){
 	VecGetArrayRead(v, &vals);
 	
 	for(int i=ns; i<ne; i++){
-		if( Last2(i) || vals[i-ns] == 0.0) continue;
+		if( geo->Last2(i) || vals[i-ns] == 0.0) continue;
 	
-		int col, offset = jh*(Nxyzcr(this)+2),
-		ij = i%(Nxyzcr(this)+2);
+		int col, offset = jh*(Nxyzcr(geo)+2),
+		ij = i%(Nxyzcr(geo)+2);
 		
 		Point p;
-		CreatePoint_i(&p, ij, gN);
+		CreatePoint_i(&p, ij, geo->gN);
 		
 		if(jc == -1) //columns
-			col = Nxyzcr(this)+jr;
+			col = Nxyzcr(geo)+jr;
 		else if(jc == -2) //blocks
-			col = jr*Nxyzc(this) + xyzc(&p);
+			col = jr*Nxyzc(geo) + xyzc(&p);
 		else // tensors
-			col = jr*Nxyzc(this) + jc*Nxyz(this) + xyz(&p);
+			col = jr*Nxyzc(geo) + jc*Nxyz(geo) + xyz(&p);
 		
 		MatSetValue(J, i, col+offset, vals[i-ns], ADD_VALUES);
 		
