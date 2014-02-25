@@ -147,10 +147,12 @@ struct Mode{
 	KSP ksp; // one ksp per J seems faster
 
 	Mode(Geometry& geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]);
-	Mode(char *Name, Geometry& geo, double *Dout); // read constructor
+
 
 
 };
+
+void ModeRead(Mode *m, char *Name, Geometry& geo, double *Dout);
 void DestroyMode(Mode *m);
 void Setup(Mode *m, Geometry& geo);
 

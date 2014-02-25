@@ -18,17 +18,17 @@ Mode::Mode(Geometry& geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]){
 
 
 
-Mode::Mode(char *Name, Geometry& geo, double *Dout){ // read constructor
+void ModeRead(Mode *m, char *Name, Geometry& geo, double *Dout){
 
-	sprintf(name, "%s", Name );
-	CreateVec(2*Nxyzc(&geo)+2, &vpsi);
-	CreateSquareMatrix(2*Nxyzc(&geo)+2, 0, &J);
+	sprintf(m->name, "%s", Name );
+	CreateVec(2*Nxyzc(&geo)+2, &m->vpsi);
+	CreateSquareMatrix(2*Nxyzc(&geo)+2, 0, &m->J);
 		
-	KSPCreate(PETSC_COMM_WORLD,&ksp);
+	KSPCreate(PETSC_COMM_WORLD,&m->ksp);
 
 
 	char w[PETSC_MAX_PATH_LEN], filename[PETSC_MAX_PATH_LEN];
-	sprintf(filename, "%s%s", name, Output_Suffix);
+	sprintf(filename, "%s%s", m->name, Output_Suffix);
 	
 	FILE *fp = fopen(filename, "r");
 	
@@ -43,7 +43,7 @@ Mode::Mode(char *Name, Geometry& geo, double *Dout){ // read constructor
 
 
 
-	ReadVectorC(fp, 2*Nxyzc(&geo)+2, vpsi);
+	ReadVectorC(fp, 2*Nxyzc(&geo)+2, m->vpsi);
 
    if(GetRank()==0){
 
@@ -54,14 +54,14 @@ Mode::Mode(char *Name, Geometry& geo, double *Dout){ // read constructor
 	// make sure to Bcast these at the end
 
 	fgets(w, PETSC_MAX_PATH_LEN, fp);
-	sscanf(w, "ifix=%i\n", &ifix); 
+	sscanf(w, "ifix=%i\n", &m->ifix); 
 
 	fgets(w, PETSC_MAX_PATH_LEN, fp);
-	sscanf(w, "b=[%i %i %i];", &b[0][0], &b[1][0], &b[2][0]);
-	for(int i=0; i<3; i++) b[i][1] = 0;
+	sscanf(w, "b=[%i %i %i];", &m->b[0][0], &m->b[1][0], &m->b[2][0]);
+	for(int i=0; i<3; i++) m->b[i][1] = 0;
 
 	fgets(w, PETSC_MAX_PATH_LEN, fp);
-	sscanf(w, "BCPeriod=%i;", &BCPeriod); 	 
+	sscanf(w, "BCPeriod=%i;", &m->BCPeriod); 	 
 
 	fgets(w, PETSC_MAX_PATH_LEN, fp);
 	sscanf(w, "D=%lf;", Dout); 	 
@@ -69,22 +69,22 @@ Mode::Mode(char *Name, Geometry& geo, double *Dout){ // read constructor
 	fgets(w, PETSC_MAX_PATH_LEN, fp); // k=[ line
 	for(int i=0; i<3; i++){ 
 		fgets(w, PETSC_MAX_PATH_LEN, fp);
-		sscanf(w, "%lf", &k[i]);
+		sscanf(w, "%lf", &m->k[i]);
 	}
    }
    
 	fclose(fp);
 
-	MPI_Bcast(k, 3, MPI_DOUBLE, 0, PETSC_COMM_WORLD);
-	MPI_Bcast(&ifix, 1, MPI_INT, 0, PETSC_COMM_WORLD);
+	MPI_Bcast(m->k, 3, MPI_DOUBLE, 0, PETSC_COMM_WORLD);
+	MPI_Bcast(&m->ifix, 1, MPI_INT, 0, PETSC_COMM_WORLD);
 	for(int i=0; i<3; i++) 
-	   MPI_Bcast(b[i], 2, MPI_INT, 0, PETSC_COMM_WORLD);
-	MPI_Bcast(&BCPeriod, 1, MPI_INT, 0, PETSC_COMM_WORLD);
+	   MPI_Bcast(m->b[i], 2, MPI_INT, 0, PETSC_COMM_WORLD);
+	MPI_Bcast(&m->BCPeriod, 1, MPI_INT, 0, PETSC_COMM_WORLD);
 	MPI_Bcast(Dout, 1, MPI_DOUBLE, 0, PETSC_COMM_WORLD);
 		
 	double val1, val2;
-	GetLast2(vpsi, &val1, &val2);
-	lasing = val2 >= 0.0;
+	GetLast2(m->vpsi, &val1, &val2);
+	m->lasing = val2 >= 0.0;
 
 }
 
