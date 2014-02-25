@@ -11,7 +11,7 @@ void FillBop(Geometry& geo, Mat Bop, dcomp w){
 	ComplexVecfun b(geo.vscratch[0], geo.vscratch[1]);
 
 	for(int i=b.ns(); i<b.ne(); i++)
-		b.set(i, sqr(w)* b.val(i) );
+		b.set(i, sqr(w)* valc(&b, i) );
 
 	geo.SetJacobian(Bop, geo.vscratch[0], -2, 0, 0);
 	geo.SetJacobian(Bop, geo.vscratch[1], -2, 1, 0);	

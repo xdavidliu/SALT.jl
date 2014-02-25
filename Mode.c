@@ -123,7 +123,7 @@ void Mode::Fix(Geometry& geo){
 
 	for(int i=psiket.ns(); i<psiket.ne(); i++){
 
-		dcomp val = psi.val(i) * factor;
+		dcomp val = valc(&psi, i) * factor;
 		psiket.set(i, ir(&geo, i)? val.imag() : val.real() ); 
 	}}
 

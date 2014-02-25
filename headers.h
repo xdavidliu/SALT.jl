@@ -47,7 +47,7 @@ void OptionsXYZInt(const char* prefix, int* a);
 
 
 struct Grid{	
-	public:
+	
 	Grid(){}
 	Grid(int* M, int Mc, int Mr){
 		for(int i=0; i<3; i++) N[i] = M[i];
@@ -67,7 +67,7 @@ int xyzcrGrid(Grid *g);
 
 struct Point{
 
-	public:
+	
 	Point(int i, const Grid& H){
 		for(int j = 2; j>=0; j--){
 			G = H;
@@ -102,7 +102,7 @@ int xyzcr(Point *p);
 #define SCRATCHNUM 5
 struct Geometry{
 
-	public:
+	
 
 	int Npml[3], Nc, LowerPML;
 	double h[3];
@@ -141,7 +141,7 @@ int ir(Geometry *geo, int i);
 
 struct Mode{
 
-	public:
+	
 
 	Vec vpsi;
 	char name[PETSC_MAX_PATH_LEN];
@@ -192,10 +192,10 @@ struct Vecfun{
 	int ms, me; // should keep these, since they are used by the val() function
 				// every single time.
 
-	protected: 
+	 
 	double* a;
 
-	public:
+	
 	Vecfun(Vec w){
 		u = w;
 		VecGetOwnershipRange(u, &ms, &me); // TODO: take into account Nxyzcr+2 here
@@ -209,7 +209,7 @@ struct Vecfun{
 
 	int ns() const{ return ms;}
 	int ne() const{ return me;}
-	double val(int i) const{ return a[i-ns()];}
+	double valr(int i) const{ return a[i-ns()];}
 	void set(int i, double val){ a[i-ns()] = val;}
 
 };
@@ -221,7 +221,7 @@ struct ComplexVecfun: public Vecfun{
 	double* b;
 	int Nxyzc;
 	
-	public:
+	
 	ComplexVecfun(Vec w, Vec x): Vecfun(w){
 		v = x;
 		VecGetArray(v, &b);
@@ -230,13 +230,7 @@ struct ComplexVecfun: public Vecfun{
 		VecGetSize(v, &N);
 		Nxyzc = (N-2)/2;
 	}
-	dcomp val(int i) const{
-	
-		dcomp z( a[i-ns()], -b[i-ns()] );
-		if(i/Nxyzc) z*= ComplexI;
-		return z;
-	
-	}
+
 	void set(int i, dcomp val){
 		
 		if(i/Nxyzc) val /= ComplexI;
@@ -246,6 +240,8 @@ struct ComplexVecfun: public Vecfun{
 	~ComplexVecfun(){ VecRestoreArray(v, &b); }
 
 };
+
+dcomp valc(ComplexVecfun *fun, int i);
 
 
 dcomp pmlval(int i, int* N, int* Npml, double* h, int LowerPML, int k);

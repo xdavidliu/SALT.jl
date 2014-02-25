@@ -274,3 +274,12 @@ int Mxyz(Geometry *geo){ return xyzGrid(&geo->gM); }
 int NJ(Geometry *geo){ return Nxyzcr(geo) + 2;}
 int offset(Geometry *geo, int ih){ return ih*NJ(geo); }
 int ir(Geometry *geo, int i){ return i%NJ(geo) / Nxyzc(geo); }
+
+
+dcomp valc(ComplexVecfun *fun, int i){
+
+	dcomp z( fun->a[i-fun->ns()], -fun->b[i-fun->ns()] );
+	if(i/fun->Nxyzc) z*= ComplexI;
+	return z;
+
+}
