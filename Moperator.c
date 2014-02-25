@@ -48,7 +48,7 @@ void Geometry::MoperatorGeneralBlochFill(Mat A, int b[3][2], int DimPeriod, doub
 
 for (int itrue = ns; itrue < ne && itrue < 2*Nxyzc(); ++itrue) {
 
-	Point p(itrue, Grid(N, Nc, 2)); p.project(3); int i = xyzcr(&p);
+	Point p(itrue, Grid(N, Nc, 2)); project(&p, 3); int i = xyzcr(&p);
 	int cp[2], icp[2], cidu, cpidu[2],cpidl[2], cid, cpid[2];
 	for(int j=0; j<2;j++){
 
@@ -71,7 +71,7 @@ for (int itrue = ns; itrue < ne && itrue < 2*Nxyzc(); ++itrue) {
    	magicnum = (p.ir==jr)*1.0 + (p.ir<jr)*1.0*ComplexI - (p.ir>jr)*1.0* ComplexI; 
 
 //=====================================================================
-	Point prow(i, Grid(N,3,2)); prow.project(Nc);
+	Point prow(i, Grid(N,3,2)); project(&prow, Nc);
 for(int ib=0; ib<2; ib++){
 
 
@@ -109,7 +109,7 @@ for(int ib=0; ib<2; ib++){
 
 	for(int w=0;w<4;w++){
 	Point pcol(icp[ib] + jrd+dcol[w], Grid(N,3,2) );
-	pcol.project(Nc);	
+	project(&pcol, Nc);	
 	if(pcol.ic!=-1) MatSetValue(A, xyzcr(&prow)+offset, xyzcr(&pcol)+offset, c[w], ADD_VALUES);
 	}
 
@@ -139,7 +139,7 @@ for(int ib=0; ib<2; ib++){
 
 	for(int w=0;w<3;w++){
 	Point pcol(i + jrd+dcol[w], Grid(N,3,2) );
-	pcol.project(Nc);
+	project(&pcol, Nc);
 	if(pcol.ic!=-1) MatSetValue(A, xyzcr(&prow)+offset, xyzcr(&pcol)+offset, c[w], ADD_VALUES);
 	}
 

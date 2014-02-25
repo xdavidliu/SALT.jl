@@ -94,30 +94,13 @@ struct Point{
 
 
 
-	void setc(int jc){ ic = jc;}
-	void setr(int jr){ ir = jr;}
-
-	int convert(int Nc){
-
-		if(Nc==G.c() ) return ic;
-		else if(Nc == 3){
-			if(G.c()==1 && ic == 0) return 2;  // TM to vector
-			else if(G.c()==2 && ic < 2) return ic;  // TE to vector
-			else return -1;
-		}else if(G.c() == 3){
-			if(Nc==1 && ic == 2) return 0;  // vector to TM
-			else if(Nc==2 && ic < 2) return ic;   // vector to TE 
-			else return -1;
-		}else return -1;
-
-	}
 
 
-	int project(int Nc){
-		ic = convert(Nc);
-		G.setc(Nc);
-		return ic;
-	}
+
+
+
+
+
 
 
 	int projectmedium(const Grid& gm, int LowerPML){
@@ -137,6 +120,8 @@ struct Point{
 	Grid G;
 };
 
+int convert(Point *p, int Nc);
+int project(Point *p, int Nc);
 int xyz(Point *p);
 int xyzc(Point *p);
 int xyzcr(Point *p);

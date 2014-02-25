@@ -226,3 +226,24 @@ void Output(Vec A, const char* name, const char* variable_name){
 int xyz(Point *p) {return p->ix[0]*p->G.x(2)*p->G.x(1) + p->ix[1]*p->G.x(2) + p->ix[2];}
 int xyzc(Point *p) {return p->ic*p->G.xyz() + xyz(p);}
 int xyzcr(Point *p) {return p->ir*p->G.xyzc() + p->ic*p->G.xyz() + xyz(p);}
+
+int convert(Point *p, int Nc){
+
+	if(Nc==p->G.c() ) return p->ic;
+	else if(Nc == 3){
+		if(p->G.c()==1 && p->ic == 0) return 2;  // TM to vector
+		else if(p->G.c()==2 && p->ic < 2) return p->ic;  // TE to vector
+		else return -1;
+	}else if(p->G.c() == 3){
+		if(Nc==1 && p->ic == 2) return 0;  // vector to TM
+		else if(Nc==2 && p->ic < 2) return p->ic;   // vector to TE 
+		else return -1;
+	}else return -1;
+
+}
+
+int project(Point *p, int Nc){
+	p->ic = convert(p, Nc);
+	p->G.setc(Nc);
+	return p->ic;
+}

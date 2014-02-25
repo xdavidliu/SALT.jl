@@ -93,7 +93,7 @@ Geometry::Geometry(){
 
 	for( int i=pml.ns(); i<pml.ne(); i++){
 		Point p(i, gN);
-		p.project(3);
+		project(&p, 3);
 		dcomp eps_geoal = pmlval(xyzc(&p), N, Npml, h, LowerPML, 0);	
 		pml.set(i, p.ir? eps_geoal.imag() : eps_geoal.real() );
 	}
