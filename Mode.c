@@ -241,7 +241,7 @@ void Mode::Setup(Geometry& geo){
 
 	AllocateJacobian(J, geo);
 	
-        geo.MoperatorGeneralBlochFill(J, b, BCPeriod, k);
+    MoperatorGeneralBlochFill(&geo, J, b, BCPeriod, k);
 
 
 	AddPlaceholders(J, geo);

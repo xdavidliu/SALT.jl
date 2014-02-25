@@ -48,7 +48,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 
 
 
-	geo.MoperatorGeneralBlochFill(Mop, b, BCPeriod, k);
+	MoperatorGeneralBlochFill(&geo, Mop, b, BCPeriod, k);
 	AssembleMat(Mop);
 
 

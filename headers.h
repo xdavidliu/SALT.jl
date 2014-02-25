@@ -112,10 +112,6 @@ struct Geometry{
 
 
 
-
-
-	void MoperatorGeneralBlochFill(Mat A,  int b[3][2], int DimPeriod, double k[3], int ih=0);	
-
 	Vec vscratch[SCRATCHNUM], vMscratch[SCRATCHNUM], vNhscratch[SCRATCHNUM], vH, veps, vIeps, vf;
 	double D, wa, y;
 	Geometry();
@@ -131,6 +127,8 @@ struct Geometry{
 	void SetJacobian(Mat J, Vec v, int jc, int jr, int jh);
 
 };
+
+void MoperatorGeneralBlochFill(Geometry *geo, Mat A,  int b[3][2], int DimPeriod, double k[3], int ih=0);	
 
 int Nxyz(Geometry *geo);
 int Nxyzc(Geometry *geo);

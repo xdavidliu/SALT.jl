@@ -143,7 +143,7 @@ void Bundle(modelist &L, Geometry &geo){
 		KSPDestroy(&m->ksp);
 		m->ksp = ksp;
 		
-		geo.MoperatorGeneralBlochFill(J, m->b, m->BCPeriod, m->k, ih);
+		MoperatorGeneralBlochFill(&geo, J, m->b, m->BCPeriod, m->k, ih);
 		AddRowDerivatives(J, geo, m->ifix, ih);
 		ih++;
 	}	

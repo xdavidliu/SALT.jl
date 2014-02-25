@@ -17,16 +17,16 @@ int cyclic(Point& P, int ic, int* N){
 	return (P.ic==ic)*N[1]*N[2] + (P.ic==(ic+1)%3 )*N[2] + (P.ic==(ic+2)%3 );
 } 
 
-void Geometry::MoperatorGeneralBlochFill(Mat A, int b[3][2], int DimPeriod, double k[3], int ih){
+void MoperatorGeneralBlochFill(Geometry *geo, Mat A, int b[3][2], int DimPeriod, double k[3], int ih){
 
 
 	int N[3];
-	for(int i=0; i<3; i++) N[i] = gN.N[i];
+	for(int i=0; i<3; i++) N[i] = geo->gN.N[i];
 
 	double blochbc[3];
-	for(int i=0; i<3; i++) blochbc[i] = k[i]*N[i]*h[i];
+	for(int i=0; i<3; i++) blochbc[i] = k[i]*N[i]*geo->h[i];
 
-	int NC = 3, offset = ih*(Nxyzcr(this)+2);
+	int NC = 3, offset = ih*(Nxyzcr(geo)+2);
 	int ns, ne;
 	double hh;
 
@@ -46,14 +46,14 @@ void Geometry::MoperatorGeneralBlochFill(Mat A, int b[3][2], int DimPeriod, doub
 	
 	MatGetOwnershipRange(A, &ns, &ne);
 
-for (int itrue = ns; itrue < ne && itrue < 2*Nxyzc(this); ++itrue) {
+for (int itrue = ns; itrue < ne && itrue < 2*Nxyzc(geo); ++itrue) {
 
-	Point p(itrue, Grid(N, Nc, 2)); project(&p, 3); int i = xyzcr(&p);
+	Point p(itrue, Grid(N, geo->Nc, 2)); project(&p, 3); int i = xyzcr(&p);
 	int cp[2], icp[2], cidu, cpidu[2],cpidl[2], cid, cpid[2];
 	for(int j=0; j<2;j++){
 
 		cp[j] = (p.ic+1+j) % NC;
-		icp[j] = i + (cp[j]-p.ic ) *Nxyz(this);
+		icp[j] = i + (cp[j]-p.ic ) *Nxyz(geo);
 		cpidu[j] = cyclic(p, 2-j, N);
 		cpidl[j] = cyclic(p, 2-j, N);
 		cpid[j] = cyclic(p, 2-j, N);
@@ -67,11 +67,11 @@ for (int itrue = ns; itrue < ne && itrue < 2*Nxyzc(this); ++itrue) {
 	cidu_phase = 1.0;
     
    for(int jr=0; jr<2; jr++) { /* column real/imag parts */
-   	int jrd =  (jr-p.ir)*NC*Nxyz(this);            
+   	int jrd =  (jr-p.ir)*NC*Nxyz(geo);            
    	magicnum = (p.ir==jr)*1.0 + (p.ir<jr)*1.0*ComplexI - (p.ir>jr)*1.0* ComplexI; 
 
 //=====================================================================
-	Point prow(i, Grid(N,3,2)); project(&prow, Nc);
+	Point prow(i, Grid(N,3,2)); project(&prow, geo->Nc);
 for(int ib=0; ib<2; ib++){
 
 
@@ -87,12 +87,12 @@ for(int ib=0; ib<2; ib++){
 		cpidl_phase[ib] = per ? std::exp(-ComplexI*blochbc[cp[ib]]) : bc[cp[ib]][0][cp[ib]];
 	}
 
-        mucp[1-ib] = pmlval(icp[1-ib], N, Npml, h, LowerPML, 1);
-      	mulcp[1-ib] = pmlval(icp[1-ib]-cpidl[ib], N, Npml, h, LowerPML, 1);
+        mucp[1-ib] = pmlval(icp[1-ib], N, geo->Npml, geo->h, geo->LowerPML, 1);
+      	mulcp[1-ib] = pmlval(icp[1-ib]-cpidl[ib], N, geo->Npml, geo->h, geo->LowerPML, 1);
 
 
 	double c[4];
-        hh = h[p.ic]*h[cp[ib]];
+        hh = geo->h[p.ic]*geo->h[cp[ib]];
 	val = mucp[1-ib] * magicnum /hh; c[1] = val.real();
 	val *= cidu_phase; c[0] = -val.real();
 	val = cpidl_phase[ib] * mulcp[1-ib] * magicnum/hh; c[3] = -val.real();
@@ -109,7 +109,7 @@ for(int ib=0; ib<2; ib++){
 
 	for(int w=0;w<4;w++){
 	Point pcol(icp[ib] + jrd+dcol[w], Grid(N,3,2) );
-	project(&pcol, Nc);	
+	project(&pcol, geo->Nc);	
 	if(pcol.ic!=-1) MatSetValue(A, xyzcr(&prow)+offset, xyzcr(&pcol)+offset, c[w], ADD_VALUES);
 	}
 
@@ -127,7 +127,7 @@ for(int ib=0; ib<2; ib++){
 	}   
 
      
-	hh =  h[cp[ib]]*h[cp[ib]];
+	hh =  geo->h[cp[ib]]*geo->h[cp[ib]];
 	val = -(cpidu_phase[ib] * mucp[1-ib] * magicnum)/hh; c[0] = -val.real();
 	val = +( (mucp[1-ib] + mulcp[1-ib]) * magicnum)/hh;c[1] = -val.real();
 	val = -(cpidl_phase[ib] * mulcp[1-ib] * magicnum)/hh;c[2] = -val.real();
@@ -139,7 +139,7 @@ for(int ib=0; ib<2; ib++){
 
 	for(int w=0;w<3;w++){
 	Point pcol(i + jrd+dcol[w], Grid(N,3,2) );
-	project(&pcol, Nc);
+	project(&pcol, geo->Nc);
 	if(pcol.ic!=-1) MatSetValue(A, xyzcr(&prow)+offset, xyzcr(&pcol)+offset, c[w], ADD_VALUES);
 	}
 
