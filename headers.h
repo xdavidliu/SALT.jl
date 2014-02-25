@@ -150,7 +150,7 @@ struct Mode{
 	KSP ksp; // one ksp per J seems faster
 
 	Mode(Geometry& geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]);
-	Mode(std::string Name, Geometry& geo, double *Dout); // read constructor
+	Mode(char *Name, Geometry& geo, double *Dout); // read constructor
 	~Mode();
 	void Fix(Geometry& geo);
 	void Setup(Geometry& geo);
@@ -169,7 +169,6 @@ void ComputeGain(Geometry& geo, modelist& L);
 
 void CreateSquareMatrix(int N, int nz, Mat *A);
 double GetValue(Vec v, int i);
-void ReadVector(std::ifstream& is, int N, Vec v);
 void ReadVectorC(FILE *fp, int N, Vec v);
 
 PetscErrorCode MyError(const char* message);

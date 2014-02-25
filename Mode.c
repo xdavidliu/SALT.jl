@@ -18,28 +18,25 @@ Mode::Mode(Geometry& geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]){
 
 
 
-Mode::Mode(std::string Name, Geometry& geo, double *Dout){ // read constructor
+Mode::Mode(char *Name, Geometry& geo, double *Dout){ // read constructor
 
-	sprintf(name, "%s", Name.c_str() );
+	sprintf(name, "%s", Name );
 	CreateVec(2*geo.Nxyzc()+2, &vpsi);
 	CreateSquareMatrix(2*geo.Nxyzc()+2, 0, &J);
 		
 	KSPCreate(PETSC_COMM_WORLD,&ksp);
 
 
-
-
-	std::string filename = name + Output_Suffix;
-	char w[PETSC_MAX_PATH_LEN];
+	char w[PETSC_MAX_PATH_LEN], filename[PETSC_MAX_PATH_LEN];
+	sprintf(filename, "%s%s", name, Output_Suffix.c_str());
 	
-	FILE *fp = fopen(filename.c_str(), "r");
+	FILE *fp = fopen(filename, "r");
 	
-	std::string s;
 
 	if(fp==NULL){
-		s = "failed to read ";
-		s += filename;
-		MyError(s.c_str() );
+
+		sprintf(w, "failed to read %s", filename);
+		MyError(w );
 	}
 
    if(GetRank()==0){ fscanf(fp, "%*[^\n]\n", NULL); } // "mode = ["
@@ -141,16 +138,21 @@ void Mode::Write(const Geometry& geo){
 
 
    if(GetRank()==0){
+   
+   	
 	std::string filename = name + Output_Suffix;
-	std::ofstream f(filename.c_str(), std::ios_base::app);
 
-	f << "ifix=" << ifix << ";\n";
-	f << "b=[" << b[0][0] << " " << b[1][0] << " "
-	  << b[2][0] << "];\n";
-	f << "BCPeriod=" << BCPeriod << ";\n";
-	f << std::setprecision(15) << "D=" << geo.D << ";\n";
-	f << "k=[\n" << k[0] << "\n" << k[1] << "\n" << k[2] << "\n];\n";
+	FILE *fp = fopen(filename.c_str(), "a");
+	fprintf(fp, "ifix=%i;\n", ifix);
+
+	fprintf(fp, "b=[%i %i %i];\n", b[0][0], b[1][0], b[2][0]);
+	fprintf(fp, "BCPeriod=%i;\n", BCPeriod);
+
+	fprintf(fp, "D=%1.15g;\n", geo.D);
+	fprintf(fp, "k=[\n%1.15g\n%1.15g\n%1.15g\n];\n", k[0], k[1], k[2]);	
 	// "read" constructor for Mode depends on this
+	
+	fclose(fp);
    }
 	MPI_Barrier(PETSC_COMM_WORLD);
 	

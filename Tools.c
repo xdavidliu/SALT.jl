@@ -140,18 +140,6 @@ double GetValue(Vec v, int i){
 	return val;
 }
 
-void ReadVector(std::ifstream& is, int N, Vec v){
-
-   double val;
-
-   if(GetRank() ==0){
-	for(int i=0; i< N; i++){
-		is >> val;
-		VecSetValue(v, i, val, INSERT_VALUES);
-	}
-   }
-   AssembleVec(v);
-}
 
 void ReadVectorC(FILE *fp, int N, Vec v){
 
