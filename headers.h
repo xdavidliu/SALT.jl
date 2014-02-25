@@ -1,6 +1,5 @@
 #include <slepc.h>
 #include <cmath>
-#include <new>
 #include <cstdio>
 #include <complex>
 #include <list>
