@@ -210,7 +210,7 @@ int LastProcess(){
 void Output(Vec A, const char* name, const char* variable_name){
 
 	char filename[PETSC_MAX_PATH_LEN];
-	sprintf(filename, "%s%s", name, Output_Suffix.c_str());
+	sprintf(filename, "%s%s", name, Output_Suffix);
 
 	PetscViewer viewer;
 	PetscViewerASCIIOpen(PETSC_COMM_WORLD, filename, &viewer);

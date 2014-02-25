@@ -28,7 +28,7 @@ Mode::Mode(char *Name, Geometry& geo, double *Dout){ // read constructor
 
 
 	char w[PETSC_MAX_PATH_LEN], filename[PETSC_MAX_PATH_LEN];
-	sprintf(filename, "%s%s", name, Output_Suffix.c_str());
+	sprintf(filename, "%s%s", name, Output_Suffix);
 	
 	FILE *fp = fopen(filename, "r");
 	
@@ -140,9 +140,11 @@ void Mode::Write(const Geometry& geo){
    if(GetRank()==0){
    
    	
-	std::string filename = name + Output_Suffix;
 
-	FILE *fp = fopen(filename.c_str(), "a");
+	char filename[PETSC_MAX_PATH_LEN];
+	sprintf(filename, "%s%s", name, Output_Suffix );
+
+	FILE *fp = fopen(filename, "a");
 	fprintf(fp, "ifix=%i;\n", ifix);
 
 	fprintf(fp, "b=[%i %i %i];\n", b[0][0], b[1][0], b[2][0]);

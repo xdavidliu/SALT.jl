@@ -6,7 +6,6 @@
 #include <new>
 #include <cstdio>
 #include <complex>
-#include <string>
 #include <vector>
 #include <list>
 
@@ -18,7 +17,7 @@ double dt(tv t1, tv t2);
 
 typedef std::complex<double> dcomp;
 static const dcomp ComplexI(0.0, 1.0);
-const std::string Output_Suffix = "_file.m";
+static const char Output_Suffix[PETSC_MAX_PATH_LEN] = "_file.m";
 
 int GetRank();
 int GetSize();
@@ -122,7 +121,6 @@ struct Geometry{
 	Geometry();
 	~Geometry();	
 
-	void DestroyScatters();
 	void InterpolateVec(Vec vM, Vec vN);
 	void CollectVec(Vec vN, Vec vM);
 	void Stamp(Vec vN, int ic, int ir, Vec scratchM);
