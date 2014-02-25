@@ -214,25 +214,29 @@ struct Vecfun{
 
 };
 
-struct ComplexVecfun: public Vecfun{
+struct ComplexVecfun{
 
 	
-	Vec v;
-	double* b;
-	int Nxyzc;
+	Vec u, v;
+	double *a, *b;
+	int Nxyzc, ns, ne;
 	
-	
-	ComplexVecfun(Vec w, Vec x): Vecfun(w){
+	ComplexVecfun(Vec w, Vec x){
+		u = w;
 		v = x;
+		VecGetArray(u, &a);
 		VecGetArray(v, &b);
-		
+		VecGetOwnershipRange(u, &ns, &ne);
+
 		int N;
 		VecGetSize(v, &N);
 		Nxyzc = (N-2)/2;
 	}
 
-
-	~ComplexVecfun(){ VecRestoreArray(v, &b); }
+	~ComplexVecfun(){ 
+		VecRestoreArray(u, &a); 
+		VecRestoreArray(v, &b); 
+	}
 
 };
 

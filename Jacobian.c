@@ -39,7 +39,7 @@ void LinearDerivative(Mode& m, Geometry& geo, Vec dfR, Vec dfI, int ih){
 
 	dcomp mw = m.w(), yw = m.gamma_w(geo);
 
-	for(int i=eps.ns(); i<eps.ne(); i++){
+	for(int i=eps.ns; i<eps.ne; i++){
 		dcomp val = sqr(mw) * (valc(&eps, i) + geo.D * yw * f.valr(i) * H.valr(i) );
 		VecSetComplex(dfR, dfI, i+offset(&geo, ih), ir(&geo, i), val, INSERT_VALUES);
 	}
@@ -79,7 +79,7 @@ void ColumnDerivative(Mode* m, Mode* mj, Geometry& geo, Vec dfR, Vec dfI, Vec vI
 	ComplexVecfun psi(m->vpsi, vIpsi), eps(geo.veps, geo.vIeps);
 	Vecfun f(geo.vf), H(geo.vH), psisq(vpsisq); 
 
-	for(int i=psi.ns(); i<psi.ne(); i++){
+	for(int i=psi.ns; i<psi.ne; i++){
 
 		dcomp dfdk = 0.0, dfdc = 0.0, 
 			DfywHpsi = geo.D * f.valr(i) * yw * H.valr(i) * valc(&psi, i);

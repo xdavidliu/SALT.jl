@@ -278,13 +278,13 @@ int ir(Geometry *geo, int i){ return i%NJ(geo) / Nxyzc(geo); }
 
 dcomp valc(ComplexVecfun *fun, int i){
 
-	dcomp z( fun->a[i-fun->ns()], -fun->b[i-fun->ns()] );
+	dcomp z( fun->a[i-fun->ns], -fun->b[i-fun->ns] );
 	if(i/fun->Nxyzc) z*= ComplexI;
 	return z;
 }
 void setc(ComplexVecfun *fun,int i, dcomp val){
 	
 	if(i/fun->Nxyzc) val /= ComplexI;
-	fun->a[i-fun->ns()] = val.real();
-	fun->b[i-fun->ns()] = -val.imag();
+	fun->a[i-fun->ns] = val.real();
+	fun->b[i-fun->ns] = -val.imag();
 }
