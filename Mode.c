@@ -137,10 +137,10 @@ void Fix(Mode *m, Geometry& geo){
 
 
 
-void Mode::Write(const Geometry& geo){
+void Write(Mode *m, const Geometry& geo){
 
 
-	Output(vpsi, name, "psi");
+	Output(m->vpsi, m->name, "psi");
 
 
    if(GetRank()==0){
@@ -148,16 +148,16 @@ void Mode::Write(const Geometry& geo){
    	
 
 	char filename[PETSC_MAX_PATH_LEN];
-	sprintf(filename, "%s%s", name, Output_Suffix );
+	sprintf(filename, "%s%s", m->name, Output_Suffix );
 
 	FILE *fp = fopen(filename, "a");
-	fprintf(fp, "ifix=%i;\n", ifix);
+	fprintf(fp, "ifix=%i;\n", m->ifix);
 
-	fprintf(fp, "b=[%i %i %i];\n", b[0][0], b[1][0], b[2][0]);
-	fprintf(fp, "BCPeriod=%i;\n", BCPeriod);
+	fprintf(fp, "b=[%i %i %i];\n", m->b[0][0], m->b[1][0], m->b[2][0]);
+	fprintf(fp, "BCPeriod=%i;\n", m->BCPeriod);
 
 	fprintf(fp, "D=%1.15g;\n", geo.D);
-	fprintf(fp, "k=[\n%1.15g\n%1.15g\n%1.15g\n];\n", k[0], k[1], k[2]);	
+	fprintf(fp, "k=[\n%1.15g\n%1.15g\n%1.15g\n];\n", m->k[0], m->k[1], m->k[2]);	
 	// "read" constructor for Mode depends on this
 	
 	fclose(fp);

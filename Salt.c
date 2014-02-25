@@ -220,7 +220,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 	}
 
 	FORMODES(L, it){
-		(*it)->Write(geo);
+		Write(*it, geo);
 		delete *it; // since the pointer was allocated using new
 		// also, delete automatically calls destructor
 	}

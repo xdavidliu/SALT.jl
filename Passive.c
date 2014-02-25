@@ -157,7 +157,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 		char s[PETSC_MAX_PATH_LEN];
 		OptionsGetString("-passiveout", s);
 		sprintf(m.name, "%s%i", s, j);
-		m.Write(geo);
+		Write(&m, geo);
 	}
 	EPSDestroy(&evps);
 	DestroyMat(&Mop);	DestroyMat(&Bop);

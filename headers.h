@@ -151,9 +151,11 @@ struct Mode{
 	~Mode();
 
 	void Setup(Geometry& geo);
-	void Write(const Geometry& geo);
+
 
 };
+
+void Write(Mode *m, const Geometry& geo);
 double getc(Mode *m);
 dcomp getw(Mode *m);
 dcomp gamma_w(Mode *m, Geometry& geo);
