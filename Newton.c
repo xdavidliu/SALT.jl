@@ -8,8 +8,8 @@ double EdgeIntensity(Mode &m, Geometry &geo){
 
 	if( !m.lasing) return 0;
 	
-	double psiR = GetValue(m.vpsi, geo.Mxyz()-1 ),
-			psiI = GetValue(m.vpsi, geo.Mxyz()-1+geo.Nxyzc() );
+	double psiR = GetValue(m.vpsi, Mxyz(&geo)-1 ),
+			psiI = GetValue(m.vpsi, Mxyz(&geo)-1+Nxyzc(&geo) );
 
 	return 2*sqr( m.c() ) * (  sqr(psiR ) + sqr(psiI) );
 
@@ -24,7 +24,7 @@ void NewtonSolve(modelist &L, Geometry& geo, Vec v, Vec f, Vec dv){
 	if( (*L.begin())->vpsi != v){  // update v from L's vpsi
 		int ih =0;
 		FORMODES(L, it){
-			ScatterRange((*it)->vpsi, v, 0, ih*geo.NJ(), geo.NJ() );
+			ScatterRange((*it)->vpsi, v, 0, ih*NJ(&geo), NJ(&geo) );
 			ih++;
 		}
 	}
@@ -43,7 +43,7 @@ void NewtonSolve(modelist &L, Geometry& geo, Vec v, Vec f, Vec dv){
 		if( (*L.begin())->vpsi != v && its !=0){ // update vpsi's from v
 			int ih =0;
 			FORMODES(L, it){
-				ScatterRange(v, (*it)->vpsi, ih*geo.NJ(), 0, geo.NJ() );
+				ScatterRange(v, (*it)->vpsi, ih*NJ(&geo), 0, NJ(&geo) );
 				ih++;
 			}
 		}

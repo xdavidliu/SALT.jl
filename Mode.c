@@ -5,8 +5,8 @@
 
 Mode::Mode(Geometry& geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]){
 
-	CreateVec(2*geo.Nxyzc()+2, &vpsi);
-	CreateSquareMatrix(2*geo.Nxyzc()+2, 0, &J);
+	CreateVec(2*Nxyzc(&geo)+2, &vpsi);
+	CreateSquareMatrix(2*Nxyzc(&geo)+2, 0, &J);
 	KSPCreate(PETSC_COMM_WORLD,&ksp);
 
 	lasing = 0;
@@ -21,8 +21,8 @@ Mode::Mode(Geometry& geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]){
 Mode::Mode(char *Name, Geometry& geo, double *Dout){ // read constructor
 
 	sprintf(name, "%s", Name );
-	CreateVec(2*geo.Nxyzc()+2, &vpsi);
-	CreateSquareMatrix(2*geo.Nxyzc()+2, 0, &J);
+	CreateVec(2*Nxyzc(&geo)+2, &vpsi);
+	CreateSquareMatrix(2*Nxyzc(&geo)+2, 0, &J);
 		
 	KSPCreate(PETSC_COMM_WORLD,&ksp);
 
@@ -43,7 +43,7 @@ Mode::Mode(char *Name, Geometry& geo, double *Dout){ // read constructor
 
 
 
-	ReadVectorC(fp, 2*geo.Nxyzc()+2, vpsi);
+	ReadVectorC(fp, 2*Nxyzc(&geo)+2, vpsi);
 
    if(GetRank()==0){
 
@@ -124,7 +124,7 @@ void Mode::Fix(Geometry& geo){
 	for(int i=psiket.ns(); i<psiket.ne(); i++){
 
 		dcomp val = psi.val(i) * factor;
-		psiket.set(i, geo.ir(i)? val.imag() : val.real() ); 
+		psiket.set(i, ir(&geo, i)? val.imag() : val.real() ); 
 	}}
 
 }
@@ -164,20 +164,20 @@ void AddPlaceholders(Mat J, Geometry &geo){
         int ns, ne,N;
         MatGetOwnershipRange(J, &ns, &ne);
         MatGetSize(J, &N, NULL);
-        int Nh = N/(geo.Nxyzcr()+2);
+        int Nh = N/(Nxyzcr(&geo)+2);
 
 	for(int i=ns; i<ne; i++){ 
 	
 		if(geo.Last2(i)) continue;		
 
 		for(int jh = 0; jh<Nh; jh++){
-			int offset =  jh*(geo.Nxyzcr()+2);
+			int offset =  jh*(Nxyzcr(&geo)+2);
 			
 			for(int j=0; j<2; j++) // columns
-				MatSetValue(J, i, offset+geo.Nxyzcr()+j, 0.0, ADD_VALUES);
+				MatSetValue(J, i, offset+Nxyzcr(&geo)+j, 0.0, ADD_VALUES);
 			
 			for(int jr=0; jr<2;jr++) for(int jc=0; jc<geo.Nc; jc++) // tensor
-				MatSetValue(J, i, offset+geo.Nxyzc()*jr + geo.Nxyz()*jc + i % geo.NJ() % geo.Nxyz(), 0.0, ADD_VALUES);
+				MatSetValue(J, i, offset+Nxyzc(&geo)*jr + Nxyz(&geo)*jc + i % NJ(&geo) % Nxyz(&geo), 0.0, ADD_VALUES);
 				
 		}		
 
@@ -202,16 +202,16 @@ void AddPlaceholders(Mat J, Geometry &geo){
 
 void AddRowDerivatives(Mat J, Geometry& geo, int ifix, int ih){
 
-	int offset =  ih*(geo.Nxyzcr()+2);
+	int offset =  ih*(Nxyzcr(&geo)+2);
 
 	// last two rows; just put the row derivatives here!
 	if(LastProcess()){
-		MatSetValue(J, geo.Nxyzcr()+offset, 
+		MatSetValue(J, Nxyzcr(&geo)+offset, 
 		ifix+offset, 1.0, ADD_VALUES);
 	// putting these here takes care of last two residual elements
 	// up to scaling of the first one (done below)
-		MatSetValue(J, geo.Nxyzcr() + 1+offset, 
-		geo.Nxyzc()+ ifix+offset, 1.0, ADD_VALUES);
+		MatSetValue(J, Nxyzcr(&geo) + 1+offset, 
+		Nxyzc(&geo)+ ifix+offset, 1.0, ADD_VALUES);
 	}	
 	
 
@@ -223,7 +223,7 @@ void AllocateJacobian(Mat J, Geometry& geo){
 	int N, ns, ne;
 	MatGetSize(J, &N, NULL);
 	MatGetOwnershipRange(J, &ns, &ne);
-	int Nh = N / (2*geo.Nxyzc()+2);
+	int Nh = N / (2*Nxyzc(&geo)+2);
 	
 	int nnz = 26+Nh*(2+2*geo.Nc);
 	// in parenthesis: 2 column derivatives plus 2Nc tensor derivatives

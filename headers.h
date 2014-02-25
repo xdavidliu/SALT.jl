@@ -111,13 +111,9 @@ struct Geometry{
 
 	Grid gN, gM;
 
-	int Nxyz(){ return xyzGrid(&gN); }
-	int Nxyzc(){ return xyzcGrid(&gN); }
-	int Nxyzcr(){ return xyzcrGrid(&gN);}
-	int Mxyz(){ return xyzGrid(&gM); }
-	int NJ(){ return Nxyzcr() + 2;}
-	int offset(int ih){ return ih*NJ(); }
-	int ir(int i){ return i%NJ() / Nxyzc(); }
+
+
+
 
 	void MoperatorGeneralBlochFill(Mat A,  int b[3][2], int DimPeriod, double k[3], int ih=0);	
 
@@ -137,6 +133,15 @@ struct Geometry{
 	void SetJacobian(Mat J, Vec v, int jc, int jr, int jh);
 
 };
+
+int Nxyz(Geometry *geo);
+int Nxyzc(Geometry *geo);
+int Nxyzcr(Geometry *geo);
+int Mxyz(Geometry *geo);
+
+int NJ(Geometry *geo);
+int offset(Geometry *geo, int ih);
+int ir(Geometry *geo, int i);
 
 struct Mode{
 

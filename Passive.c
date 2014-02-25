@@ -37,7 +37,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 	for(int i=0; i<3; i++){ b[i][0]=bl[i]; b[i][1] = 0;}
 
         Mat Mop;
-	CreateSquareMatrix(2*geo.Nxyzc(), 26, &Mop);
+	CreateSquareMatrix(2*Nxyzc(&geo), 26, &Mop);
 
 
 
@@ -65,7 +65,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 	dcomp guess = -sqr(wguess_real + ComplexI * wguess_imag);
 
 
-	Mat Bop; CreateSquareMatrix(2*geo.Nxyzc(), 2, &Bop);
+	Mat Bop; CreateSquareMatrix(2*Nxyzc(&geo), 2, &Bop);
 
 
 

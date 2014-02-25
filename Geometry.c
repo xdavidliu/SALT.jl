@@ -13,7 +13,7 @@ void Geometry::InterpolateVec(Vec vM, Vec vN){
 	int ms, me;
 	VecGetOwnershipRange(vM, &ms, &me);
 
-	for(int i=0; i< Nxyzcr(); i++){
+	for(int i=0; i< Nxyzcr(this); i++){
 		
 		Point p(i, gN);
 		if( projectmedium(&p, gM, LowerPML) )
@@ -33,7 +33,7 @@ void Geometry::CollectVec(Vec vN, Vec vM){
 	VecGetArrayRead(vN, &vals);
 	int ns, ne;
 	VecGetOwnershipRange(vN, &ns, &ne);
-	if( ne > Nxyzcr()-2) ne = Nxyzcr()-2;
+	if( ne > Nxyzcr(this)-2) ne = Nxyzcr(this)-2;
 	
 	for(int i=ns; i<ne; i++){
 		
@@ -50,11 +50,11 @@ void Geometry::CollectVec(Vec vN, Vec vM){
 void Geometry::TimesI(Vec v, Vec Iv){
 
 	VecSet(Iv, 0.0);
-	ScatterRange (v, Iv, Nxyzc(), 0, Nxyzc());
+	ScatterRange (v, Iv, Nxyzc(this), 0, Nxyzc(this));
 	
 	
 	VecScale(Iv, -1.0);
-	ScatterRange (v, Iv, 0, Nxyzc(), Nxyzc());
+	ScatterRange (v, Iv, 0, Nxyzc(this), Nxyzc(this));
 
 }
 
@@ -83,7 +83,7 @@ Geometry::Geometry(){
 	gM = Grid(M, 1, 1);
 
 
-	CreateVec(2*Nxyzc()+2, &vepspml);
+	CreateVec(2*Nxyzc(this)+2, &vepspml);
 
 
 
@@ -98,7 +98,7 @@ Geometry::Geometry(){
 		pml.set(i, p.ir? eps_geoal.imag() : eps_geoal.real() );
 	}
 	
-	CreateVec(Mxyz(), &vMscratch[0]);
+	CreateVec(Mxyz(this), &vMscratch[0]);
 
 	for(int i=1; i<SCRATCHNUM; i++) VecDuplicate(vMscratch[0], &vMscratch[i]);
 	char file[PETSC_MAX_PATH_LEN];
@@ -112,10 +112,10 @@ Geometry::Geometry(){
 		sprintf(message, "failed to read %s", file);
 		MyError(message);
 	}
-	ReadVectorC(fp, Mxyz(), vMscratch[0]);
+	ReadVectorC(fp, Mxyz(this), vMscratch[0]);
 	fclose(fp);
 	
-	CreateVec(2*Nxyzc()+2, &vH);
+	CreateVec(2*Nxyzc(this)+2, &vH);
 	VecDuplicate(vH, &veps);
 	VecDuplicate(vH, &vIeps);
 	for(int i=0; i<SCRATCHNUM; i++) VecDuplicate(vH, &vscratch[i]);
@@ -147,7 +147,7 @@ Geometry::Geometry(){
 		sprintf(message, "failed to read %s", file);
 		MyError(message);
 	}	
-	ReadVectorC(fp, Mxyz(), vMscratch[1]);
+	ReadVectorC(fp, Mxyz(this), vMscratch[1]);
 	fclose(fp);	
 	
 	InterpolateVec(vMscratch[1], vf);
@@ -175,7 +175,7 @@ Geometry::~Geometry(){
 }
 
 int Geometry::Last2(int i){
-	return i%(Nxyzcr()+2) / Nxyzcr();
+	return i%(Nxyzcr(this)+2) / Nxyzcr(this);
 }
 
 
@@ -192,17 +192,17 @@ void Geometry::SetJacobian(Mat J, Vec v, int jc, int jr, int jh){
 	for(int i=ns; i<ne; i++){
 		if( Last2(i) || vals[i-ns] == 0.0) continue;
 	
-		int col, offset = jh*(Nxyzcr()+2),
-		ij = i%(Nxyzcr()+2);
+		int col, offset = jh*(Nxyzcr(this)+2),
+		ij = i%(Nxyzcr(this)+2);
 		
 		Point p(ij, gN);
 		
 		if(jc == -1) //columns
-			col = Nxyzcr()+jr;
+			col = Nxyzcr(this)+jr;
 		else if(jc == -2) //blocks
-			col = jr*Nxyzc() + xyzc(&p);
+			col = jr*Nxyzc(this) + xyzc(&p);
 		else // tensors
-			col = jr*Nxyzc() + jc*Nxyz() + xyz(&p);
+			col = jr*Nxyzc(this) + jc*Nxyz(this) + xyz(&p);
 		
 		MatSetValue(J, i, col+offset, vals[i-ns], ADD_VALUES);
 		

@@ -265,3 +265,12 @@ int projectmedium(Point *p, const Grid& gm, int LowerPML){
 int xyzGrid(Grid *g) {return g->N[0]* g->N[1]*g->N[2];}
 int xyzcGrid(Grid *g) {return xyzGrid(g)* g->Nc;}
 int xyzcrGrid(Grid *g) {return xyzcGrid(g)* g->Nr;}
+
+int Nxyz(Geometry *geo){ return xyzGrid(&geo->gN); }
+int Nxyzc(Geometry *geo){ return xyzcGrid(&geo->gN); }
+int Nxyzcr(Geometry *geo){ return xyzcrGrid(&geo->gN);}
+int Mxyz(Geometry *geo){ return xyzGrid(&geo->gM); }
+
+int NJ(Geometry *geo){ return Nxyzcr(geo) + 2;}
+int offset(Geometry *geo, int ih){ return ih*NJ(geo); }
+int ir(Geometry *geo, int i){ return i%NJ(geo) / Nxyzc(geo); }

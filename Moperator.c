@@ -26,7 +26,7 @@ void Geometry::MoperatorGeneralBlochFill(Mat A, int b[3][2], int DimPeriod, doub
 	double blochbc[3];
 	for(int i=0; i<3; i++) blochbc[i] = k[i]*N[i]*h[i];
 
-	int NC = 3, offset = ih*(Nxyzcr()+2);
+	int NC = 3, offset = ih*(Nxyzcr(this)+2);
 	int ns, ne;
 	double hh;
 
@@ -46,14 +46,14 @@ void Geometry::MoperatorGeneralBlochFill(Mat A, int b[3][2], int DimPeriod, doub
 	
 	MatGetOwnershipRange(A, &ns, &ne);
 
-for (int itrue = ns; itrue < ne && itrue < 2*Nxyzc(); ++itrue) {
+for (int itrue = ns; itrue < ne && itrue < 2*Nxyzc(this); ++itrue) {
 
 	Point p(itrue, Grid(N, Nc, 2)); project(&p, 3); int i = xyzcr(&p);
 	int cp[2], icp[2], cidu, cpidu[2],cpidl[2], cid, cpid[2];
 	for(int j=0; j<2;j++){
 
 		cp[j] = (p.ic+1+j) % NC;
-		icp[j] = i + (cp[j]-p.ic ) *Nxyz();
+		icp[j] = i + (cp[j]-p.ic ) *Nxyz(this);
 		cpidu[j] = cyclic(p, 2-j, N);
 		cpidl[j] = cyclic(p, 2-j, N);
 		cpid[j] = cyclic(p, 2-j, N);
@@ -67,7 +67,7 @@ for (int itrue = ns; itrue < ne && itrue < 2*Nxyzc(); ++itrue) {
 	cidu_phase = 1.0;
     
    for(int jr=0; jr<2; jr++) { /* column real/imag parts */
-   	int jrd =  (jr-p.ir)*NC*Nxyz();            
+   	int jrd =  (jr-p.ir)*NC*Nxyz(this);            
    	magicnum = (p.ir==jr)*1.0 + (p.ir<jr)*1.0*ComplexI - (p.ir>jr)*1.0* ComplexI; 
 
 //=====================================================================

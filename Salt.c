@@ -60,7 +60,7 @@ void FirstStep(modelist Lh, Mode *m, Geometry& geo, Vec vNh, Vec f, Vec dv, doub
 	if(vNh != m->vpsi){ // update vpsi's from v
 		int ih =0;
 		FORMODES(Lh, it){
-			ScatterRange((*it)->vpsi, vNh, 0, ih*geo.NJ(), geo.NJ() );
+			ScatterRange((*it)->vpsi, vNh, 0, ih*NJ(&geo), NJ(&geo) );
 			ih++;
 		}
 	}
@@ -68,8 +68,8 @@ void FirstStep(modelist Lh, Mode *m, Geometry& geo, Vec vNh, Vec f, Vec dv, doub
   while(1){
 
 	if( LastProcess() ){ // try new c
-		VecSetValue(vNh, geo.offset(ih)+geo.Nxyzcr()+1, c, INSERT_VALUES);	
-		if( vNh != m->vpsi) VecSetValue(m->vpsi, geo.Nxyzcr()+1, c, INSERT_VALUES);
+		VecSetValue(vNh, offset(&geo, ih)+Nxyzcr(&geo)+1, c, INSERT_VALUES);	
+		if( vNh != m->vpsi) VecSetValue(m->vpsi, Nxyzcr(&geo)+1, c, INSERT_VALUES);
 	}
 	AssembleVec(vNh);
 	AssembleVec(m->vpsi);
@@ -78,7 +78,7 @@ void FirstStep(modelist Lh, Mode *m, Geometry& geo, Vec vNh, Vec f, Vec dv, doub
 	KSPSolve( (*Lh.begin())->ksp, f, dv);
 	PetscPrintf(PETSC_COMM_WORLD, "\n");
 
-	double dc = -GetValue(dv, geo.offset(ih)+geo.Nxyzcr()+1 );
+	double dc = -GetValue(dv, offset(&geo, ih)+Nxyzcr(&geo)+1 );
 
 	if( std::abs(dc)/c < 0.5){
 		VecAXPY(vNh, -1.0, dv);
@@ -86,7 +86,7 @@ void FirstStep(modelist Lh, Mode *m, Geometry& geo, Vec vNh, Vec f, Vec dv, doub
 		if(vNh != m->vpsi){ // update vpsi's from v
 			int ih =0;
 			FORMODES(Lh, it){
-				ScatterRange(vNh, (*it)->vpsi, ih*geo.NJ(), 0, geo.NJ() );
+				ScatterRange(vNh, (*it)->vpsi, ih*NJ(&geo), 0, NJ(&geo) );
 				ih++;
 			}
 		}
@@ -110,7 +110,7 @@ void Bundle(modelist &L, Geometry &geo){
 
 
 
-	int Nh = L.size(), Nj = 2*geo.Nxyzc()+2;
+	int Nh = L.size(), Nj = 2*Nxyzc(&geo)+2;
 	if(Nh < 2) MyError("Bundle function is only for multimode!");
 	
 	Mat J; KSP ksp;

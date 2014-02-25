@@ -41,7 +41,7 @@ void LinearDerivative(Mode& m, Geometry& geo, Vec dfR, Vec dfI, int ih){
 
 	for(int i=eps.ns(); i<eps.ne(); i++){
 		dcomp val = sqr(mw) * (eps.val(i) + geo.D * yw * f.val(i) * H.val(i) );
-		VecSetComplex(dfR, dfI, i+geo.offset(ih), geo.ir(i), val, INSERT_VALUES);
+		VecSetComplex(dfR, dfI, i+offset(&geo, ih), ir(&geo, i), val, INSERT_VALUES);
 	}
 }
 
@@ -60,9 +60,9 @@ void TensorDerivative(Mode& m, Mode &mj, Geometry& geo, int jc, int jr, Vec df, 
 		if( f.val(i) == 0.0) continue;			
 		dcomp ket_term = -sqr(mw ) * sqr(mjc) * sqr(std::abs(yjw)) * 2.0
 			* sqr(H.val(i) ) * geo.D * f.val(i) * yw * psi.val(i);		
-		double val = psibra.val(i) * (geo.ir(i)? ket_term.imag() : ket_term.real() );
+		double val = psibra.val(i) * (ir(&geo, i)? ket_term.imag() : ket_term.real() );
 		
-		VecSetValue(df, i+geo.offset(ih), val, INSERT_VALUES);
+		VecSetValue(df, i+offset(&geo, ih), val, INSERT_VALUES);
 	}
 }
 
@@ -98,10 +98,10 @@ void ColumnDerivative(Mode* m, Mode* mj, Geometry& geo, Vec dfR, Vec dfI, Vec vI
 		}
 		
 		if( !m->lasing)
-			VecSetComplex(dfR, dfI, i+geo.offset(ih), geo.ir(i), dfdk, INSERT_VALUES);
+			VecSetComplex(dfR, dfI, i+offset(&geo, ih), ir(&geo, i), dfdk, INSERT_VALUES);
 		else{
-			VecSetValue(dfR, i+geo.offset(ih), geo.ir(i)? dfdk.imag() : dfdk.real(), INSERT_VALUES );
-			VecSetValue(dfI, i+geo.offset(ih), geo.ir(i)? dfdc.imag() : dfdc.real(), INSERT_VALUES );
+			VecSetValue(dfR, i+offset(&geo, ih), ir(&geo, i)? dfdk.imag() : dfdk.real(), INSERT_VALUES );
+			VecSetValue(dfI, i+offset(&geo, ih), ir(&geo, i)? dfdc.imag() : dfdc.real(), INSERT_VALUES );
 		}
 	}
 
@@ -179,7 +179,7 @@ double FormJf(modelist& L, Geometry& geo, Vec v, Vec f){
 	MatMult(J, v, f);
 
 	for(int kh = 0; kh<L.size(); kh++) for(int ir=0; ir<2; ir++)
-		VecSetValue(f, kh*geo.NJ() + geo.Nxyzcr()+ir, 0.0, INSERT_VALUES);
+		VecSetValue(f, kh*NJ(&geo) + Nxyzcr(&geo)+ir, 0.0, INSERT_VALUES);
 
 	AssembleVec(f);
 
