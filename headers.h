@@ -100,12 +100,15 @@ struct Geometry{
 	void InterpolateVec(Vec vM, Vec vN);
 	void CollectVec(Vec vN, Vec vM);
 	void Stamp(Vec vN, int ic, int ir, Vec scratchM);
-	void TimesI(Vec v, Vec Iv);
-	void VecSqMedium(Vec v, Vec vsq, Vec scratchM);
 
-	int Last2(int i);
+
+
+
 
 };
+void TimesI(Geometry *geo, Vec v, Vec Iv);
+void VecSqMedium(Geometry *geo, Vec v, Vec vsq, Vec scratchM);
+int Last2(Geometry *geo, int i);
 void SetJacobian(Geometry *geo, Mat J, Vec v, int jc, int jr, int jh);
 
 void MoperatorGeneralBlochFill(Geometry *geo, Mat A,  int b[3][2], int DimPeriod, double k[3], int ih=0);	

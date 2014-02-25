@@ -49,23 +49,23 @@ void Geometry::CollectVec(Vec vN, Vec vM){
 }
 
 
-void Geometry::TimesI(Vec v, Vec Iv){
+void TimesI(Geometry *geo, Vec v, Vec Iv){
 
 	VecSet(Iv, 0.0);
-	ScatterRange (v, Iv, Nxyzc(this), 0, Nxyzc(this));
+	ScatterRange (v, Iv, Nxyzc(geo), 0, Nxyzc(geo));
 	
 	
 	VecScale(Iv, -1.0);
-	ScatterRange (v, Iv, 0, Nxyzc(this), Nxyzc(this));
+	ScatterRange (v, Iv, 0, Nxyzc(geo), Nxyzc(geo));
 
 }
 
-void Geometry::VecSqMedium(Vec v, Vec vsq, Vec scratchM){
+void VecSqMedium(Geometry *geo, Vec v, Vec vsq, Vec scratchM){
 		VecCopy(v, vsq);
 		VecPointwiseMult(vsq, vsq, vsq);
 
-		CollectVec(vsq, scratchM);
-		InterpolateVec(scratchM, vsq);
+		geo->CollectVec(vsq, scratchM);
+		geo->InterpolateVec(scratchM, vsq);
 }
 
 
@@ -132,7 +132,7 @@ Geometry::Geometry(){
 
 
 	VecPointwiseMult(veps, vscratch[1], vepspml);
-	TimesI(veps, vIeps); // vIeps for convenience only, make sure to update it later if eps ever changes!
+	TimesI(this, veps, vIeps); // vIeps for convenience only, make sure to update it later if eps ever changes!
 
 
 
@@ -178,8 +178,8 @@ Geometry::~Geometry(){
 
 }
 
-int Geometry::Last2(int i){
-	return i%(Nxyzcr(this)+2) / Nxyzcr(this);
+int Last2(Geometry *geo, int i){
+	return i%(Nxyzcr(geo)+2) / Nxyzcr(geo);
 }
 
 
@@ -194,7 +194,7 @@ void SetJacobian(Geometry *geo, Mat J, Vec v, int jc, int jr, int jh){
 	VecGetArrayRead(v, &vals);
 	
 	for(int i=ns; i<ne; i++){
-		if( geo->Last2(i) || vals[i-ns] == 0.0) continue;
+		if( Last2(geo, i) || vals[i-ns] == 0.0) continue;
 	
 		int col, offset = jh*(Nxyzcr(geo)+2),
 		ij = i%(Nxyzcr(geo)+2);

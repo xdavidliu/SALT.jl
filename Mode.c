@@ -117,7 +117,7 @@ void Fix(Mode *m, Geometry& geo){
 	dcomp factor = OptionsDouble("-norm") / (psifix_real+ ComplexI * psifix_imag);
 
 	VecCopy(m->vpsi, geo.vscratch[0]);
-	geo.TimesI(m->vpsi, geo.vscratch[1]);
+	TimesI(&geo, m->vpsi, geo.vscratch[1]);
 	
 	Complexfun psi;
 	CreateComplexfun(&psi, geo.vscratch[0], geo.vscratch[1]);
@@ -176,7 +176,7 @@ void AddPlaceholders(Mat J, Geometry &geo){
 
 	for(int i=ns; i<ne; i++){ 
 	
-		if(geo.Last2(i)) continue;		
+		if(Last2(&geo, i)) continue;		
 
 		for(int jh = 0; jh<Nh; jh++){
 			int offset =  jh*(Nxyzcr(&geo)+2);
@@ -197,9 +197,9 @@ void AddPlaceholders(Mat J, Geometry &geo){
 		PetscPrintf(PETSC_COMM_WORLD, "pastix detected, symmetrizing nonzero pattern...\n");
 	
 		MatSetOption(J,MAT_NEW_NONZERO_LOCATIONS, PETSC_TRUE);
-		for(int i=ns; i<ne; i++) if( geo.Last2(i) ){
+		for(int i=ns; i<ne; i++) if( Last2(&geo, i) ){
 			for(int j = 0; j < N; j++){
-				if( geo.Last2(j) ) continue;
+				if( Last2(&geo, j) ) continue;
 				MatSetValue(J, i, j, 0.0, ADD_VALUES);
 
 			}

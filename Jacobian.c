@@ -146,7 +146,7 @@ void ComputeGain(Geometry& geo, modelist& L){
 	double mc = getc(m);
 
 	// do not change this from vscratch[3], or the hack below for single mode Column derivative will fail!
-	geo.VecSqMedium(m->vpsi, geo.vscratch[3], geo.vMscratch[0]);
+	VecSqMedium(&geo, m->vpsi, geo.vscratch[3], geo.vMscratch[0]);
 
 	Vecfun psisq;
 	CreateVecfun(&psisq ,geo.vscratch[3]);
@@ -236,13 +236,13 @@ double FormJf(modelist& L, Geometry& geo, Vec v, Vec f){
 		VecSet(dfI, 0.0);
 
 		if(L.size() > 1)  // hack: only recompute vpsisq if ComputeGain didn't already do it, i.e. for multimode
-			geo.VecSqMedium(mj->vpsi, vpsisq, geo.vMscratch[0]);
+			VecSqMedium(&geo, mj->vpsi, vpsisq, geo.vMscratch[0]);
 
 		ih = 0;
 		FORMODES(L, it){
 			Mode *mi = *it;
 
-			geo.TimesI(mi->vpsi, vIpsi);
+			TimesI(&geo, mi->vpsi, vIpsi);
 			ColumnDerivative(mi, mj, geo, dfR, dfI, vIpsi, vpsisq, ih);
 
 			ih++;
@@ -273,7 +273,7 @@ double FormJf(modelist& L, Geometry& geo, Vec v, Vec f){
 			ih = 0;
 			FORMODES(L, it){
 				Mode *mi = *it;
-				geo.TimesI(mi->vpsi, vIpsi);
+				TimesI(&geo, mi->vpsi, vIpsi);
 	
 				TensorDerivative(*mi, *mj, geo, jc, jr, dfR, vpsibra, vIpsi, ih);
 				ih++;

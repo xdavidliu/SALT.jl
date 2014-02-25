@@ -6,7 +6,7 @@ void FillBop(Geometry& geo, Mat Bop, dcomp w){
 
 
 	VecCopy(geo.veps, geo.vscratch[0]);
-	geo.TimesI(geo.vscratch[0], geo.vscratch[1]);
+	TimesI(&geo, geo.vscratch[0], geo.vscratch[1]);
 	
 	Complexfun b;
 	CreateComplexfun(&b, geo.vscratch[0], geo.vscratch[1]);
@@ -119,7 +119,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 		
 
 		ScatterRange(v, geo.vscratch[0], 0, 0, xyzcrGrid(&geo.gN) );
-		geo.TimesI(geo.vscratch[0], geo.vscratch[2]);
+		TimesI(&geo, geo.vscratch[0], geo.vscratch[2]);
 		
 		VecSet(geo.vscratch[1], 0.0); // annoying last two elements
 		ScatterRange(vi, geo.vscratch[1], 0, 0, xyzcrGrid(&geo.gN) );
