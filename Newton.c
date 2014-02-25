@@ -3,7 +3,7 @@
 
 double EdgeIntensity(Mode &m, Geometry &geo){
 
-	if(geo.gN.x(1) != 1 || geo.gN.x(2) != 1 || geo.LowerPML != 0 || geo.Nc != 1)
+	if(geo.gN.N[1] != 1 || geo.gN.N[2] != 1 || geo.LowerPML != 0 || geo.Nc != 1)
 		MyError("EdgeIntensity is only for 1d symmetric TM fields!");
 
 	if( !m.lasing) return 0;

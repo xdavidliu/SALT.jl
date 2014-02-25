@@ -223,18 +223,18 @@ void Output(Vec A, const char* name, const char* variable_name){
 
 
 
-int xyz(Point *p) {return p->ix[0]*p->G.x(2)*p->G.x(1) + p->ix[1]*p->G.x(2) + p->ix[2];}
-int xyzc(Point *p) {return p->ic*p->G.xyz() + xyz(p);}
-int xyzcr(Point *p) {return p->ir*p->G.xyzc() + p->ic*p->G.xyz() + xyz(p);}
+int xyz(Point *p) {return p->ix[0]*p->G.N[2]*p->G.N[1] + p->ix[1]*p->G.N[2] + p->ix[2];}
+int xyzc(Point *p) {return p->ic*xyzGrid(&p->G) + xyz(p);}
+int xyzcr(Point *p) {return p->ir*xyzcGrid(&p->G) + p->ic*xyzGrid(&p->G) + xyz(p);}
 
 int convert(Point *p, int Nc){
 
-	if(Nc==p->G.c() ) return p->ic;
+	if(Nc==p->G.Nc ) return p->ic;
 	else if(Nc == 3){
-		if(p->G.c()==1 && p->ic == 0) return 2;  // TM to vector
-		else if(p->G.c()==2 && p->ic < 2) return p->ic;  // TE to vector
+		if(p->G.Nc==1 && p->ic == 0) return 2;  // TM to vector
+		else if(p->G.Nc==2 && p->ic < 2) return p->ic;  // TE to vector
 		else return -1;
-	}else if(p->G.c() == 3){
+	}else if(p->G.Nc == 3){
 		if(Nc==1 && p->ic == 2) return 0;  // vector to TM
 		else if(Nc==2 && p->ic < 2) return p->ic;   // vector to TE 
 		else return -1;
@@ -244,7 +244,7 @@ int convert(Point *p, int Nc){
 
 int project(Point *p, int Nc){
 	p->ic = convert(p, Nc);
-	p->G.setc(Nc);
+	p->G.Nc = Nc;
 	return p->ic;
 }
 
@@ -253,10 +253,15 @@ int projectmedium(Point *p, const Grid& gm, int LowerPML){
 	int medium =1;
 	for(int j=0; j<3; j++){ // position component
 
-		double d = p->ix[j] - LowerPML*floor( (p->G.x(j)-gm.x(j))/2.0 ) + ( p->ic!=j)*0.5;
+		double d = p->ix[j] - LowerPML*floor( (p->G.N[j]-gm.N[j])/2.0 ) + ( p->ic!=j)*0.5;
 		p->ix[j] = ceil(d-0.5);
-		if(p->ix[j]<0 || p->ix[j]>= gm.x(j) ) medium = 0;
+		if(p->ix[j]<0 || p->ix[j]>= gm.N[j] ) medium = 0;
 	}
 	p->G = gm;
 	return medium;
 }
+
+
+int xyzGrid(Grid *g) {return g->N[0]* g->N[1]*g->N[2];}
+int xyzcGrid(Grid *g) {return xyzGrid(g)* g->Nc;}
+int xyzcrGrid(Grid *g) {return xyzcGrid(g)* g->Nr;}

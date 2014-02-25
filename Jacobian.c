@@ -7,14 +7,14 @@ void VecSetComplex(Vec vR, Vec vI, int i, int ir, dcomp val, InsertMode addv){
 }
 
 
-void Isolate(Vec v, const Grid& gN, int ic, int ir){
+void Isolate(Vec v, Grid& gN, int ic, int ir){
 
 	int ns, ne;
 	VecGetOwnershipRange(v, &ns, &ne);
 	double *a;
 	VecGetArray(v, &a);
 
-	for(int i=ns; i<ne && i<gN.xyzcr(); i++){
+	for(int i=ns; i<ne && i<xyzcrGrid(&gN); i++){
 
 		Point p(i, gN);
 		if(p.ic != ic || p.ir != ir) a[i-ns] = 0.0;
@@ -233,7 +233,7 @@ double FormJf(modelist& L, Geometry& geo, Vec v, Vec f){
 	FORMODES(L, jt){
 		Mode *mj = *jt;
 
-		for(int jr=0; jr<2; jr++) for(int jc=0; jc< geo.gN.c(); jc++){
+		for(int jr=0; jr<2; jr++) for(int jc=0; jc< geo.gN.Nc; jc++){
 
 			VecCopy(mj->vpsi, vpsibra);
 			geo.Stamp(vpsibra, jc, jr, geo.vMscratch[0]);

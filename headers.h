@@ -55,20 +55,15 @@ struct Grid{
 		Nc = Mc;
 		Nr = Mr;
 	}
-	int x(int ic) const{return N[ic];}
-	int c() const{return Nc;}
-	int r() const{return Nr;}
-	int xyz() const{return N[0]*N[1]*N[2];}
-	int xyzc() const{return xyz()*Nc;}
-	int xyzcr() const{return xyzc()*Nr;}
-
-	void setc(int Mc){ Nc = Mc;}
 
 	
 	int N[3], Nc, Nr;
 };
 
 
+int xyzGrid(Grid *g);
+int xyzcGrid(Grid *g);
+int xyzcrGrid(Grid *g);
 
 
 struct Point{
@@ -77,11 +72,11 @@ struct Point{
 	Point(int i, const Grid& H){
 		for(int j = 2; j>=0; j--){
 			G = H;
-			ix[j] = i % G.x(j); 
-			i /= G.x(j);
+			ix[j] = i % G.N[j]; 
+			i /= G.N[j];
 		}
-		ic = i % G.c();
-		ir = i / G.c();	
+		ic = i % G.Nc;
+		ir = i / G.Nc;	
 	}
 
 	Point(int* jx, int jc, int jr, const Grid& H){
@@ -116,10 +111,10 @@ struct Geometry{
 
 	Grid gN, gM;
 
-	int Nxyz(){ return gN.xyz(); }
-	int Nxyzc(){ return gN.xyzc(); }
-	int Nxyzcr(){ return gN.xyzcr();}
-	int Mxyz(){ return gM.xyz(); }
+	int Nxyz(){ return xyzGrid(&gN); }
+	int Nxyzc(){ return xyzcGrid(&gN); }
+	int Nxyzcr(){ return xyzcrGrid(&gN);}
+	int Mxyz(){ return xyzGrid(&gM); }
 	int NJ(){ return Nxyzcr() + 2;}
 	int offset(int ih){ return ih*NJ(); }
 	int ir(int i){ return i%NJ() / Nxyzc(); }

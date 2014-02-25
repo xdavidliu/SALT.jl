@@ -116,11 +116,11 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 		// then || TimesI(v) + vi || > 1e-5 or something
 		
 
-		ScatterRange(v, geo.vscratch[0], 0, 0, geo.gN.xyzcr() );
+		ScatterRange(v, geo.vscratch[0], 0, 0, xyzcrGrid(&geo.gN) );
 		geo.TimesI(geo.vscratch[0], geo.vscratch[2]);
 		
 		VecSet(geo.vscratch[1], 0.0); // annoying last two elements
-		ScatterRange(vi, geo.vscratch[1], 0, 0, geo.gN.xyzcr() );
+		ScatterRange(vi, geo.vscratch[1], 0, 0, xyzcrGrid(&geo.gN) );
 		VecAXPY(geo.vscratch[2], -1.0, geo.vscratch[1]);
 		
 		double dvnorm, vnorm;
@@ -138,7 +138,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 
 
 		Mode m(geo, 0, b, BCPeriod, k);
-		ScatterRange(v, m.vpsi, 0, 0, geo.gN.xyzcr() );
+		ScatterRange(v, m.vpsi, 0, 0, xyzcrGrid(&geo.gN) );
 
 
 		m.Fix(geo);

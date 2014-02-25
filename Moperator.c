@@ -21,7 +21,7 @@ void Geometry::MoperatorGeneralBlochFill(Mat A, int b[3][2], int DimPeriod, doub
 
 
 	int N[3];
-	for(int i=0; i<3; i++) N[i] = gN.x(i);
+	for(int i=0; i<3; i++) N[i] = gN.N[i];
 
 	double blochbc[3];
 	for(int i=0; i<3; i++) blochbc[i] = k[i]*N[i]*h[i];
