@@ -272,6 +272,12 @@ int projectmedium(Point *p, const Grid& gm, int LowerPML){
 }
 
 
+void CreateGrid(Grid *g, int* M, int Mc, int Mr){
+	for(int i=0; i<3; i++) g->N[i] = M[i];
+	g->Nc = Mc;
+	g->Nr = Mr;
+}
+
 int xyzGrid(Grid *g) {return g->N[0]* g->N[1]*g->N[2];}
 int xyzcGrid(Grid *g) {return xyzGrid(g)* g->Nc;}
 int xyzcrGrid(Grid *g) {return xyzcGrid(g)* g->Nr;}

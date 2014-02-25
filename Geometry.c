@@ -81,8 +81,9 @@ Geometry::Geometry(){
 
 	OptionsGetInt("-Nc", &Nc);
 	OptionsGetInt("-LowerPML", &LowerPML);
-	gN = Grid(N, Nc, 2);
-	gM = Grid(M, 1, 1);
+	
+	CreateGrid(&gN, N, Nc, 2);
+	CreateGrid(&gM, M, 1, 1);
 
 
 	CreateVec(2*Nxyzc(this)+2, &vepspml);

@@ -45,15 +45,14 @@ void OptionsXYZInt(const char* prefix, int* a);
 struct Grid{	
 	
 	Grid(){}
-	Grid(int* M, int Mc, int Mr){
-		for(int i=0; i<3; i++) N[i] = M[i];
-		Nc = Mc;
-		Nr = Mr;
-	}
+
 
 	
 	int N[3], Nc, Nr;
 };
+
+
+void CreateGrid(Grid *g, int* M, int Mc, int Mr);
 
 
 int xyzGrid(Grid *g);
