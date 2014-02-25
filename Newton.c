@@ -76,7 +76,7 @@ void NewtonSolve(modelist &L, Geometry *geo, Vec v, Vec f, Vec dv){
 			PetscPrintf(PETSC_COMM_WORLD, "%s at D = %g: w = %g + i(%g)", 
 				(*it)->name,  geo->D, w.real(), w.imag());
 				
-			if( (*it)->lasing )  PetscPrintf(PETSC_COMM_WORLD, ", |psi|^2_edge = %g", EdgeIntensity( *it, geo));
+			if( (*it)->lasing && geo->LowerPML==0 )  PetscPrintf(PETSC_COMM_WORLD, ", |psi|^2_edge = %g", EdgeIntensity( *it, geo));
 				
 			PetscPrintf(PETSC_COMM_WORLD, "\n");	
 		}

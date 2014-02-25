@@ -42,14 +42,10 @@ void OptionsXYZInt(const char* prefix, int* a);
 
 
 
-struct Grid{	
-	
-	Grid(){}
-
-
+typedef struct Grid_s{	
 	
 	int N[3], Nc, Nr;
-};
+} Grid;
 
 
 void CreateGrid(Grid *g, int* M, int Mc, int Mr);
@@ -60,12 +56,12 @@ int xyzcGrid(Grid *g);
 int xyzcrGrid(Grid *g);
 
 
-struct Point{
+typedef struct Point_s{
 
 
 	int ix[3], ir, ic;
 	Grid G;
-};
+} Point;
 
 void CreatePoint_i(Point *p, int i, Grid *H);
 
@@ -80,7 +76,7 @@ int xyzcr(Point *p);
 
 
 #define SCRATCHNUM 5
-struct Geometry{
+typedef struct Geometry_s{
 
 	
 
@@ -95,10 +91,8 @@ struct Geometry{
 	Vec vscratch[SCRATCHNUM], vMscratch[SCRATCHNUM], vNhscratch[SCRATCHNUM], vH, veps, vIeps, vf;
 	double D, wa, y;
 
+} Geometry;
 
-
-
-};
 void CreateGeometry(Geometry *geo);
 void DestroyGeometry(Geometry *geo);	
 void InterpolateVec(Geometry *geo, Vec vM, Vec vN);
@@ -120,9 +114,7 @@ int NJ(Geometry *geo);
 int offset(Geometry *geo, int ih);
 int ir(Geometry *geo, int i);
 
-struct Mode{
-
-	
+typedef struct Mode_s{
 
 	Vec vpsi;
 	char name[PETSC_MAX_PATH_LEN];
@@ -131,9 +123,7 @@ struct Mode{
 	Mat J;
 	KSP ksp; // one ksp per J seems faster
 
-
-
-};
+} Mode;
 
 void CreateMode(Mode *m, Geometry *geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]);
 void ModeRead(Mode *m, char *Name, Geometry *geo, double *Dout);
@@ -170,7 +160,7 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 double FormJf(modelist& L, Geometry *geo, Vec v, Vec f);
 
 
-struct Vecfun{
+typedef struct Vecfun_s{
 // always Nxyzcr()+2!	
 	
 	Vec u;
@@ -181,7 +171,7 @@ struct Vecfun{
 	double* a;
 
 
-};
+} Vecfun;
 
 void CreateVecfun(Vecfun *fun, Vec w);
 
@@ -190,13 +180,13 @@ void setr(Vecfun *fun, int i, double val);
 void DestroyVecfun(Vecfun *fun);
 
 
-struct Complexfun{
+typedef struct Complexfun_s{
 
 	Vec u, v;
 	double *a, *b;
 	int Nxyzc, ns, ne;
 
-};
+}Complexfun;
 
 dcomp valc(Complexfun *fun, int i);
 void setc(Complexfun *fun,int i, dcomp val);

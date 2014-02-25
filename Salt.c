@@ -13,7 +13,7 @@ PetscErrorCode ReadModes(modelist& L, Geometry *geo){
 	for(i=0; OptionsGetString(optionin, modename); i++){
 
 		double D;
-		Mode* m = (Mode*) malloc(sizeof(struct Mode));
+		Mode* m = (Mode*) malloc(sizeof( Mode));
 		ModeRead(m, modename, geo, &D);
 
 		if(i==0) geo->D = D;
