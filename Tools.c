@@ -153,6 +153,18 @@ void ReadVector(std::ifstream& is, int N, Vec v){
    AssembleVec(v);
 }
 
+void ReadVectorC(FILE *fp, int N, Vec v){
+
+   double val;
+
+   if(GetRank() ==0){
+	for(int i=0; i< N; i++){
+		fscanf(fp, "%lf", &val);
+		VecSetValue(v, i, val, INSERT_VALUES);
+	}
+   }
+   AssembleVec(v);
+}
 
 
 void SetLast2(Vec f, double val1, double val2){

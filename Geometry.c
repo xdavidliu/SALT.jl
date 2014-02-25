@@ -103,17 +103,18 @@ Geometry::Geometry(){
 	for(int i=1; i<SCRATCHNUM; i++) VecDuplicate(vMscratch[0], &vMscratch[i]);
 	char file[PETSC_MAX_PATH_LEN];
 	OptionsGetString("-epsfile", file);
-	std::ifstream is_eps(file);
 
-	if(!is_eps){
+	FILE *fp;
+	
+	fp = fopen(file, "r");
+	if(fp==NULL){
 		char message[PETSC_MAX_PATH_LEN];
 		sprintf(message, "failed to read %s", file);
 		MyError(message);
 	}
-
-
-
-	ReadVector(is_eps, Mxyz(), vMscratch[0]);
+	ReadVectorC(fp, Mxyz(), vMscratch[0]);
+	fclose(fp);
+	
 	CreateVec(2*Nxyzc()+2, &vH);
 	VecDuplicate(vH, &veps);
 	VecDuplicate(vH, &vIeps);
@@ -139,16 +140,16 @@ Geometry::Geometry(){
 	VecDuplicate(veps, &vf);
 
 	OptionsGetString("-fproffile", file);
-	std::ifstream is_fprof(file);
 
-	
-	if(!is_fprof){
+	fp = fopen(file, "r");	
+	if(fp==NULL){
 		char message[PETSC_MAX_PATH_LEN];
 		sprintf(message, "failed to read %s", file);
 		MyError(message);
 	}	
+	ReadVectorC(fp, Mxyz(), vMscratch[1]);
+	fclose(fp);	
 	
-	ReadVector(is_fprof, Mxyz(), vMscratch[1]);
 	InterpolateVec(vMscratch[1], vf);
 
 

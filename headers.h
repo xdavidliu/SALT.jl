@@ -170,7 +170,7 @@ void ComputeGain(Geometry& geo, modelist& L);
 void CreateSquareMatrix(int N, int nz, Mat *A);
 double GetValue(Vec v, int i);
 void ReadVector(std::ifstream& is, int N, Vec v);
-
+void ReadVectorC(FILE *fp, int N, Vec v);
 
 PetscErrorCode MyError(const char* message);
 double sqr(const double a);
