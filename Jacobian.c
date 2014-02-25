@@ -36,7 +36,9 @@ void LinearDerivative(Mode& m, Geometry& geo, Vec dfR, Vec dfI, int ih){
 
 	Complexfun eps;
 	CreateComplexfun(&eps, geo.veps, geo.vIeps);
-	Vecfun f(geo.vf), H(geo.vH);
+	Vecfun f, H;
+	CreateVecfun(&f, geo.vf);
+	CreateVecfun(&H, geo.vH);
 
 	dcomp mw = m.w(), yw = m.gamma_w(geo);
 
@@ -55,7 +57,11 @@ void TensorDerivative(Mode& m, Mode &mj, Geometry& geo, int jc, int jr, Vec df, 
 	double mjc = mj.c();
 	dcomp mw = m.w(), yw = m.gamma_w(geo), yjw = mj.gamma_w(geo);
 
-	Vecfun f(geo.vf), H(geo.vH), psibra(vpsibra);
+	Vecfun f, H, psibra;
+	CreateVecfun(&f, geo.vf);
+	CreateVecfun(&H, geo.vH);
+	CreateVecfun(&psibra, vpsibra);
+
 	Complexfun psi;
 	CreateComplexfun(&psi, m.vpsi, vIpsi);
 
@@ -88,7 +94,10 @@ void ColumnDerivative(Mode* m, Mode* mj, Geometry& geo, Vec dfR, Vec dfI, Vec vI
 	CreateComplexfun(&psi,m->vpsi, vIpsi);
 	CreateComplexfun(&eps,geo.veps, geo.vIeps);
 
-	Vecfun f(geo.vf), H(geo.vH), psisq(vpsisq); 
+	Vecfun f,H, psisq;
+	CreateVecfun(&f, geo.vf);
+	CreateVecfun(&H, geo.vH);
+	CreateVecfun(&psisq, vpsisq);
 
 	for(int i=psi.ns; i<psi.ne; i++){
 
@@ -127,7 +136,9 @@ void ComputeGain(Geometry& geo, modelist& L){
 
 	VecSet(geo.vH, 0.0);
 
-	Vecfun H(geo.vH);
+	Vecfun H;
+	CreateVecfun(&H, geo.vH);
+
 	FORMODES(L, it){
 	Mode *m = *it;
 	dcomp yw = m->gamma_w(geo);
@@ -136,7 +147,8 @@ void ComputeGain(Geometry& geo, modelist& L){
 	// do not change this from vscratch[3], or the hack below for single mode Column derivative will fail!
 	geo.VecSqMedium(m->vpsi, geo.vscratch[3], geo.vMscratch[0]);
 
-	Vecfun psisq(geo.vscratch[3]);
+	Vecfun psisq;
+	CreateVecfun(&psisq ,geo.vscratch[3]);
 	for(int i=H.ns; i<H.ne; i++)
 		setr(&H, i, valr(&H, i) + sqr(std::abs(yw)) *sqr(mc) * valr(&psisq, i) ) ;
 	}

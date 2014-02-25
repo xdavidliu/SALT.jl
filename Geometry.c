@@ -87,7 +87,8 @@ Geometry::Geometry(){
 
 
 
-	Vecfun pml(vepspml);
+	Vecfun pml;
+	CreateVecfun(&pml,vepspml);
 
 	for( int i=pml.ns; i<pml.ne; i++){
 		Point p(i, gN);

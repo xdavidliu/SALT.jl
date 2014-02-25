@@ -121,7 +121,8 @@ void Mode::Fix(Geometry& geo){
 	
 	Complexfun psi;
 	CreateComplexfun(&psi, geo.vscratch[0], geo.vscratch[1]);
-	Vecfun psiket(vpsi);
+	Vecfun psiket;
+	CreateVecfun(&psiket,vpsi);
 
 	for(int i=psiket.ns; i<psiket.ne; i++){
 

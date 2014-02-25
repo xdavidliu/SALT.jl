@@ -196,18 +196,12 @@ struct Vecfun{
 	double* a;
 
 	
-	Vecfun(Vec w){
-		u = w;
-		VecGetOwnershipRange(u, &ns, &ne); // TODO: take into account Nxyzcr+2 here
-		int N;
-		VecGetSize(w, &N);
-		if(ne >= N-2) ne = N-2;
-		
-		VecGetArray(u, &a);
-	}
+
 
 
 };
+
+void CreateVecfun(Vecfun *fun, Vec w);
 
 double valr(Vecfun *fun, int i);
 void setr(Vecfun *fun, int i, double val);

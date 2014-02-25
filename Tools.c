@@ -291,6 +291,16 @@ void setc(Complexfun *fun,int i, dcomp val){
 	fun->b[i-fun->ns] = -val.imag();
 }
 
+void CreateVecfun(Vecfun *fun, Vec w){
+	fun->u = w;
+	VecGetOwnershipRange(w, &fun->ns, &fun->ne); // TODO: take into account Nxyzcr+2 here
+	int N;
+	VecGetSize(w, &N);
+	if(fun->ne >= N-2) fun->ne = N-2;
+	
+	VecGetArray(w, &fun->a);
+}
+
 void CreateComplexfun(Complexfun *fun, Vec w, Vec x){
 	fun->u = w;
 	fun->v = x;
