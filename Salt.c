@@ -22,7 +22,7 @@ PetscErrorCode ReadModes(modelist& L, Geometry& geo){
 		sprintf(m->name, "%s", modename);
 
 		L.push_back(m);
-		m->Setup(geo);
+		Setup(m, geo);
 
 		sprintf(optionin, "-in%i", i+1);
 		sprintf(optionout, "-out%i", i+1);
@@ -221,6 +221,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 
 	FORMODES(L, it){
 		Write(*it, geo);
+		DestroyMode(*it);
 		delete *it; // since the pointer was allocated using new
 		// also, delete automatically calls destructor
 	}

@@ -88,14 +88,14 @@ Mode::Mode(char *Name, Geometry& geo, double *Dout){ // read constructor
 
 }
 
-Mode::~Mode(){
+void DestroyMode(Mode *m){
 
-	DestroyVec(&vpsi);
-	DestroyMat(&J);
+	DestroyVec(&m->vpsi);
+	DestroyMat(&m->J);
 	
-	if(!ksp){
-		KSPDestroy(&ksp);
-		ksp = 0;
+	if(!m->ksp){
+		KSPDestroy(&m->ksp);
+		m->ksp = 0;
 	}
 
 }
@@ -242,22 +242,22 @@ void AllocateJacobian(Mat J, Geometry& geo){
 
 }
 
-void Mode::Setup(Geometry& geo){
+void Setup(Mode *m, Geometry& geo){
 
 
-	AllocateJacobian(J, geo);
+	AllocateJacobian(m->J, geo);
 	
-    MoperatorGeneralBlochFill(&geo, J, b, BCPeriod, k);
+    MoperatorGeneralBlochFill(&geo, m->J, m->b, m->BCPeriod, m->k);
 
 
-	AddPlaceholders(J, geo);
-	AddRowDerivatives(J, geo, ifix);
-	AssembleMat(J);
-	MatSetOption(J,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
-	MatStoreValues(J); 
+	AddPlaceholders(m->J, geo);
+	AddRowDerivatives(m->J, geo, m->ifix);
+	AssembleMat(m->J);
+	MatSetOption(m->J,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
+	MatStoreValues(m->J); 
 	
-	KSPSetFromOptions(ksp);
-	KSPSetOperators(ksp, J, J, SAME_PRECONDITIONER);
+	KSPSetFromOptions(m->ksp);
+	KSPSetOperators(m->ksp, m->J, m->J, SAME_PRECONDITIONER);
 		// this will only be called the first time KSPSolve is called. SAME_PRECONDITIONER makes this
 		// line analogous to "static". If call it here, the LU factorization
 		// will give a better preconditioner than if you call it with just

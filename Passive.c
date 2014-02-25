@@ -158,6 +158,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 		OptionsGetString("-passiveout", s);
 		sprintf(m.name, "%s%i", s, j);
 		Write(&m, geo);
+		DestroyMode(&m);
 	}
 	EPSDestroy(&evps);
 	DestroyMat(&Mop);	DestroyMat(&Bop);
