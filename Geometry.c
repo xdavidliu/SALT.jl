@@ -21,7 +21,7 @@ void Geometry::InterpolateVec(Vec vM, Vec vN){
 	}
 
 	VecRestoreArrayRead(vM, &vals);	
-	Assemble(vN);
+	AssembleVec(vN);
 
 }
 
@@ -43,7 +43,7 @@ void Geometry::CollectVec(Vec vN, Vec vM){
 	}
 	
 	VecRestoreArrayRead(vN, &vals);
-	Assemble(vM);
+	AssembleVec(vM);
 }
 
 
@@ -160,15 +160,15 @@ Geometry::Geometry(){
 Geometry::~Geometry(){
 
 	for(int i=0; i<SCRATCHNUM; i++){
-		Destroy(&vscratch[i]);
-		Destroy(&vNhscratch[i]);		
-		Destroy(&vMscratch[i]);
+		DestroyVec(&vscratch[i]);
+		DestroyVec(&vNhscratch[i]);		
+		DestroyVec(&vMscratch[i]);
 	}
-	Destroy(&vH);
-	Destroy(&veps);
-	Destroy(&vIeps);
-	Destroy(&vepspml);
-	Destroy(&vf);
+	DestroyVec(&vH);
+	DestroyVec(&veps);
+	DestroyVec(&vIeps);
+	DestroyVec(&vepspml);
+	DestroyVec(&vf);
 
 }
 
@@ -180,7 +180,7 @@ int Geometry::Last2(int i){
 void Geometry::SetJacobian(Mat J, Vec v, int jc, int jr, int jh){
 // use jc = -1 for last 2 columns, and jc = -2 for blocks (all jc)
 
-	Assemble(v);
+	AssembleVec(v);
 
 	int ns, ne;
 	VecGetOwnershipRange(v, &ns, &ne);

@@ -88,8 +88,8 @@ Mode::Mode(std::string Name, Geometry& geo, double *Dout){ // read constructor
 
 Mode::~Mode(){
 
-	Destroy(&vpsi);
-	Destroy(&J);
+	DestroyVec(&vpsi);
+	DestroyMat(&J);
 	
 	if(!ksp){
 		KSPDestroy(&ksp);
@@ -235,7 +235,7 @@ void Mode::Setup(Geometry& geo){
 
 	AddPlaceholders(J, geo);
 	AddRowDerivatives(J, geo, ifix);
-	Assemble(J);
+	AssembleMat(J);
 	MatSetOption(J,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
 	MatStoreValues(J); 
 	

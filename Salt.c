@@ -71,8 +71,8 @@ void FirstStep(modelist Lh, Mode *m, Geometry& geo, Vec vNh, Vec f, Vec dv, doub
 		VecSetValue(vNh, geo.offset(ih)+geo.Nxyzcr()+1, c, INSERT_VALUES);	
 		if( vNh != m->vpsi) VecSetValue(m->vpsi, geo.Nxyzcr()+1, c, INSERT_VALUES);
 	}
-	Assemble(vNh);
-	Assemble(m->vpsi);
+	AssembleVec(vNh);
+	AssembleVec(m->vpsi);
 
 	if( FormJf(Lh, geo, vNh, f) < OptionsDouble("-newtonf_tol")) break;
 	KSPSolve( (*Lh.begin())->ksp, f, dv);
@@ -128,7 +128,7 @@ void Bundle(modelist &L, Geometry &geo){
 	
 
 	for(int i=0; i<SCRATCHNUM; i++){
-		Destroy(&geo.vNhscratch[i]);
+		DestroyVec(&geo.vNhscratch[i]);
 		MatGetVecs(J, &geo.vNhscratch[i], NULL);
 	}
 
@@ -138,7 +138,7 @@ void Bundle(modelist &L, Geometry &geo){
 	FORMODES(L, it){
 		Mode *m = *it;
 		
-		Destroy( &m->J); // bundle shares J and v
+		DestroyMat( &m->J); // bundle shares J and v
 		m->J = J;
 		KSPDestroy(&m->ksp);
 		m->ksp = ksp;
@@ -148,7 +148,7 @@ void Bundle(modelist &L, Geometry &geo){
 		ih++;
 	}	
 	
-	Assemble(J);
+	AssembleMat(J);
 	MatSetOption(J,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
 	MatStoreValues(J); 	
 	
@@ -225,8 +225,8 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 		// also, delete automatically calls destructor
 	}
 
-	Destroy(&f);
-	Destroy(&dv);
+	DestroyVec(&f);
+	DestroyVec(&dv);
 	PetscPrintf(PETSC_COMM_WORLD, "\n");
 	PetscPrintf(PETSC_COMM_WORLD, "TODO: a whole bunch of TODOs in Salt.c related to first step of multimode\n");	
 	PetscPrintf(PETSC_COMM_WORLD, "future todo: add artificial crashes to enforce all the assumptions I'm making. For example, crash if any file read fails.\n");		

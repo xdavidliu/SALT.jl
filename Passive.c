@@ -17,7 +17,7 @@ void FillBop(Geometry& geo, Mat Bop, dcomp w){
 	geo.SetJacobian(Bop, geo.vscratch[1], -2, 1, 0);	
 	
 	
-		Assemble(Bop);
+		AssembleMat(Bop);
 
 }
 
@@ -49,7 +49,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 
 
 	geo.MoperatorGeneralBlochFill(Mop, b, BCPeriod, k);
-	Assemble(Mop);
+	AssembleMat(Mop);
 
 
 
@@ -160,8 +160,8 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 		m.Write(geo);
 	}
 	EPSDestroy(&evps);
-	Destroy(&Mop);	Destroy(&Bop);
-	Destroy(&v);	Destroy(&vi);
+	DestroyMat(&Mop);	DestroyMat(&Bop);
+	DestroyVec(&v);	DestroyVec(&vi);
 
 
 	gettimeofday(&t3, NULL);	

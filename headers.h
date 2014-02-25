@@ -29,10 +29,10 @@ double GetFromLast(Vec v, int ir);
 void GetLast2(Vec f, double *val1, double *val2);
 
 void CreateVec(int N, Vec *x);
-void Assemble(Vec x);
-void Assemble(Mat M);
-void Destroy(Vec *x);
-void Destroy(Mat *A);
+void AssembleVec(Vec x);
+void AssembleMat(Mat M);
+void DestroyVec(Vec *x);
+void DestroyMat(Mat *A);
 
 int OptionsInt(const char* c);
 double OptionsDouble(const char* c);

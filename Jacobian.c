@@ -174,14 +174,14 @@ double FormJf(modelist& L, Geometry& geo, Vec v, Vec f){
 
 	// row derivatives already added in add placeholders!
 
-	Assemble(J);
+	AssembleMat(J);
 
 	MatMult(J, v, f);
 
 	for(int kh = 0; kh<L.size(); kh++) for(int ir=0; ir<2; ir++)
 		VecSetValue(f, kh*geo.NJ() + geo.Nxyzcr()+ir, 0.0, INSERT_VALUES);
 
-	Assemble(f);
+	AssembleVec(f);
 
 	double fnorm;
 	VecNorm(f, NORM_2, &fnorm);
@@ -254,7 +254,7 @@ double FormJf(modelist& L, Geometry& geo, Vec v, Vec f){
 		jh++;
 	}
   }
-	Assemble(J);
+	AssembleMat(J);
 
 
 	return fnorm;	

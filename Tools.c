@@ -16,14 +16,14 @@ PetscErrorCode MyError(const char* message){
 double sqr(double a){ return a*a;}
 dcomp sqr(dcomp a){ return a*a;}
 
-void Assemble(Vec x){ VecAssemblyBegin(x); VecAssemblyEnd(x); }
-void Assemble(Mat M){ MatAssemblyBegin(M, MAT_FINAL_ASSEMBLY); MatAssemblyEnd(M, MAT_FINAL_ASSEMBLY);}
-void Destroy(Vec *x){
+void AssembleVec(Vec x){ VecAssemblyBegin(x); VecAssemblyEnd(x); }
+void AssembleMat(Mat M){ MatAssemblyBegin(M, MAT_FINAL_ASSEMBLY); MatAssemblyEnd(M, MAT_FINAL_ASSEMBLY);}
+void DestroyVec(Vec *x){
 	if(!x) VecDestroy(x);
 	x = 0;	
 }
 
-void Destroy(Mat *A){
+void DestroyMat(Mat *A){
 	if(!A) MatDestroy(A); 
 	A = 0;
 }
@@ -110,7 +110,7 @@ void ScatterRange (Vec x, Vec y, int ix, int iy, int N){
 
 	
 	VecRestoreArrayRead(x, &vals);
-	Assemble(y);
+	AssembleVec(y);
 
 	
 }
@@ -158,7 +158,7 @@ void ReadVector(std::ifstream& is, int N, Vec v){
 		VecSetValue(v, i, val, INSERT_VALUES);
 	}
    }
-   Assemble(v);
+   AssembleVec(v);
 }
 
 
@@ -172,7 +172,7 @@ void SetLast2(Vec f, double val1, double val2){
 		VecSetValue(f, N-2, val1, INSERT_VALUES);
 		VecSetValue(f, N-1, val2, INSERT_VALUES);
 	}
-	Assemble(f);
+	AssembleVec(f);
 
 }
 
