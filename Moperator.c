@@ -51,7 +51,7 @@ void MoperatorGeneralBlochFill(Geometry *geo, Mat A, int b[3][2], int DimPeriod,
 for (int itrue = ns; itrue < ne && itrue < 2*Nxyzc(geo); ++itrue) {
 
 	Point p;
-	CreatePoint_i(&p, itrue, gc); 
+	CreatePoint_i(&p, itrue, &gc); 
 
 	project(&p, 3); int i = xyzcr(&p);
 	int cp[2], icp[2], cidu, cpidu[2],cpidl[2], cid, cpid[2];
@@ -77,7 +77,7 @@ for (int itrue = ns; itrue < ne && itrue < 2*Nxyzc(geo); ++itrue) {
 
 //=====================================================================
 	Point prow;
-	CreatePoint_i(&prow, i, gC); 
+	CreatePoint_i(&prow, i, &gC); 
 	project(&prow, geo->Nc);
 for(ib=0; ib<2; ib++){
 
@@ -116,7 +116,7 @@ for(ib=0; ib<2; ib++){
 
 	for(w=0;w<4;w++){
 	Point pcol;
-	CreatePoint_i(&pcol, icp[ib] + jrd+dcol[w], gC );
+	CreatePoint_i(&pcol, icp[ib] + jrd+dcol[w], &gC );
 
 	project(&pcol, geo->Nc);	
 	if(pcol.ic!=-1) MatSetValue(A, xyzcr(&prow)+offset, xyzcr(&pcol)+offset, c[w], ADD_VALUES);
@@ -148,7 +148,7 @@ for(ib=0; ib<2; ib++){
 
 	for(w=0;w<3;w++){
 	Point pcol;
-	CreatePoint_i(&pcol, i + jrd+dcol[w], gC );
+	CreatePoint_i(&pcol, i + jrd+dcol[w], &gC );
 	project(&pcol, geo->Nc);
 	if(pcol.ic!=-1) MatSetValue(A, xyzcr(&prow)+offset, xyzcr(&pcol)+offset, c[w], ADD_VALUES);
 	}

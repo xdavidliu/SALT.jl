@@ -67,11 +67,11 @@ struct Point{
 	Grid G;
 };
 
-void CreatePoint_i(Point *p, int i, const Grid& H);
+void CreatePoint_i(Point *p, int i, Grid *H);
 
 int convert(Point *p, int Nc);
 int project(Point *p, int Nc);
-int projectmedium(Point *p, const Grid& gm, int LowerPML);
+int projectmedium(Point *p, Grid *gm, int LowerPML);
 int xyz(Point *p);
 int xyzc(Point *p);
 int xyzcr(Point *p);

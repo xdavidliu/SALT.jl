@@ -221,16 +221,16 @@ void Output(Vec A, const char* name, const char* variable_name){
 }
 
 
-void CreatePoint_i(Point *p, int i, const Grid& H){
+void CreatePoint_i(Point *p, int i, Grid *H){
 
 	int j;
 	for(j = 2; j>=0; j--){
-		p->G = H;
-		p->ix[j] = i % H.N[j]; 
-		i /= H.N[j];
+		p->G = *H;
+		p->ix[j] = i % H->N[j]; 
+		i /= H->N[j];
 	}
-	p->ic = i % H.Nc;
-	p->ir = i / H.Nc;	
+	p->ic = i % H->Nc;
+	p->ir = i / H->Nc;	
 }
 
 
@@ -260,16 +260,16 @@ int project(Point *p, int Nc){
 	return p->ic;
 }
 
-int projectmedium(Point *p, const Grid& gm, int LowerPML){
+int projectmedium(Point *p, Grid *gm, int LowerPML){
 
 	int medium =1, j;
 	for(j=0; j<3; j++){ // position component
 
-		double d = p->ix[j] - LowerPML*floor( (p->G.N[j]-gm.N[j])/2.0 ) + ( p->ic!=j)*0.5;
+		double d = p->ix[j] - LowerPML*floor( (p->G.N[j]-gm->N[j])/2.0 ) + ( p->ic!=j)*0.5;
 		p->ix[j] = ceil(d-0.5);
-		if(p->ix[j]<0 || p->ix[j]>= gm.N[j] ) medium = 0;
+		if(p->ix[j]<0 || p->ix[j]>= gm->N[j] ) medium = 0;
 	}
-	p->G = gm;
+	p->G = *gm;
 	return medium;
 }
 

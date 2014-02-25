@@ -17,8 +17,8 @@ void InterpolateVec(Geometry *geo, Vec vM, Vec vN){
 	for(i=0; i< Nxyzcr(geo); i++){
 		
 		Point p;
-		CreatePoint_i(&p, i, geo->gN);
-		if( projectmedium(&p, geo->gM, geo->LowerPML) )
+		CreatePoint_i(&p, i, &geo->gN);
+		if( projectmedium(&p, &geo->gM, geo->LowerPML) )
 			VecSetValue(vN, i, vals[xyz(&p)-ms], ADD_VALUES);
 	}
 
@@ -41,8 +41,8 @@ void CollectVec(Geometry *geo, Vec vN, Vec vM){
 	for(i=ns; i<ne; i++){
 		
 		Point p;
-		CreatePoint_i(&p, i, geo->gN);
-		if( projectmedium(&p, geo->gM, geo->LowerPML) )
+		CreatePoint_i(&p, i, &geo->gN);
+		if( projectmedium(&p, &geo->gM, geo->LowerPML) )
 			VecSetValue(vM, xyz(&p), vals[i-ns], ADD_VALUES);
 	}
 	
@@ -98,7 +98,7 @@ void CreateGeometry(Geometry *geo){
 	int i;
 	for(i=pml.ns; i<pml.ne; i++){
 		Point p;
-		CreatePoint_i(&p, i, geo->gN);
+		CreatePoint_i(&p, i, &geo->gN);
 		project(&p, 3);
 		dcomp eps_geoal = pmlval(xyzc(&p), N, geo->Npml, geo->h, geo->LowerPML, 0);	
 		setr(&pml, i, p.ir? eps_geoal.imag() : eps_geoal.real() );
@@ -203,7 +203,7 @@ void SetJacobian(Geometry *geo, Mat J, Vec v, int jc, int jr, int jh){
 		ij = i%(Nxyzcr(geo)+2);
 		
 		Point p;
-		CreatePoint_i(&p, ij, geo->gN);
+		CreatePoint_i(&p, ij, &geo->gN);
 		
 		if(jc == -1) //columns
 			col = Nxyzcr(geo)+jr;
