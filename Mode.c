@@ -30,48 +30,54 @@ Mode::Mode(std::string Name, Geometry& geo, double *Dout){ // read constructor
 
 
 	std::string filename = name + Output_Suffix;
-	std::ifstream is(filename.c_str());
+	char w[PETSC_MAX_PATH_LEN];
+	
+	FILE *fp = fopen(filename.c_str(), "r");
+	
 	std::string s;
 
-	if(!is){
+	if(fp==NULL){
 		s = "failed to read ";
 		s += filename;
 		MyError(s.c_str() );
 	}
 
-   if(GetRank()==0){ std::getline(is, s); } // "mode = ["
+   if(GetRank()==0){ fscanf(fp, "%*[^\n]\n", NULL); } // "mode = ["
 
 
 
-	ReadVector(is, 2*geo.Nxyzc()+2, vpsi);
+	ReadVectorC(fp, 2*geo.Nxyzc()+2, vpsi);
 
    if(GetRank()==0){
-	std::getline(is, s);
-	std::getline(is, s); // for some reason you need two getlines to get the "];" character here
 
+	fgets(w, PETSC_MAX_PATH_LEN, fp);
+	fgets(w, PETSC_MAX_PATH_LEN, fp);
+	
+		
 	// Make sure this part is consistent with Mode::Write()
 	// make sure to Bcast these at the end
 
-	std::getline(is, s);
-	std::sscanf(s.c_str(), "ifix=%i;", &ifix); 
+	fgets(w, PETSC_MAX_PATH_LEN, fp);
+	sscanf(w, "ifix=%i\n", &ifix); 
 
-	std::getline(is, s);
-	std::sscanf(s.c_str(), "b=[%i %i %i];", 
-		&b[0][0], &b[1][0], &b[2][0]);
+	fgets(w, PETSC_MAX_PATH_LEN, fp);
+	sscanf(w, "b=[%i %i %i];", &b[0][0], &b[1][0], &b[2][0]);
 	for(int i=0; i<3; i++) b[i][1] = 0;
 
-	std::getline(is, s);
-	std::sscanf(s.c_str(), "BCPeriod=%i;", &BCPeriod); 	 
+	fgets(w, PETSC_MAX_PATH_LEN, fp);
+	sscanf(w, "BCPeriod=%i;", &BCPeriod); 	 
 
-	std::getline(is, s);
-	std::sscanf(s.c_str(), "D=%lf;", Dout); 	 
+	fgets(w, PETSC_MAX_PATH_LEN, fp);
+	sscanf(w, "D=%lf;", Dout); 	 
 
-	std::getline(is, s); // k=[ line
+	fgets(w, PETSC_MAX_PATH_LEN, fp); // k=[ line
 	for(int i=0; i<3; i++){ 
-		std::getline(is, s);
-		std::sscanf(s.c_str(), "%lf", &k[i]);
+		fgets(w, PETSC_MAX_PATH_LEN, fp);
+		sscanf(w, "%lf", &k[i]);
 	}
    }
+
+	fclose(fp);
 
 	MPI_Bcast(k, 3, MPI_DOUBLE, 0, PETSC_COMM_WORLD);
 	MPI_Bcast(&ifix, 1, MPI_INT, 0, PETSC_COMM_WORLD);
