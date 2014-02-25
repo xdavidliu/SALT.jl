@@ -210,7 +210,7 @@ struct Vecfun{
 	int ns() const{ return ms;}
 	int ne() const{ return me;}
 	double valr(int i) const{ return a[i-ns()];}
-	void set(int i, double val){ a[i-ns()] = val;}
+	void setr(int i, double val){ a[i-ns()] = val;}
 
 };
 
@@ -231,18 +231,13 @@ struct ComplexVecfun: public Vecfun{
 		Nxyzc = (N-2)/2;
 	}
 
-	void set(int i, dcomp val){
-		
-		if(i/Nxyzc) val /= ComplexI;
-		a[i-ns()] = val.real();
-		b[i-ns()] = -val.imag();
-	}
+
 	~ComplexVecfun(){ VecRestoreArray(v, &b); }
 
 };
 
 dcomp valc(ComplexVecfun *fun, int i);
-
+void setc(ComplexVecfun *fun,int i, dcomp val);
 
 dcomp pmlval(int i, int* N, int* Npml, double* h, int LowerPML, int k);
 void AddPlaceholders(Mat J, Geometry &geo);

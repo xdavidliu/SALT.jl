@@ -122,11 +122,11 @@ void ComputeGain(Geometry& geo, modelist& L){
 
 	Vecfun psisq(geo.vscratch[3]);
 	for(int i=H.ns(); i<H.ne(); i++)
-		H.set(i, H.valr(i) + sqr(std::abs(yw)) *sqr(mc) * psisq.valr(i) ) ;
+		H.setr(i, H.valr(i) + sqr(std::abs(yw)) *sqr(mc) * psisq.valr(i) ) ;
    }
 
    for(int i=H.ns(); i<H.ne(); i++)
-		H.set(i, 1.0 / (1.0 + H.valr(i) ) );
+		H.setr(i, 1.0 / (1.0 + H.valr(i) ) );
 }
 
 double FormJf(modelist& L, Geometry& geo, Vec v, Vec f){
