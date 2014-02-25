@@ -4,7 +4,7 @@
 
 
 
-void Geometry::InterpolateVec(Vec vM, Vec vN){
+void InterpolateVec(Geometry *geo, Vec vM, Vec vN){
 
 	VecSet(vN, 0.0);
 
@@ -13,11 +13,11 @@ void Geometry::InterpolateVec(Vec vM, Vec vN){
 	int ms, me;
 	VecGetOwnershipRange(vM, &ms, &me);
 
-	for(int i=0; i< Nxyzcr(this); i++){
+	for(int i=0; i< Nxyzcr(geo); i++){
 		
 		Point p;
-		CreatePoint_i(&p, i, gN);
-		if( projectmedium(&p, gM, LowerPML) )
+		CreatePoint_i(&p, i, geo->gN);
+		if( projectmedium(&p, geo->gM, geo->LowerPML) )
 			VecSetValue(vN, i, vals[xyz(&p)-ms], ADD_VALUES);
 	}
 
@@ -26,7 +26,7 @@ void Geometry::InterpolateVec(Vec vM, Vec vN){
 
 }
 
-void Geometry::CollectVec(Vec vN, Vec vM){
+void CollectVec(Geometry *geo, Vec vN, Vec vM){
 
 	VecSet(vM, 0.0);
 
@@ -34,13 +34,13 @@ void Geometry::CollectVec(Vec vN, Vec vM){
 	VecGetArrayRead(vN, &vals);
 	int ns, ne;
 	VecGetOwnershipRange(vN, &ns, &ne);
-	if( ne > Nxyzcr(this)-2) ne = Nxyzcr(this)-2;
+	if( ne > Nxyzcr(geo)-2) ne = Nxyzcr(geo)-2;
 	
 	for(int i=ns; i<ne; i++){
 		
 		Point p;
-		CreatePoint_i(&p, i, gN);
-		if( projectmedium(&p, gM, LowerPML) )
+		CreatePoint_i(&p, i, geo->gN);
+		if( projectmedium(&p, geo->gM, geo->LowerPML) )
 			VecSetValue(vM, xyz(&p), vals[i-ns], ADD_VALUES);
 	}
 	
@@ -64,8 +64,8 @@ void VecSqMedium(Geometry *geo, Vec v, Vec vsq, Vec scratchM){
 		VecCopy(v, vsq);
 		VecPointwiseMult(vsq, vsq, vsq);
 
-		geo->CollectVec(vsq, scratchM);
-		geo->InterpolateVec(scratchM, vsq);
+		CollectVec(geo, vsq, scratchM);
+		InterpolateVec(geo, scratchM, vsq);
 }
 
 
@@ -127,7 +127,7 @@ Geometry::Geometry(){
 
 
 	VecShift(vMscratch[0], -1.0); //hack, for background dielectric
-	InterpolateVec(vMscratch[0], vscratch[1]);
+	InterpolateVec(this, vMscratch[0], vscratch[1]);
 	VecShift(vscratch[1], 1.0);
 
 
@@ -154,7 +154,7 @@ Geometry::Geometry(){
 	ReadVectorC(fp, Mxyz(this), vMscratch[1]);
 	fclose(fp);	
 	
-	InterpolateVec(vMscratch[1], vf);
+	InterpolateVec(this, vMscratch[1], vf);
 
 
 

@@ -97,15 +97,11 @@ struct Geometry{
 	Geometry();
 	~Geometry();	
 
-	void InterpolateVec(Vec vM, Vec vN);
-	void CollectVec(Vec vN, Vec vM);
-	void Stamp(Vec vN, int ic, int ir, Vec scratchM);
-
-
-
-
 
 };
+void InterpolateVec(Geometry *geo, Vec vM, Vec vN);
+void CollectVec(Geometry *geo, Vec vN, Vec vM);
+void Stamp(Geometry *geo, Vec vN, int ic, int ir, Vec scratchM);
 void TimesI(Geometry *geo, Vec v, Vec Iv);
 void VecSqMedium(Geometry *geo, Vec v, Vec vsq, Vec scratchM);
 int Last2(Geometry *geo, int i);

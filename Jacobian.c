@@ -25,11 +25,11 @@ void Isolate(Vec v, Grid& gN, int ic, int ir){
 }
 
 
-void Geometry::Stamp(Vec vN, int ic, int ir, Vec scratchM){
+void Stamp(Geometry *geo, Vec vN, int ic, int ir, Vec scratchM){
 
-	Isolate(vN, gN, ic, ir);
-	CollectVec(vN, scratchM);
-	InterpolateVec(scratchM, vN);
+	Isolate(vN, geo->gN, ic, ir);
+	CollectVec(geo, vN, scratchM);
+	InterpolateVec(geo, scratchM, vN);
 
 }
 
@@ -267,7 +267,7 @@ double FormJf(modelist& L, Geometry& geo, Vec v, Vec f){
 		for(int jr=0; jr<2; jr++) for(int jc=0; jc< geo.gN.Nc; jc++){
 
 			VecCopy(mj->vpsi, vpsibra);
-			geo.Stamp(vpsibra, jc, jr, geo.vMscratch[0]);
+			Stamp(&geo, vpsibra, jc, jr, geo.vMscratch[0]);
 
 			VecSet(dfR, 0.0);
 			ih = 0;
