@@ -139,7 +139,8 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 		if(w.imag() > 0.0) w = std::conj(w);
 
 
-		Mode m(geo, 0, b, BCPeriod, k);
+		Mode m;
+		CreateMode(&m, geo, 0, b, BCPeriod, k);
 		ScatterRange(v, m.vpsi, 0, 0, xyzcrGrid(&geo.gN) );
 
 

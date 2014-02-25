@@ -3,17 +3,17 @@
 
 
 
-Mode::Mode(Geometry& geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]){
+void CreateMode(Mode *m, Geometry& geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]){
 
-	CreateVec(2*Nxyzc(&geo)+2, &vpsi);
-	CreateSquareMatrix(2*Nxyzc(&geo)+2, 0, &J);
-	KSPCreate(PETSC_COMM_WORLD,&ksp);
+	CreateVec(2*Nxyzc(&geo)+2, &m->vpsi);
+	CreateSquareMatrix(2*Nxyzc(&geo)+2, 0, &m->J);
+	KSPCreate(PETSC_COMM_WORLD,&m->ksp);
 
-	lasing = 0;
-	ifix = ifix_;
-	BCPeriod = BCPeriod_;
-	for(int i=0; i<3; i++) for(int j=0; j<2; j++) b[i][j] = b_[i][j];
-	for(int i=0; i<3; i++) k[i] = k_[i];
+	m->lasing = 0;
+	m->ifix = ifix_;
+	m->BCPeriod = BCPeriod_;
+	for(int i=0; i<3; i++) for(int j=0; j<2; j++) m->b[i][j] = b_[i][j];
+	for(int i=0; i<3; i++) m->k[i] = k_[i];
 }
 
 

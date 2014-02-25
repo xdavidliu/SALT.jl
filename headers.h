@@ -63,27 +63,12 @@ int xyzcrGrid(Grid *g);
 
 struct Point{
 
-	
-	Point(int i, const Grid& H){
-		for(int j = 2; j>=0; j--){
-			G = H;
-			ix[j] = i % G.N[j]; 
-			i /= G.N[j];
-		}
-		ic = i % G.Nc;
-		ir = i / G.Nc;	
-	}
-
-	Point(int* jx, int jc, int jr, const Grid& H){
-		G = H;
-		for(int k=0; k<3; k++) ix[k] = jx[k];
-		ic = jc;
-		ir = jr;
-	}
 
 	int ix[3], ir, ic;
 	Grid G;
 };
+
+void CreatePoint_i(Point *p, int i, const Grid& H);
 
 int convert(Point *p, int Nc);
 int project(Point *p, int Nc);
@@ -146,12 +131,11 @@ struct Mode{
 	Mat J;
 	KSP ksp; // one ksp per J seems faster
 
-	Mode(Geometry& geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]);
-
 
 
 };
 
+void CreateMode(Mode *m, Geometry& geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]);
 void ModeRead(Mode *m, char *Name, Geometry& geo, double *Dout);
 void DestroyMode(Mode *m);
 void Setup(Mode *m, Geometry& geo);

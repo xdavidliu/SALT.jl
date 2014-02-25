@@ -16,7 +16,8 @@ void Isolate(Vec v, Grid& gN, int ic, int ir){
 
 	for(int i=ns; i<ne && i<xyzcrGrid(&gN); i++){
 
-		Point p(i, gN);
+		Point p;
+		CreatePoint_i(&p, i, gN);
 		if(p.ic != ic || p.ir != ir) a[i-ns] = 0.0;
 	}
 	VecRestoreArray(v, &a);

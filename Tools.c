@@ -221,6 +221,16 @@ void Output(Vec A, const char* name, const char* variable_name){
 }
 
 
+void CreatePoint_i(Point *p, int i, const Grid& H){
+	for(int j = 2; j>=0; j--){
+		p->G = H;
+		p->ix[j] = i % H.N[j]; 
+		i /= H.N[j];
+	}
+	p->ic = i % H.Nc;
+	p->ir = i / H.Nc;	
+}
+
 
 
 int xyz(Point *p) {return p->ix[0]*p->G.N[2]*p->G.N[1] + p->ix[1]*p->G.N[2] + p->ix[2];}
