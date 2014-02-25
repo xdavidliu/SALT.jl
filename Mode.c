@@ -101,28 +101,28 @@ Mode::~Mode(){
 }
 
 
-void Mode::Fix(Geometry& geo){
+void Fix(Mode *m, Geometry& geo){
 
 	int N;
-	VecGetSize(vpsi, &N);
+	VecGetSize(m->vpsi, &N);
 	int Nxyzc = (N-2)/2;
 
 	double max;
-	VecMax(vpsi,&ifix, &max);
-	ifix = ifix % Nxyzc;
+	VecMax(m->vpsi,&m->ifix, &max);
+	m->ifix = m->ifix % Nxyzc;
 
-	double psifix_real = GetValue(vpsi, ifix % Nxyzc),
-	       psifix_imag = GetValue(vpsi, ifix % Nxyzc + Nxyzc);
+	double psifix_real = GetValue(m->vpsi, m->ifix % Nxyzc),
+	       psifix_imag = GetValue(m->vpsi, m->ifix % Nxyzc + Nxyzc);
 
 	dcomp factor = OptionsDouble("-norm") / (psifix_real+ ComplexI * psifix_imag);
 
-	VecCopy(vpsi, geo.vscratch[0]);
-	geo.TimesI(vpsi, geo.vscratch[1]);
+	VecCopy(m->vpsi, geo.vscratch[0]);
+	geo.TimesI(m->vpsi, geo.vscratch[1]);
 	
 	Complexfun psi;
 	CreateComplexfun(&psi, geo.vscratch[0], geo.vscratch[1]);
 	Vecfun psiket;
-	CreateVecfun(&psiket,vpsi);
+	CreateVecfun(&psiket,m->vpsi);
 
 	for(int i=psiket.ns; i<psiket.ne; i++){
 

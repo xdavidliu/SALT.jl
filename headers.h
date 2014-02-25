@@ -1,12 +1,8 @@
 #include <slepc.h>
-#include <iostream>
-#include <iomanip>
-#include <fstream>
 #include <cmath>
 #include <new>
 #include <cstdio>
 #include <complex>
-#include <vector>
 #include <list>
 
 
@@ -153,7 +149,7 @@ struct Mode{
 	Mode(Geometry& geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]);
 	Mode(char *Name, Geometry& geo, double *Dout); // read constructor
 	~Mode();
-	void Fix(Geometry& geo);
+
 	void Setup(Geometry& geo);
 	void Write(const Geometry& geo);
 	double c();
@@ -161,6 +157,8 @@ struct Mode{
 	dcomp gamma_w(Geometry& geo);
 
 };
+void Fix(Mode *m, Geometry& geo);
+
 typedef std::list<Mode*> modelist;
 #define FORMODES(L, it)   for(modelist::iterator it=L.begin(); it!= L.end(); it++) 
 // note no ; at end of macro!
@@ -194,9 +192,6 @@ struct Vecfun{
 
 	 
 	double* a;
-
-	
-
 
 
 };

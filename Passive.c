@@ -143,7 +143,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 		ScatterRange(v, m.vpsi, 0, 0, xyzcrGrid(&geo.gN) );
 
 
-		m.Fix(geo);
+		Fix(&m, geo);
 		
 		double psinorm, psifnorm;
 		VecNorm(m.vpsi, NORM_2, &psinorm);
