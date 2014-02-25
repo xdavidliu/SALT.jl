@@ -1,17 +1,17 @@
 #include "headers.h"
 
 
-double EdgeIntensity(Mode &m, Geometry *geo){
+double EdgeIntensity(Mode *m, Geometry *geo){
 
 	if(geo->gN.N[1] != 1 || geo->gN.N[2] != 1 || geo->LowerPML != 0 || geo->Nc != 1)
 		MyError("EdgeIntensity is only for 1d symmetric TM fields!");
 
-	if( !m.lasing) return 0;
+	if( !m->lasing) return 0;
 	
-	double psiR = GetValue(m.vpsi, Mxyz(geo)-1 ),
-			psiI = GetValue(m.vpsi, Mxyz(geo)-1+Nxyzc(geo) );
+	double psiR = GetValue(m->vpsi, Mxyz(geo)-1 ),
+			psiI = GetValue(m->vpsi, Mxyz(geo)-1+Nxyzc(geo) );
 
-	return 2*sqr( getc(&m) ) * (  sqr(psiR ) + sqr(psiI) );
+	return 2*sqr( getc(m) ) * (  sqr(psiR ) + sqr(psiI) );
 
 }
 
@@ -76,7 +76,7 @@ void NewtonSolve(modelist &L, Geometry *geo, Vec v, Vec f, Vec dv){
 			PetscPrintf(PETSC_COMM_WORLD, "%s at D = %g: w = %g + i(%g)", 
 				(*it)->name,  geo->D, w.real(), w.imag());
 				
-			if( (*it)->lasing )  PetscPrintf(PETSC_COMM_WORLD, ", |psi|^2_edge = %g", EdgeIntensity( **it, geo));
+			if( (*it)->lasing )  PetscPrintf(PETSC_COMM_WORLD, ", |psi|^2_edge = %g", EdgeIntensity( *it, geo));
 				
 			PetscPrintf(PETSC_COMM_WORLD, "\n");	
 		}
@@ -87,17 +87,17 @@ void NewtonSolve(modelist &L, Geometry *geo, Vec v, Vec f, Vec dv){
 
 
 
-void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, modelist &Lh, Vec vNh, Mode& m, Geometry *geo, Vec f, Vec dv){
+void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, modelist &Lh, Vec vNh, Mode *m, Geometry *geo, Vec f, Vec dv){
 
 		
 	modelist L;
-	L.push_back(&m);
+	L.push_back(m);
 	
-	dcomp mw = getw(&m);
+	dcomp mw = getw(m);
 	if( std::abs(mw.imag()) < OptionsDouble("-thresholdw_tol") ){
-		SetLast2(m.vpsi, mw.real(), 0.0);
-		PetscPrintf(PETSC_COMM_WORLD, "Threshold found for mode \"%s\" at D = %1.10g\n", m.name, geo->D);
-		m.lasing = 1;
+		SetLast2(m->vpsi, mw.real(), 0.0);
+		PetscPrintf(PETSC_COMM_WORLD, "Threshold found for mode \"%s\" at D = %1.10g\n", m->name, geo->D);
+		m->lasing = 1;
 		return;
 	}
 
@@ -105,8 +105,8 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 	if(Lh.size() > 0) NewtonSolve(Lh, geo, vNh, f, dv);
 
 		// if searching a single mode with no lasing, pass empty list
-	NewtonSolve(L, geo, m.vpsi, f, dv);
-	mw = getw(&m);
+	NewtonSolve(L, geo, m->vpsi, f, dv);
+	mw = getw(m);
 	
 	if( wimag_lo*wimag_hi > 0){ // both on same side of threshold
 		if(wimag_lo > 0){ wimag_hi = wimag_lo; wimag_lo = mw.imag(); D_hi = D_lo; D_lo = geo->D;}

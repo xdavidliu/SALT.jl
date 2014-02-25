@@ -142,27 +142,27 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 		if(w.imag() > 0.0) w = std::conj(w);
 
 
-		Mode m;
-		CreateMode(&m, geo, 0, b, BCPeriod, k);
-		ScatterRange(v, m.vpsi, 0, 0, xyzcrGrid(&geo->gN) );
+		Mode M, *m = &M;
+		CreateMode(m, geo, 0, b, BCPeriod, k);
+		ScatterRange(v, m->vpsi, 0, 0, xyzcrGrid(&geo->gN) );
 
 
-		Fix(&m, geo);
+		Fix(m, geo);
 		
 		double psinorm, psifnorm;
-		VecNorm(m.vpsi, NORM_2, &psinorm);
-		VecPointwiseMult(geo->vscratch[0], m.vpsi, geo->vf);
+		VecNorm(m->vpsi, NORM_2, &psinorm);
+		VecPointwiseMult(geo->vscratch[0], m->vpsi, geo->vf);
 		VecNorm(geo->vscratch[0], NORM_2, &psifnorm);
 
 		PetscPrintf(PETSC_COMM_WORLD, "found mode #%i: w = %1.8g + (%1.8g) i; pumped fraction = %g\n", j, w.real(), w.imag(), psifnorm/psinorm );
-		SetLast2(m.vpsi, w.real(), w.imag() ); // make sure to get psinorm before doing this
+		SetLast2(m->vpsi, w.real(), w.imag() ); // make sure to get psinorm before doing this
 
 
 		char s[PETSC_MAX_PATH_LEN];
 		OptionsGetString("-passiveout", s);
-		sprintf(m.name, "%s%i", s, j);
-		Write(&m, geo);
-		DestroyMode(&m);
+		sprintf(m->name, "%s%i", s, j);
+		Write(m, geo);
+		DestroyMode(m);
 	}
 	EPSDestroy(&evps);
 	DestroyMat(&Mop);	DestroyMat(&Bop);

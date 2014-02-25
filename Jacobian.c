@@ -33,7 +33,7 @@ void Stamp(Geometry *geo, Vec vN, int ic, int ir, Vec scratchM){
 
 }
 
-void LinearDerivative(Mode& m, Geometry *geo, Vec dfR, Vec dfI, int ih){
+void LinearDerivative(Mode *m, Geometry *geo, Vec dfR, Vec dfI, int ih){
 
 	Complexfun eps;
 	CreateComplexfun(&eps, geo->veps, geo->vIeps);
@@ -41,7 +41,7 @@ void LinearDerivative(Mode& m, Geometry *geo, Vec dfR, Vec dfI, int ih){
 	CreateVecfun(&f, geo->vf);
 	CreateVecfun(&H, geo->vH);
 
-	dcomp mw = getw(&m), yw = gamma_w(&m, geo);
+	dcomp mw = getw(m), yw = gamma_w(m, geo);
 
 	int i;
 	for(i=eps.ns; i<eps.ne; i++){
@@ -53,11 +53,11 @@ void LinearDerivative(Mode& m, Geometry *geo, Vec dfR, Vec dfI, int ih){
 	DestroyComplexfun(&eps);
 }
 
-void TensorDerivative(Mode& m, Mode &mj, Geometry *geo, int jc, int jr, Vec df, Vec vpsibra, Vec vIpsi, int ih){
+void TensorDerivative(Mode *m, Mode *mj, Geometry *geo, int jc, int jr, Vec df, Vec vpsibra, Vec vIpsi, int ih){
 
 
-	double mjc = getc(&mj);
-	dcomp mw = getw(&m), yw = gamma_w(&m, geo), yjw = gamma_w(&mj, geo);
+	double mjc = getc(mj);
+	dcomp mw = getw(m), yw = gamma_w(m, geo), yjw = gamma_w(mj, geo);
 
 	Vecfun f, H, psibra;
 	CreateVecfun(&f, geo->vf);
@@ -65,7 +65,7 @@ void TensorDerivative(Mode& m, Mode &mj, Geometry *geo, int jc, int jr, Vec df, 
 	CreateVecfun(&psibra, vpsibra);
 
 	Complexfun psi;
-	CreateComplexfun(&psi, m.vpsi, vIpsi);
+	CreateComplexfun(&psi, m->vpsi, vIpsi);
 
 	int i;
 	for(i=f.ns; i<f.ne; i++){
@@ -200,7 +200,7 @@ double FormJf(modelist& L, Geometry *geo, Vec v, Vec f){
 		VecSet(dfR, 0.0);		
 		VecSet(dfI, 0.0);
 	
-		LinearDerivative(*m, geo, dfR, dfI, ih);
+		LinearDerivative(m, geo, dfR, dfI, ih);
 
 	  	SetJacobian(geo, J, dfR, -2, 0, ih);
 		SetJacobian(geo, J, dfI, -2, 1, ih); 
@@ -280,7 +280,7 @@ double FormJf(modelist& L, Geometry *geo, Vec v, Vec f){
 				Mode *mi = *it;
 				TimesI(geo, mi->vpsi, vIpsi);
 	
-				TensorDerivative(*mi, *mj, geo, jc, jr, dfR, vpsibra, vIpsi, ih);
+				TensorDerivative(mi, mj, geo, jc, jr, dfR, vpsibra, vIpsi, ih);
 				ih++;
 			}
 

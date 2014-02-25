@@ -166,7 +166,7 @@ void Output(Vec A, const char* name, const char* variable_name);
 
 
 void NewtonSolve(modelist &L, Geometry *geo, Vec v, Vec f, Vec dv);
-void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, modelist &Lh, Vec vNh, Mode& m, Geometry *geo, Vec f, Vec dv);
+void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, modelist &Lh, Vec vNh, Mode *m, Geometry *geo, Vec f, Vec dv);
 double FormJf(modelist& L, Geometry *geo, Vec v, Vec f);
 
 

@@ -217,7 +217,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 
 		if(wi_new > -OptionsDouble("-thresholdw_tol") && !m->lasing)
 			ThresholdSearch(  wi_old, wi_new, geo->D-dD, geo->D, 
-			Ll, vNh, *m, geo, f, dv); // todo: replace with vNh
+			Ll, vNh, m, geo, f, dv); // todo: replace with vNh
 
 	  }
 	  
