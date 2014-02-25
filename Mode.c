@@ -52,7 +52,6 @@ Mode::Mode(std::string Name, Geometry& geo, double *Dout){ // read constructor
 
 	fgets(w, PETSC_MAX_PATH_LEN, fp);
 	fgets(w, PETSC_MAX_PATH_LEN, fp);
-	
 		
 	// Make sure this part is consistent with Mode::Write()
 	// make sure to Bcast these at the end
@@ -76,7 +75,7 @@ Mode::Mode(std::string Name, Geometry& geo, double *Dout){ // read constructor
 		sscanf(w, "%lf", &k[i]);
 	}
    }
-
+   
 	fclose(fp);
 
 	MPI_Bcast(k, 3, MPI_DOUBLE, 0, PETSC_COMM_WORLD);
