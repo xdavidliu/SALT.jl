@@ -91,11 +91,11 @@ Geometry::Geometry(){
 
 
 
-	for( int i=pml.ns(); i<pml.ne(); i++){
+	for( int i=pml.ns; i<pml.ne; i++){
 		Point p(i, gN);
 		project(&p, 3);
 		dcomp eps_geoal = pmlval(xyzc(&p), N, Npml, h, LowerPML, 0);	
-		pml.setr(i, p.ir? eps_geoal.imag() : eps_geoal.real() );
+		setr(&pml, i, p.ir? eps_geoal.imag() : eps_geoal.real() );
 	}
 	
 	CreateVec(Mxyz(this), &vMscratch[0]);

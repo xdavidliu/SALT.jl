@@ -189,7 +189,7 @@ struct Vecfun{
 // always Nxyzcr()+2!	
 	
 	Vec u;
-	int ms, me; // should keep these, since they are used by the val() function
+	int ns, ne; // should keep these, since they are used by the val() function
 				// every single time.
 
 	 
@@ -198,21 +198,20 @@ struct Vecfun{
 	
 	Vecfun(Vec w){
 		u = w;
-		VecGetOwnershipRange(u, &ms, &me); // TODO: take into account Nxyzcr+2 here
+		VecGetOwnershipRange(u, &ns, &ne); // TODO: take into account Nxyzcr+2 here
 		int N;
 		VecGetSize(w, &N);
-		if(me >= N-2) me = N-2;
+		if(ne >= N-2) ne = N-2;
 		
 		VecGetArray(u, &a);
 	}
 	~Vecfun(){ VecRestoreArray(u, &a); }
 
-	int ns() const{ return ms;}
-	int ne() const{ return me;}
-	double valr(int i) const{ return a[i-ns()];}
-	void setr(int i, double val){ a[i-ns()] = val;}
-
 };
+
+double valr(Vecfun *fun, int i);
+void setr(Vecfun *fun, int i, double val);
+
 
 struct ComplexVecfun{
 

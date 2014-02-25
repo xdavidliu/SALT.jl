@@ -123,10 +123,10 @@ void Mode::Fix(Geometry& geo){
 	CreateComplexVecfun(&psi, geo.vscratch[0], geo.vscratch[1]);
 	{Vecfun psiket(vpsi);
 
-	for(int i=psiket.ns(); i<psiket.ne(); i++){
+	for(int i=psiket.ns; i<psiket.ne; i++){
 
 		dcomp val = valc(&psi, i) * factor;
-		psiket.setr(i, ir(&geo, i)? val.imag() : val.real() ); 
+		setr(&psiket, i, ir(&geo, i)? val.imag() : val.real() ); 
 	}
 
 	}

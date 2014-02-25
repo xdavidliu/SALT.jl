@@ -41,7 +41,7 @@ void LinearDerivative(Mode& m, Geometry& geo, Vec dfR, Vec dfI, int ih){
 	dcomp mw = m.w(), yw = m.gamma_w(geo);
 
 	for(int i=eps.ns; i<eps.ne; i++){
-		dcomp val = sqr(mw) * (valc(&eps, i) + geo.D * yw * f.valr(i) * H.valr(i) );
+		dcomp val = sqr(mw) * (valc(&eps, i) + geo.D * yw * valr(&f, i) * valr(&H, i) );
 		VecSetComplex(dfR, dfI, i+offset(&geo, ih), ir(&geo, i), val, INSERT_VALUES);
 	}
 
@@ -59,12 +59,12 @@ void TensorDerivative(Mode& m, Mode &mj, Geometry& geo, int jc, int jr, Vec df, 
 	CreateComplexVecfun(&psi, m.vpsi, vIpsi);
 	Vecfun psibra(vpsibra);
 
-	for(int i=f.ns(); i<f.ne(); i++){
+	for(int i=f.ns; i<f.ne; i++){
 
-		if( f.valr(i) == 0.0) continue;			
+		if( valr(&f, i) == 0.0) continue;			
 		dcomp ket_term = -sqr(mw ) * sqr(mjc) * sqr(std::abs(yjw)) * 2.0
-			* sqr(H.valr(i) ) * geo.D * f.valr(i) * yw * valc(&psi, i);		
-		double val = psibra.valr(i) * (ir(&geo, i)? ket_term.imag() : ket_term.real() );
+			* sqr(valr(&H, i) ) * geo.D * valr(&f, i) * yw * valc(&psi, i);		
+		double val = valr(&psibra, i) * (ir(&geo, i)? ket_term.imag() : ket_term.real() );
 		
 		VecSetValue(df, i+offset(&geo, ih), val, INSERT_VALUES);
 	}
@@ -90,19 +90,19 @@ void ColumnDerivative(Mode* m, Mode* mj, Geometry& geo, Vec dfR, Vec dfI, Vec vI
 	for(int i=psi.ns; i<psi.ne; i++){
 
 		dcomp dfdk = 0.0, dfdc = 0.0, 
-			DfywHpsi = geo.D * f.valr(i) * yw * H.valr(i) * valc(&psi, i);
+			DfywHpsi = geo.D * valr(&f, i) * yw * valr(&H, i) * valc(&psi, i);
 
 		if(m == mj)
 			dfdk += ( -sqr(mw)*yw / geo.y +2.0*mw ) * DfywHpsi + 2.0*mw* valc(&eps, i)*valc(&psi, i);
 
-		if(m->lasing && f.valr(i) != 0.0){
+		if(m->lasing && valr(&f, i) != 0.0){
 			dcomp dHdk_term = -sqr(mjc) * -2.0*(mjw-geo.wa)
 			 /sqr(geo.y) * sqr(sqr(std::abs(yjw)));
-			dHdk_term *= sqr(mw)*DfywHpsi * H.valr(i) * psisq.valr(i);
+			dHdk_term *= sqr(mw)*DfywHpsi * valr(&H, i) * valr(&psisq, i);
 			dfdk += dHdk_term;
 
-			dfdc = sqr(mw) * DfywHpsi * H.valr(i);
-			dfdc *= (-2.0*mjc)*sqr(std::abs(yjw)) * psisq.valr(i);
+			dfdc = sqr(mw) * DfywHpsi * valr(&H, i);
+			dfdc *= (-2.0*mjc)*sqr(std::abs(yjw)) * valr(&psisq, i);
 		}
 		
 		if( !m->lasing)
@@ -132,12 +132,12 @@ void ComputeGain(Geometry& geo, modelist& L){
 	geo.VecSqMedium(m->vpsi, geo.vscratch[3], geo.vMscratch[0]);
 
 	Vecfun psisq(geo.vscratch[3]);
-	for(int i=H.ns(); i<H.ne(); i++)
-		H.setr(i, H.valr(i) + sqr(std::abs(yw)) *sqr(mc) * psisq.valr(i) ) ;
+	for(int i=H.ns; i<H.ne; i++)
+		setr(&H, i, valr(&H, i) + sqr(std::abs(yw)) *sqr(mc) * valr(&psisq, i) ) ;
    }
 
-   for(int i=H.ns(); i<H.ne(); i++)
-		H.setr(i, 1.0 / (1.0 + H.valr(i) ) );
+   for(int i=H.ns; i<H.ne; i++)
+		setr(&H, i, 1.0 / (1.0 + valr(&H, i) ) );
 }
 
 double FormJf(modelist& L, Geometry& geo, Vec v, Vec f){

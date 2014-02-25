@@ -275,6 +275,8 @@ int NJ(Geometry *geo){ return Nxyzcr(geo) + 2;}
 int offset(Geometry *geo, int ih){ return ih*NJ(geo); }
 int ir(Geometry *geo, int i){ return i%NJ(geo) / Nxyzc(geo); }
 
+double valr(Vecfun *fun, int i) { return fun->a[i-fun->ns];}
+void setr(Vecfun *fun, int i, double val){ fun->a[i-fun->ns] = val;}
 
 dcomp valc(ComplexVecfun *fun, int i){
 
