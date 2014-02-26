@@ -165,7 +165,7 @@ void ComputeGain(Geometry *geo, ModeArray *ma){
 	DestroyVecfun(&H);
 }
 
-double FormJf(ModeArray *ma, Geometry *geo, Vec v, Vec f){
+double FormJf(ModeArray *ma, Geometry *geo, Vec v, Vec f, double ftol){
 
 
 	Mode *m = ma->L[0];
@@ -228,7 +228,7 @@ double FormJf(ModeArray *ma, Geometry *geo, Vec v, Vec f){
 	// no \n here to make room for timing printf statement immediately afterwards
 
 
-	if(fnorm < geo->ftol )
+	if(fnorm < ftol )
 		return fnorm;   		// TODO: deleted old integral routine. Write new one here.
 
 	// =============== column derivatives ====================

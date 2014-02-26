@@ -76,7 +76,7 @@ void CreateGeometry(Geometry *geo){
 
 	int N[3], M[3];
 
-	geo->ftol = OptionsDouble("-newtonf_tol");
+	
 
 
 	OptionsXYZInt("-N", N);

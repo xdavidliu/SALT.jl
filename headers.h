@@ -98,7 +98,7 @@ typedef struct Geometry_s{
 	
 
 	int Npml[3], Nc, LowerPML;
-	double h[3], ftol;
+	double h[3];
 	Vec vepspml;
 
 	Grid gN, gM;
@@ -181,9 +181,9 @@ void View(Vec x, PetscViewer viewer);
 void Output(Vec A, const char* name, const char* variable_name);
 
 
-void NewtonSolve(ModeArray *ma, Geometry *geo, Vec v, Vec f, Vec dv);
-void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray *mah, Vec vNh, Mode *m, Geometry *geo, Vec f, Vec dv, double thresholdw_tol);
-double FormJf(ModeArray *ma, Geometry *geo, Vec v, Vec f);
+void NewtonSolve(ModeArray *ma, Geometry *geo, Vec v, Vec f, Vec dv, double ftol);
+void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray *mah, Vec vNh, Mode *m, Geometry *geo, Vec f, Vec dv, double thresholdw_tol, double ftol);
+double FormJf(ModeArray *ma, Geometry *geo, Vec v, Vec f, double ftol);
 
 
 typedef struct Vecfun_s{

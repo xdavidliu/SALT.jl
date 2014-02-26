@@ -38,7 +38,7 @@ PetscErrorCode ReadModes(ModeArray *ma, Geometry *geo){
 
 
 
-void FirstStep(ModeArray *mah, Mode *m, Geometry *geo, Vec vNh, Vec f, Vec dv, double c){
+void FirstStep(ModeArray *mah, Mode *m, Geometry *geo, Vec vNh, Vec f, Vec dv, double c, double ftol){
 
 
 	PetscPrintf(PETSC_COMM_WORLD, "Taking first step for mode \"%s\"...\n", m->name );
@@ -68,10 +68,10 @@ void FirstStep(ModeArray *mah, Mode *m, Geometry *geo, Vec vNh, Vec f, Vec dv, d
 	AssembleVec(m->vpsi);
 
 
-	double fnorm = FormJf(mah, geo, vNh, f);
+	double fnorm = FormJf(mah, geo, vNh, f, ftol);
 
 
-	if(  fnorm < geo->ftol) break;
+	if(  fnorm < ftol) break;
 	
 	KSPSolve( m->ksp, f, dv);
 	PetscPrintf(PETSC_COMM_WORLD, "\n");
@@ -170,7 +170,7 @@ int FindModeAtThreshold(ModeArray *ma){
 }
 
 
-void Salt(double dD, double Dmax, double thresholdw_tol){
+void Salt(double dD, double Dmax, double thresholdw_tol, double ftol){
 
 	Geometry Geo, *geo = &Geo;
 	CreateGeometry(geo);
@@ -220,11 +220,11 @@ void Salt(double dD, double Dmax, double thresholdw_tol){
 		  		geo->D += 0.5*dD;
 				if(geo->D > Dmax) geo->D = Dmax;
 				
-		  		FirstStep(mah, mah->L[nt], geo, vNh, fNh, dvNh, 1.0);
+		  		FirstStep(mah, mah->L[nt], geo, vNh, fNh, dvNh, 1.0, ftol);
 		  }
 		  
 		  
-		  NewtonSolve(mah, geo,  vNh, fNh, dvNh);  
+		  NewtonSolve(mah, geo,  vNh, fNh, dvNh, ftol);  
 
 		  
 	  }
@@ -238,7 +238,7 @@ void Salt(double dD, double Dmax, double thresholdw_tol){
 		 ModeArray Ma_single, *ma_single = &Ma_single;
 		 CreateModeArray(ma_single , m);
 		
-		NewtonSolve(ma_single , geo,  m->vpsi, f, dv);
+		NewtonSolve(ma_single , geo,  m->vpsi, f, dv, ftol);
 	  	DestroyModeArray(ma_single);
 	  	
 		double wi_new = cimag(get_w(m));
@@ -247,7 +247,7 @@ void Salt(double dD, double Dmax, double thresholdw_tol){
 		
 		
 			ThresholdSearch(  wi_old, wi_new, geo->D-dD, geo->D, 
-			mah, vNh, m, geo, f, dv, thresholdw_tol); // todo: replace with vNh
+			mah, vNh, m, geo, f, dv, thresholdw_tol, ftol); // todo: replace with vNh
 			
 		}
 	  }
@@ -279,9 +279,10 @@ int main(int argc, char** argv){
 	double dD, Dmax, thresholdw_tol = OptionsDouble("-thresholdw_tol");	
 	OptionsGetDouble("-dD", &dD);
 	OptionsGetDouble("-Dmax", &Dmax);
+	
+	double ftol = OptionsDouble("-newtonf_tol");
 
-
-	Salt(dD, Dmax, thresholdw_tol);
+	Salt(dD, Dmax, thresholdw_tol, ftol);
 
 	PetscPrintf(PETSC_COMM_WORLD, "\n");
 	PetscPrintf(PETSC_COMM_WORLD, "TODO: a whole bunch of TODOs in Salt.c related to first step of multimode\n");	

@@ -17,7 +17,7 @@ double EdgeIntensity(Mode *m, Geometry *geo){
 
 
 
-void NewtonSolve(ModeArray *ma, Geometry *geo, Vec v, Vec f, Vec dv){
+void NewtonSolve(ModeArray *ma, Geometry *geo, Vec v, Vec f, Vec dv, double ftol){
 // f and dv are essentially scratch vectors.
 // for L.size > 1, v is also essentially a scratch vector
 
@@ -52,9 +52,9 @@ void NewtonSolve(ModeArray *ma, Geometry *geo, Vec v, Vec f, Vec dv){
 		
 
 
-		double fnorm = FormJf(ma, geo, v, f);
+		double fnorm = FormJf(ma, geo, v, f, ftol);
 		
-		if(  fnorm < geo->ftol)	break;
+		if(  fnorm < ftol)	break;
 		gettimeofday(&t2, NULL);
 		KSPSolve(ksp, f, dv);
 		gettimeofday(&t3, NULL);
@@ -91,7 +91,7 @@ void NewtonSolve(ModeArray *ma, Geometry *geo, Vec v, Vec f, Vec dv){
 
 
 
-void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray *mah, Vec vNh, Mode *m, Geometry *geo, Vec f, Vec dv, double thresholdw_tol){
+void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray *mah, Vec vNh, Mode *m, Geometry *geo, Vec f, Vec dv, double thresholdw_tol, double ftol){
 
 	
 	dcomp mw = get_w(m);
@@ -105,13 +105,13 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 
 
 	geo->D = D_lo - (D_hi - D_lo)/(wimag_hi - wimag_lo) * wimag_lo;
-	if(mah->size>0) NewtonSolve(mah, geo, vNh, f, dv);
+	if(mah->size>0) NewtonSolve(mah, geo, vNh, f, dv, ftol);
 
 	ModeArray Ma, *ma = &Ma;	
 	CreateModeArray(ma, m);
 	
 		// if searching a single mode with no lasing, pass empty list
-	NewtonSolve(ma, geo, m->vpsi, f, dv);
+	NewtonSolve(ma, geo, m->vpsi, f, dv, ftol);
 	DestroyModeArray(ma);
 
 	mw = get_w(m);
@@ -128,5 +128,5 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 	if(OptionsInt("-printnewton"))
 	PetscPrintf(PETSC_COMM_WORLD, 
 		"Searching... D=%g --> Im[w] = %g\n", geo->D, cimag(mw));
-	ThresholdSearch(wimag_lo, wimag_hi, D_lo, D_hi, mah, vNh, m, geo, f, dv, thresholdw_tol); 	
+	ThresholdSearch(wimag_lo, wimag_hi, D_lo, D_hi, mah, vNh, m, geo, f, dv, thresholdw_tol, ftol); 	
 }
