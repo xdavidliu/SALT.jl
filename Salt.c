@@ -69,7 +69,7 @@ void FirstStep(ModeArray *mah, Mode *m, Geometry *geo, Vec vNh, Vec f, Vec dv, d
 	if(  fnorm < ftol) break;
 	
 	KSPSolve( m->ksp, f, dv);
-	PetscPrintf(PETSC_COMM_WORLD, "\n");
+	if(printnewton) PetscPrintf(PETSC_COMM_WORLD, "\n");
 
 	double dc = -GetValue(dv, offset(geo, nh)+Nxyzcr(geo)+1 );
 

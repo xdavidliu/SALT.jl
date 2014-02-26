@@ -60,9 +60,10 @@ void NewtonSolve(ModeArray *ma, Geometry *geo, Vec v, Vec f, Vec dv, double ftol
 		gettimeofday(&t3, NULL);
 
 
-		if(OptionsInt("-printtime"))
+		int printtime = 0; // disable printtime for now
+		if(printtime)
 		PetscPrintf(PETSC_COMM_WORLD, "formJ in %gs, solve in %gs\n", dt(t1, t2), dt(t2, t3) );
-		else PetscPrintf(PETSC_COMM_WORLD, "\n");
+		else if(printnewton) PetscPrintf(PETSC_COMM_WORLD, "\n");
 
 		its++;
 		if(its > 8) MyError("Something's wrong, Newton shouldn't take this long to converge. Try a different starting point.\n");
@@ -73,7 +74,7 @@ void NewtonSolve(ModeArray *ma, Geometry *geo, Vec v, Vec f, Vec dv, double ftol
 
 	
 	// removed print statement; redo these for multimode.
-	if(OptionsInt("-printnewton")){ 
+	if(printnewton){ 
 		PetscPrintf(PETSC_COMM_WORLD, "\nconverged!\n" );
 		for(ih=0; ih<ma->size; ih++){
 			dcomp w = get_w(ma->L[ih]);
@@ -125,7 +126,7 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 	}
 
 
-	if(OptionsInt("-printnewton"))
+	if(printnewton)
 	PetscPrintf(PETSC_COMM_WORLD, 
 		"Searching... D=%g --> Im[w] = %g\n", geo->D, cimag(mw));
 	ThresholdSearch(wimag_lo, wimag_hi, D_lo, D_hi, mah, vNh, m, geo, f, dv, thresholdw_tol, ftol, printnewton); 	
