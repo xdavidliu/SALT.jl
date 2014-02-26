@@ -291,4 +291,37 @@ dcomp gamma_w(Mode *m, Geometry *geo){
 
 
 
+void CreateModeArray(ModeArray *ma, Mode *m){
+
+	ma->L = (Mode**) malloc(sizeof(Mode*));
+	ma->L[0] = m;
+	ma->size = 1;
+}
+
+void DestroyModeArray(ModeArray *ma){
+	free(ma->L);
+}
+
+void AddArrayMode(ModeArray *ma, Mode *m){
+	
+	ma->size++;
+	
+	ma->L = (Mode**) realloc( ma->L, ma->size  *sizeof(Mode*) );
+	ma->L[ ma->size-1] = m;
+}
+
+void RemoveArrayMode(ModeArray *ma, int n){
+
+	if( n >= ma->size) MyError("out of range in RemoveArrayMode");
+
+	int i;
+	for(i = n+1; i<ma->size; i++){
+		ma->L[i-1] = ma->L[i];
+	}
+
+	ma->size--;
+	ma->L = (Mode**) realloc( ma->L, ma->size  *sizeof(Mode*) );
+
+}
+
 

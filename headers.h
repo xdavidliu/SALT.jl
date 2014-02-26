@@ -136,6 +136,18 @@ dcomp gamma_w(Mode *m, Geometry *geo);
 void Fix(Mode *m, Geometry *geo);
 
 typedef std::list<Mode*> modelist;
+
+
+typedef struct ModeArray_s{
+	int size;
+	Mode **L;
+} ModeArray;
+
+void CreateModeArray(ModeArray *ma, Mode *m);
+void DestroyModeArray(ModeArray *ma);
+void AddArrayMode(ModeArray *ma, Mode *m);
+void RemoveArrayMode(ModeArray *ma, int n);
+
 #define FORMODES(L, it)   for(modelist::iterator it=L.begin(); it!= L.end(); it++) 
 // note no ; at end of macro!
 
