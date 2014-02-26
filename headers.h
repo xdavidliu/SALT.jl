@@ -229,6 +229,7 @@ void AddPlaceholders(Mat J, Geometry *geo);
 void AllocateJacobian(Mat J, Geometry *geo);
 void AddRowDerivatives(Mat J, Geometry *geo, int ifix, int ih);
 
+void Passive(int BCPeriod, int bl[3], double k[3], double wreal, double wimag, double modenorm, int nev, char *modeout, Geometry *geo);
 void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, char namesin[MAXMODES][PETSC_MAX_PATH_LEN], char namesout[MAXMODES][PETSC_MAX_PATH_LEN], int printnewton, int Nm, Geometry *geo);
 
 

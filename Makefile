@@ -5,7 +5,7 @@ include ${SLEPC_DIR}/conf/slepc_common
 #PCC_LINKER=${CXX}
 
 
-BASIC_OFILES = Geometry.o Tools.o Mode.o Moperator.o Pml.o
+BASIC_OFILES = Geometry.o Tools.o Mode.o Moperator.o Pml.o Passive.o
 NEWTON_OFILES = Newton.o Jacobian.o Creeper.o
 
 NLOPT = /usr/include/nlopt.hpp
@@ -15,9 +15,6 @@ CFLAGS = -lnlopt
 CLEANFILES = PassiveOut SaltOut log* #.o files removed by default!
 COMMAND = ${CLINKER} $^ -o $@Out ${SLEPC_LIB}
 
-
-Passive: Passive.o ${BASIC_OFILES}
-	${COMMAND}
 
 Salt: Salt.o ${BASIC_OFILES} ${NEWTON_OFILES}
 	${COMMAND}

@@ -33,7 +33,7 @@ SOLVER="-printnewton 0";
 
 
 if [[ $COMMAND = "passive" ]]; then
-$RUN ./PassiveOut $GEO $PASSIVE;
+$RUN ./SaltOut $GEO $PASSIVE -Dmax 0.0;
 elif [[ $COMMAND = "salt" ]]; then
 $RUN ./SaltOut $GEO $CREEPER $SOLVER;
 elif [[ $COMMAND = "test" ]]; then
