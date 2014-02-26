@@ -167,6 +167,8 @@ void ComputeGain(Geometry *geo, modelist& L){
 
 double FormJf(modelist& L, Geometry *geo, Vec v, Vec f){
 
+
+
 	Mode *m = *(L.begin());
 	bool lasing = m->lasing;
 	Mat J = m->J; // for multimode, all m share same J
@@ -194,9 +196,11 @@ double FormJf(modelist& L, Geometry *geo, Vec v, Vec f){
 
 	int ih, jh, kh, ir, jr, jc;
 
-	ih = 0;
-	FORMODES(L, it){
-		m = *it;
+	ModeArray Ma, *ma = &Ma;
+	CreateFromList(ma, L);
+
+	for(ih=0; ih<ma->size; ih++){
+		m = ma->L[ih];
 		VecSet(dfR, 0.0);		
 		VecSet(dfI, 0.0);
 	
@@ -205,7 +209,6 @@ double FormJf(modelist& L, Geometry *geo, Vec v, Vec f){
 	  	SetJacobian(geo, J, dfR, -2, 0, ih);
 		SetJacobian(geo, J, dfI, -2, 1, ih); 
 
-		ih++;
 	}
 
 	// row derivatives already added in add placeholders!
@@ -233,9 +236,10 @@ double FormJf(modelist& L, Geometry *geo, Vec v, Vec f){
 	// =============== column derivatives ====================
 
 
-	jh = 0;
-	FORMODES(L, jt){
-		Mode *mj = *jt;
+
+
+	for(jh=0; jh<ma->size; jh++){
+		Mode *mj = ma->L[jh];
 
 		VecSet(dfR, 0.0);
 		VecSet(dfI, 0.0);
@@ -243,31 +247,29 @@ double FormJf(modelist& L, Geometry *geo, Vec v, Vec f){
 		if(L.size() > 1)  // hack: only recompute vpsisq if ComputeGain didn't already do it, i.e. for multimode
 			VecSqMedium(geo, mj->vpsi, vpsisq, geo->vMscratch[0]);
 
-		ih = 0;
-		FORMODES(L, it){
-			Mode *mi = *it;
+		for(ih=0; ih<ma->size; ih++){
+			Mode *mi = ma->L[ih];
 
 			TimesI(geo, mi->vpsi, vIpsi);
 			ColumnDerivative(mi, mj, geo, dfR, dfI, vIpsi, vpsisq, ih);
 
-			ih++;
 		}
 
 		SetJacobian(geo, J, dfR, -1, 0, jh);
 		SetJacobian(geo, J, dfI, -1, 1, jh);
 
 
-		jh++;
 	}
 
 	//================ tensor derivatives ================
 	
+
+	
   if(lasing){
 	Vec vpsibra = vpsisq; vpsisq = 0;
 
-	jh = 0;
-	FORMODES(L, jt){
-		Mode *mj = *jt;
+	for(jh=0; jh<ma->size; jh++){
+		Mode *mj = ma->L[jh];
 
 		for(jr=0; jr<2; jr++) for(jc=0; jc< geo->gN.Nc; jc++){
 
@@ -276,22 +278,20 @@ double FormJf(modelist& L, Geometry *geo, Vec v, Vec f){
 
 			VecSet(dfR, 0.0);
 			ih = 0;
-			FORMODES(L, it){
-				Mode *mi = *it;
+			for(ih=0; ih<ma->size; ih++){
+				Mode *mi = ma->L[ih];
 				TimesI(geo, mi->vpsi, vIpsi);
 	
 				TensorDerivative(mi, mj, geo, jc, jr, dfR, vpsibra, vIpsi, ih);
-				ih++;
 			}
 
 			SetJacobian(geo, J, dfR, jc, jr, jh);
 		}
 
-		jh++;
 	}
   }
 	AssembleMat(J);
-
+	DestroyModeArray(ma);
 
 	return fnorm;	
 

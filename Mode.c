@@ -303,7 +303,7 @@ void DestroyModeArray(ModeArray *ma){
 }
 
 void AddArrayMode(ModeArray *ma, Mode *m){
-	
+
 	ma->size++;
 	
 	ma->L = (Mode**) realloc( ma->L, ma->size  *sizeof(Mode*) );
@@ -324,4 +324,13 @@ void RemoveArrayMode(ModeArray *ma, int n){
 
 }
 
+void CreateFromList(ModeArray *ma, modelist& L){ //temp
 
+	CreateModeArray(ma, *L.begin() );
+
+	FORMODES(L, it){
+		if( it == L.begin() ) continue; // skip the first one
+		
+		AddArrayMode(ma, *it);
+	}
+}
