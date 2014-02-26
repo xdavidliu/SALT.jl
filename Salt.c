@@ -3,7 +3,7 @@
 
 
 
-PetscErrorCode ReadModes(modelist& L, Geometry *geo){
+PetscErrorCode ReadModes(ModeArray *ma, Geometry *geo){
 
 	char modename[PETSC_MAX_PATH_LEN], 
 	     optionin[PETSC_MAX_PATH_LEN] = "-in0",
@@ -24,7 +24,9 @@ PetscErrorCode ReadModes(modelist& L, Geometry *geo){
 			MyError("number of -out less than number of -in!");
 		sprintf(m->name, "%s", modename);
 
-		L.push_back(m);
+		if(i == 0) CreateModeArray(ma,m);
+		else AddArrayMode(ma, m);
+
 		Setup(m, geo);
 
 		sprintf(optionin, "-in%i", i+1);
@@ -191,27 +193,27 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 
 
 	
-	modelist L;
-	ReadModes(L, geo);
-	Mode* m = *(L.begin());
+
+	
+  	ModeArray Ma, *ma = &Ma;
+	ReadModes(ma, geo);
+	
 	
     Vec f, dv;
-    MatGetVecs( m->J, &dv, &f);
+    MatGetVecs( ma->L[0]->J, &dv, &f);
 
 
-  	ModeArray Ma, *ma = &Ma;
-	CreateFromList(ma, L);	
+
 
 	int ih;
 	for(; geo->D <= Dmax; geo->D = (geo->D+dD < Dmax? geo->D+dD: Dmax)){
 
-	  modelist Ll = L; //lasing
-	  Ll.remove_if(not_lasing() );
 
 	  	ModeArray Mah, *mah = &Mah;
-		CreateFromList(mah, Ll);	
+		CreateFilter(ma, mah, 1); // lasing sub-array
+
 	  
-	  Vec vNh = (*L.begin() )->vpsi, fNh = f, dvNh = dv;
+	  Vec vNh = ma->L[0]->vpsi, fNh = f, dvNh = dv;
 
 
 	  if( mah->size > 0){ // lasing modes
@@ -244,8 +246,8 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 		  
 	  }
 
-	  FORMODES(L, it){ // now nonlasing modes
-		m = *it;
+	  for(ih=0; ih<ma->size; ih++){ // now nonlasing modes
+		Mode *m = ma->L[ih];
 		if(m->lasing) continue;
 
 		double wi_old = getw(m).imag();
