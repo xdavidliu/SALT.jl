@@ -228,7 +228,7 @@ double FormJf(ModeArray *ma, Geometry *geo, Vec v, Vec f){
 	// no \n here to make room for timing printf statement immediately afterwards
 
 
-	if(fnorm < OptionsDouble("-newtonf_tol") )
+	if(fnorm < geo->ftol )
 		return fnorm;   		// TODO: deleted old integral routine. Write new one here.
 
 	// =============== column derivatives ====================

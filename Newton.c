@@ -54,7 +54,7 @@ void NewtonSolve(ModeArray *ma, Geometry *geo, Vec v, Vec f, Vec dv){
 
 		double fnorm = FormJf(ma, geo, v, f);
 		
-		if(  fnorm < OptionsDouble("-newtonf_tol"))	break;
+		if(  fnorm < geo->ftol)	break;
 		gettimeofday(&t2, NULL);
 		KSPSolve(ksp, f, dv);
 		gettimeofday(&t3, NULL);
@@ -91,11 +91,11 @@ void NewtonSolve(ModeArray *ma, Geometry *geo, Vec v, Vec f, Vec dv){
 
 
 
-void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray *mah, Vec vNh, Mode *m, Geometry *geo, Vec f, Vec dv){
+void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray *mah, Vec vNh, Mode *m, Geometry *geo, Vec f, Vec dv, double thresholdw_tol){
 
 	
 	dcomp mw = get_w(m);
-	if( cabs(cimag(mw)) < OptionsDouble("-thresholdw_tol") ){
+	if( cabs(cimag(mw)) < thresholdw_tol ){
 		SetLast2(m->vpsi, creal(mw), 0.0);
 		PetscPrintf(PETSC_COMM_WORLD, "Threshold found for mode \"%s\" at D = %1.10g\n", m->name, geo->D);
 		m->lasing = 1;
@@ -128,5 +128,5 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 	if(OptionsInt("-printnewton"))
 	PetscPrintf(PETSC_COMM_WORLD, 
 		"Searching... D=%g --> Im[w] = %g\n", geo->D, cimag(mw));
-	ThresholdSearch(wimag_lo, wimag_hi, D_lo, D_hi, mah, vNh, m, geo, f, dv); 	
+	ThresholdSearch(wimag_lo, wimag_hi, D_lo, D_hi, mah, vNh, m, geo, f, dv, thresholdw_tol); 	
 }

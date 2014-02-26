@@ -71,7 +71,7 @@ void FirstStep(ModeArray *mah, Mode *m, Geometry *geo, Vec vNh, Vec f, Vec dv, d
 	double fnorm = FormJf(mah, geo, vNh, f);
 
 
-	if(  fnorm < OptionsDouble("-newtonf_tol")) break;
+	if(  fnorm < geo->ftol) break;
 	
 	KSPSolve( m->ksp, f, dv);
 	PetscPrintf(PETSC_COMM_WORLD, "\n");
@@ -169,18 +169,13 @@ int FindModeAtThreshold(ModeArray *ma){
 	
 }
 
-int main(int argc, char** argv){ 
-	SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC_NULL); 
+
+void Salt(double dD, double Dmax, double thresholdw_tol){
+
 	Geometry Geo, *geo = &Geo;
 	CreateGeometry(geo);
 	
 
-	double dD, Dmax; 
-	OptionsGetDouble("-dD", &dD);
-	OptionsGetDouble("-Dmax", &Dmax);
-
-
-	
 
 	
   	ModeArray Ma, *ma = &Ma;
@@ -248,11 +243,11 @@ int main(int argc, char** argv){
 	  	
 		double wi_new = cimag(get_w(m));
 
-		if(wi_new > -OptionsDouble("-thresholdw_tol") && !m->lasing){
+		if(wi_new > -thresholdw_tol && !m->lasing){
 		
 		
 			ThresholdSearch(  wi_old, wi_new, geo->D-dD, geo->D, 
-			mah, vNh, m, geo, f, dv); // todo: replace with vNh
+			mah, vNh, m, geo, f, dv, thresholdw_tol); // todo: replace with vNh
 			
 		}
 	  }
@@ -272,6 +267,22 @@ int main(int argc, char** argv){
 	DestroyVec(&f);
 	DestroyVec(&dv);
 	DestroyGeometry(geo);
+
+
+}
+
+
+int main(int argc, char** argv){ 
+	SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC_NULL); 
+
+
+	double dD, Dmax, thresholdw_tol = OptionsDouble("-thresholdw_tol");	
+	OptionsGetDouble("-dD", &dD);
+	OptionsGetDouble("-Dmax", &Dmax);
+
+
+	Salt(dD, Dmax, thresholdw_tol);
+
 	PetscPrintf(PETSC_COMM_WORLD, "\n");
 	PetscPrintf(PETSC_COMM_WORLD, "TODO: a whole bunch of TODOs in Salt.c related to first step of multimode\n");	
 	PetscPrintf(PETSC_COMM_WORLD, "future todo: add artificial crashes to enforce all the assumptions I'm making. For example, crash if any file read fails.\n");		
