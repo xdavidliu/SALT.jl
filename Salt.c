@@ -38,18 +38,6 @@ PetscErrorCode ReadModes(ModeArray *ma, Geometry *geo){
 
 
 
-struct yes_lasing{ bool operator() (Mode *m){return m->lasing;}  };
-struct not_lasing{ bool operator() (Mode *m){return !m->lasing;}  };
-// can put this inside a function too
-// btw, this syntax is very interesting. Study this later
-
-int CountLasing(modelist L){ // makes copy
-	
-	L.remove_if(not_lasing());
-	return L.size();
-}
-
-
 
 void FirstStep(ModeArray *mah, Mode *m, Geometry *geo, Vec vNh, Vec f, Vec dv, double c){
 

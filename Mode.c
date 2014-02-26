@@ -324,22 +324,6 @@ void RemoveArrayMode(ModeArray *ma, int n){
 
 }
 
-void CreateFromList(ModeArray *ma, modelist& L){ //temp
-
-	if(L.size() == 0){
-		ma->size = 0;
-		return;
-	
-	}
-
-	CreateModeArray(ma, *L.begin() );
-
-	FORMODES(L, it){
-		if( it == L.begin() ) continue; // skip the first one
-		
-		AddArrayMode(ma, *it);
-	}
-}
 
 void CreateFilter(ModeArray *ma, ModeArray *mf, int lasing){
 

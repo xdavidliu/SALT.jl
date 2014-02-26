@@ -2,7 +2,6 @@
 #include <cmath>
 #include <cstdio>
 #include <complex>
-#include <list>
 
 
 #include <sys/time.h>
@@ -135,7 +134,6 @@ dcomp getw(Mode *m);
 dcomp gamma_w(Mode *m, Geometry *geo);
 void Fix(Mode *m, Geometry *geo);
 
-typedef std::list<Mode*> modelist;
 
 
 typedef struct ModeArray_s{
@@ -148,11 +146,8 @@ void DestroyModeArray(ModeArray *ma);
 void AddArrayMode(ModeArray *ma, Mode *m);
 void RemoveArrayMode(ModeArray *ma, int n);
 
-void CreateFromList(ModeArray *ma, modelist& L); // temp
 void CreateFilter(ModeArray *ma, ModeArray *mf, int lasing);
 
-#define FORMODES(L, it)   for(modelist::iterator it=L.begin(); it!= L.end(); it++) 
-// note no ; at end of macro!
 
 
 void CreateSquareMatrix(int N, int nz, Mat *A);
