@@ -164,8 +164,6 @@ void Bundle(ModeArray *ma, Geometry *geo){
 }
 
 
-bool AtThreshold(Mode *m){ return getc(m) == 0.0 && m->lasing;}
-
 
 int FindModeAtThreshold(ModeArray *ma){
 
@@ -202,56 +200,50 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 
 	for(; geo->D <= Dmax; geo->D = (geo->D+dD < Dmax? geo->D+dD: Dmax)){
 
-	  modelist Ll = L, Ln = L; // lasing and nonlasing
+	  modelist Ll = L; //lasing
 	  Ll.remove_if(not_lasing() );
-	  Ln.remove_if(yes_lasing() );
 	  
 	  Vec vNh = (*L.begin() )->vpsi, fNh = f, dvNh = dv;
 
 	  if( Ll.size() > 0){ // lasing modes
-		  modelist::iterator it = std::find_if(Ll.begin(), Ll.end(), AtThreshold);
-		  if( it != Ll.end() && Ll.size() > 1){
+	  
+	  	ModeArray Ma, *mah = &Ma;
+		CreateFromList(mah, Ll);	
+	  
+	  	  int nt = FindModeAtThreshold(mah);
+	  
+		  if( nt != -1 && mah->size > 1){
 
-			ModeArray Ma, *mah = &Ma;
-			CreateFromList(mah, Ll);		  
 		  	Bundle(mah, geo);
-		  	DestroyModeArray(mah);
 		  }
 
-		  if(Ll.size() > 1){	 // these vectors will have been properly created in the last block
+		  if(mah->size > 1){	 // these vectors will have been properly created in the last block
 			vNh = geo->vNhscratch[2];
 			fNh = geo->vNhscratch[3];
 			dvNh = geo->vNhscratch[4];
 		  }
 
-		  if( it != Ll.end() ){
+		  if( nt != -1 ){
 		  		geo->D += 0.5*dD;
 				if(geo->D > Dmax) geo->D = Dmax;
-				ModeArray Ma, *mah = &Ma;
-				CreateFromList(mah, Ll);
 				
-		  		FirstStep(mah, *it, geo, vNh, fNh, dvNh, 1.0);
-		  			DestroyModeArray(mah);
+		  		FirstStep(mah, mah->L[nt], geo, vNh, fNh, dvNh, 1.0);
 		  }
 		  
-		 ModeArray Mah, *mah = &Mah;
-		 CreateFromList(mah, Ll);
 		  
 		  NewtonSolve(mah, geo,  vNh, fNh, dvNh);  
-		  	DestroyModeArray(mah);
+		  DestroyModeArray(mah);
 		  
 	  }
 
-	  FORMODES(Ln, it){
+	  FORMODES(L, it){ // now nonlasing modes
 		m = *it;
-
-		modelist Lm;
-		Lm.push_back(m); // for non-lasing modes, do one by one
+		if(m->lasing) continue;
 
 		double wi_old = getw(m).imag();
 		
 		 ModeArray Ma, *ma = &Ma;
-		 CreateFromList(ma, Lm);
+		 CreateModeArray(ma, m);
 		
 		NewtonSolve(ma, geo,  m->vpsi, f, dv);
 	  	DestroyModeArray(ma);
