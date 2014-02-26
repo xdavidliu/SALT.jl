@@ -153,8 +153,6 @@ void CreateFromList(ModeArray *ma, modelist& L); // temp
 #define FORMODES(L, it)   for(modelist::iterator it=L.begin(); it!= L.end(); it++) 
 // note no ; at end of macro!
 
-void ComputeGain(Geometry *geo, modelist& L);
-// not sure how to define this as a member function of Geometry, since Mode is defined after geometry
 
 void CreateSquareMatrix(int N, int nz, Mat *A);
 double GetValue(Vec v, int i);
