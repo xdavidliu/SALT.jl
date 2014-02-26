@@ -198,17 +198,25 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
     Vec f, dv;
     MatGetVecs( m->J, &dv, &f);
 
+
+  	ModeArray Ma, *ma = &Ma;
+	CreateFromList(ma, L);	
+
+	int ih;
 	for(; geo->D <= Dmax; geo->D = (geo->D+dD < Dmax? geo->D+dD: Dmax)){
 
 	  modelist Ll = L; //lasing
 	  Ll.remove_if(not_lasing() );
+
+	  	ModeArray Mah, *mah = &Mah;
+		CreateFromList(mah, Ll);	
 	  
 	  Vec vNh = (*L.begin() )->vpsi, fNh = f, dvNh = dv;
 
-	  if( Ll.size() > 0){ // lasing modes
+
+	  if( mah->size > 0){ // lasing modes
 	  
-	  	ModeArray Ma, *mah = &Ma;
-		CreateFromList(mah, Ll);	
+	
 	  
 	  	  int nt = FindModeAtThreshold(mah);
 	  
@@ -232,7 +240,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 		  
 		  
 		  NewtonSolve(mah, geo,  vNh, fNh, dvNh);  
-		  DestroyModeArray(mah);
+
 		  
 	  }
 
@@ -242,35 +250,34 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 
 		double wi_old = getw(m).imag();
 		
-		 ModeArray Ma, *ma = &Ma;
-		 CreateModeArray(ma, m);
+		 ModeArray Ma_single, *ma_single = &Ma_single;
+		 CreateModeArray(ma_single , m);
 		
-		NewtonSolve(ma, geo,  m->vpsi, f, dv);
-	  	DestroyModeArray(ma);
+		NewtonSolve(ma_single , geo,  m->vpsi, f, dv);
+	  	DestroyModeArray(ma_single);
 	  	
 		double wi_new = getw(m).imag();
 
 		if(wi_new > -OptionsDouble("-thresholdw_tol") && !m->lasing){
 		
 		
-			ModeArray Mah, *mah = &Mah;
-			CreateFromList(mah, Ll);
-		
 			ThresholdSearch(  wi_old, wi_new, geo->D-dD, geo->D, 
 			mah, vNh, m, geo, f, dv); // todo: replace with vNh
 			
-			if(mah->size>0) DestroyModeArray(mah);
 		}
 	  }
-	  
+
+	  if(mah->size>0) DestroyModeArray(mah);	  
 	  if(geo->D==Dmax) break;
 	}
 
-	FORMODES(L, it){
-		Write(*it, geo);
-		DestroyMode(*it);
-		free(*it);
+	for(ih=0; ih<ma->size; ih++){
+		Write(ma->L[ih], geo);
+		DestroyMode(ma->L[ih]);
+		free(ma->L[ih]);
 	}
+	
+  	DestroyModeArray(ma);	
 
 	DestroyVec(&f);
 	DestroyVec(&dv);
