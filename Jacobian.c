@@ -165,7 +165,7 @@ void ComputeGain(Geometry *geo, ModeArray *ma){
 	DestroyVecfun(&H);
 }
 
-double FormJf(ModeArray *ma, Geometry *geo, Vec v, Vec f, double ftol){
+double FormJf(ModeArray *ma, Geometry *geo, Vec v, Vec f, double ftol, int printnewton){
 
 
 	Mode *m = ma->L[0];
@@ -223,7 +223,7 @@ double FormJf(ModeArray *ma, Geometry *geo, Vec v, Vec f, double ftol){
 	double fnorm;
 	VecNorm(f, NORM_2, &fnorm);
 	
-	int printnewton = OptionsInt("-printnewton");
+
 	if( printnewton ) PetscPrintf(PETSC_COMM_WORLD, "|f| = %.0e;", fnorm);
 	// no \n here to make room for timing printf statement immediately afterwards
 

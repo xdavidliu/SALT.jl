@@ -31,7 +31,7 @@ CREEPER="-in0 pass0 -in1 pass1
 -dD 0.05 -Dmax 0.5
 -newtonf_tol 1e-7 -thresholdw_tol 1e-7";
 
-SOLVER="-printnewton 1 -printtime 0
+SOLVER="-printnewton 0 -printtime 0
 -pc_factor_mat_solver_package mumps 
 -pc_type lu";
 

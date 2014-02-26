@@ -33,7 +33,7 @@ PetscErrorCode ReadModes(ModeArray *ma, Geometry *geo, char namesin[MAXMODES][PE
 
 
 
-void FirstStep(ModeArray *mah, Mode *m, Geometry *geo, Vec vNh, Vec f, Vec dv, double c, double ftol){
+void FirstStep(ModeArray *mah, Mode *m, Geometry *geo, Vec vNh, Vec f, Vec dv, double c, double ftol, int printnewton){
 
 
 	PetscPrintf(PETSC_COMM_WORLD, "Taking first step for mode \"%s\"...\n", m->name );
@@ -63,7 +63,7 @@ void FirstStep(ModeArray *mah, Mode *m, Geometry *geo, Vec vNh, Vec f, Vec dv, d
 	AssembleVec(m->vpsi);
 
 
-	double fnorm = FormJf(mah, geo, vNh, f, ftol);
+	double fnorm = FormJf(mah, geo, vNh, f, ftol, printnewton);
 
 
 	if(  fnorm < ftol) break;
@@ -166,7 +166,7 @@ int FindModeAtThreshold(ModeArray *ma){
 
 
 // everything after Nm copied directly from ReadMode
-void Salt(double dD, double Dmax, double thresholdw_tol, double ftol, char namesin[MAXMODES][PETSC_MAX_PATH_LEN], char namesout[MAXMODES][PETSC_MAX_PATH_LEN], int Nm, int N[3], int M[3], double h[3], int Npml[3], int Nc, int LowerPML, char *epsfile, char *fproffile, double wa, double y){
+void Salt(double dD, double Dmax, double thresholdw_tol, double ftol, char namesin[MAXMODES][PETSC_MAX_PATH_LEN], char namesout[MAXMODES][PETSC_MAX_PATH_LEN], int printnewton, int Nm, int N[3], int M[3], double h[3], int Npml[3], int Nc, int LowerPML, char *epsfile, char *fproffile, double wa, double y){
 
 	Geometry Geo, *geo = &Geo;
 	CreateGeometry(geo, N, M, h, Npml, Nc, LowerPML, epsfile, fproffile, wa, y);
@@ -221,11 +221,11 @@ void Salt(double dD, double Dmax, double thresholdw_tol, double ftol, char names
 		  		geo->D += 0.5*dD;
 				if(geo->D > Dmax) geo->D = Dmax;
 				
-		  		FirstStep(mah, mah->L[nt], geo, vNh, fNh, dvNh, 1.0, ftol);
+		  		FirstStep(mah, mah->L[nt], geo, vNh, fNh, dvNh, 1.0, ftol, printnewton);
 		  }
 		  
 		  
-		  NewtonSolve(mah, geo,  vNh, fNh, dvNh, ftol);  
+		  NewtonSolve(mah, geo,  vNh, fNh, dvNh, ftol, printnewton);  
 
 		  
 	  }
@@ -239,7 +239,7 @@ void Salt(double dD, double Dmax, double thresholdw_tol, double ftol, char names
 		 ModeArray Ma_single, *ma_single = &Ma_single;
 		 CreateModeArray(ma_single , m);
 		
-		NewtonSolve(ma_single , geo,  m->vpsi, f, dv, ftol);
+		NewtonSolve(ma_single , geo,  m->vpsi, f, dv, ftol, printnewton);
 	  	DestroyModeArray(ma_single);
 	  	
 		double wi_new = cimag(get_w(m));
@@ -248,7 +248,7 @@ void Salt(double dD, double Dmax, double thresholdw_tol, double ftol, char names
 		
 		
 			ThresholdSearch(  wi_old, wi_new, geo->D-dD, geo->D, 
-			mah, vNh, m, geo, f, dv, thresholdw_tol, ftol); // todo: replace with vNh
+			mah, vNh, m, geo, f, dv, thresholdw_tol, ftol, printnewton); // todo: replace with vNh
 			
 		}
 	  }
@@ -332,7 +332,9 @@ int main(int argc, char** argv){
 	// ======== copied directly from ReadGeometry ======== //
 
 
-	Salt(dD, Dmax, thresholdw_tol, ftol, namesin, namesout, Nm,  N, M, h, Npml, Nc, LowerPML, epsfile, fproffile, wa, y);
+	int printnewton = OptionsInt("-printnewton");
+
+	Salt(dD, Dmax, thresholdw_tol, ftol, namesin, namesout, printnewton, Nm,  N, M, h, Npml, Nc, LowerPML, epsfile, fproffile, wa, y);
 
 	PetscPrintf(PETSC_COMM_WORLD, "\n");
 	PetscPrintf(PETSC_COMM_WORLD, "TODO: a whole bunch of TODOs in Salt.c related to first step of multimode\n");	

@@ -24,7 +24,7 @@ void FillBop(Geometry *geo, Mat Bop, dcomp w){
 }
 
 // everything after modeout is directly from ReadGeometry
-void Passive(int BCPeriod, int bl[3], double k[3], double wreal, double wimag, char *modeout, int N[3], int M[3], double h[3], int Npml[3], int Nc, int LowerPML, char *epsfile, char *fproffile, double wa, double y){
+void Passive(int BCPeriod, int bl[3], double k[3], double wreal, double wimag, double modenorm, char *modeout, int N[3], int M[3], double h[3], int Npml[3], int Nc, int LowerPML, char *epsfile, char *fproffile, double wa, double y){
 
     	tv t1, t2, t3;
 	Geometry Geo;
@@ -139,7 +139,7 @@ void Passive(int BCPeriod, int bl[3], double k[3], double wreal, double wimag, c
 		ScatterRange(v, m->vpsi, 0, 0, xyzcrGrid(&geo->gN) );
 
 
-		Fix(m, geo);
+		Fix(m, geo, modenorm);
 		
 		double psinorm, psifnorm;
 		VecNorm(m->vpsi, NORM_2, &psinorm);
@@ -207,13 +207,14 @@ int main(int argc, char** argv){
 	OptionsGetString("-epsfile", epsfile);
 	OptionsGetString("-fproffile", fproffile);
 
-	double wa, y;
+	double wa, y, modenorm = OptionsDouble("-norm");
 	OptionsGetDouble("-wa", &wa);
 	OptionsGetDouble("-gamma", &y);
+	
 
 	// ======== copied directly from ReadGeometry ======== //
 
-	Passive(BCPeriod, bl, k, wguess_real, wguess_imag, s ,N, M, h, Npml, Nc, LowerPML, epsfile, fproffile, wa, y);
+	Passive(BCPeriod, bl, k, wguess_real, wguess_imag, modenorm, s,N, M, h, Npml, Nc, LowerPML, epsfile, fproffile, wa, y);
 
 		
 SlepcFinalize();	

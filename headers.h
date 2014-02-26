@@ -110,7 +110,6 @@ typedef struct Geometry_s{
 
 } Geometry;
 
-void ReadGeometry(Geometry *geo);
 void CreateGeometry(Geometry *geo, int N[3], int M[3], double h[3], int Npml[3], int Nc, int LowerPML, char *epsfile, char *fproffile, double wa, double y);
 void DestroyGeometry(Geometry *geo);	
 void InterpolateVec(Geometry *geo, Vec vM, Vec vN);
@@ -152,7 +151,7 @@ void Write(Mode *m, const Geometry *geo);
 double get_c(Mode *m);
 dcomp get_w(Mode *m);
 dcomp gamma_w(Mode *m, Geometry *geo);
-void Fix(Mode *m, Geometry *geo);
+void Fix(Mode *m, Geometry *geo, double norm);
 
 
 
@@ -182,9 +181,9 @@ void View(Vec x, PetscViewer viewer);
 void Output(Vec A, const char* name, const char* variable_name);
 
 
-void NewtonSolve(ModeArray *ma, Geometry *geo, Vec v, Vec f, Vec dv, double ftol);
-void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray *mah, Vec vNh, Mode *m, Geometry *geo, Vec f, Vec dv, double thresholdw_tol, double ftol);
-double FormJf(ModeArray *ma, Geometry *geo, Vec v, Vec f, double ftol);
+void NewtonSolve(ModeArray *ma, Geometry *geo, Vec v, Vec f, Vec dv, double ftol, int printnewton);
+void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray *mah, Vec vNh, Mode *m, Geometry *geo, Vec f, Vec dv, double thresholdw_tol, double ftol, int printnewton);
+double FormJf(ModeArray *ma, Geometry *geo, Vec v, Vec f, double ftol, int printnewton);
 
 
 typedef struct Vecfun_s{

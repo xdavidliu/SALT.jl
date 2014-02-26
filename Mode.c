@@ -104,7 +104,7 @@ void DestroyMode(Mode *m){
 }
 
 
-void Fix(Mode *m, Geometry *geo){
+void Fix(Mode *m, Geometry *geo, double norm){
 
 	int N;
 	VecGetSize(m->vpsi, &N);
@@ -117,7 +117,7 @@ void Fix(Mode *m, Geometry *geo){
 	double psifix_real = GetValue(m->vpsi, m->ifix % Nxyzc),
 	       psifix_imag = GetValue(m->vpsi, m->ifix % Nxyzc + Nxyzc);
 
-	dcomp factor = OptionsDouble("-norm") / (psifix_real+ ComplexI * psifix_imag);
+	dcomp factor = norm / (psifix_real+ ComplexI * psifix_imag);
 
 	VecCopy(m->vpsi, geo->vscratch[0]);
 	TimesI(geo, m->vpsi, geo->vscratch[1]);
@@ -194,6 +194,8 @@ void AddPlaceholders(Mat J, Geometry *geo){
 
 	}
 
+
+	/*    // this works, just disabling for interface reasons
 	char solver[PETSC_MAX_PATH_LEN];
 	OptionsGetString("-pc_factor_mat_solver_package", solver);
 	if( 0==strcmp(solver, "pastix" ) ){
@@ -208,6 +210,7 @@ void AddPlaceholders(Mat J, Geometry *geo){
 			}
 		}
 	}
+	*/
 
 }
 

@@ -70,36 +70,6 @@ void VecSqMedium(Geometry *geo, Vec v, Vec vsq, Vec scratchM){
 		InterpolateVec(geo, scratchM, vsq);
 }
 
-void ReadGeometry(Geometry *geo){
-
-	int N[3], M[3], Npml[3], Nc, LowerPML;
-	double h[3];
-
-	OptionsXYZInt("-N", N);
-	OptionsXYZInt("-M", M);
-
-	OptionsXYZInt("-Npml", Npml);
-	OptionsXYZDouble("-h", h);
-
-	OptionsGetInt("-Nc", &Nc);
-	OptionsGetInt("-LowerPML", &LowerPML);
-
-
-	char epsfile[PETSC_MAX_PATH_LEN], fproffile[PETSC_MAX_PATH_LEN];
-
-	OptionsGetString("-epsfile", epsfile);
-	OptionsGetString("-fproffile", fproffile);
-
-	double wa, y;
-	OptionsGetDouble("-wa", &wa);
-	OptionsGetDouble("-gamma", &y);
-
-	CreateGeometry(geo, N, M, h, Npml, Nc, LowerPML, epsfile, fproffile, wa, y);
-
-
-
-}
-
 
 void CreateGeometry(Geometry *geo, int N[3], int M[3], double h[3], int Npml[3], int Nc, int LowerPML, char *epsfile, char *fproffile, double wa, double y){
 

@@ -17,7 +17,7 @@ double EdgeIntensity(Mode *m, Geometry *geo){
 
 
 
-void NewtonSolve(ModeArray *ma, Geometry *geo, Vec v, Vec f, Vec dv, double ftol){
+void NewtonSolve(ModeArray *ma, Geometry *geo, Vec v, Vec f, Vec dv, double ftol, int printnewton){
 // f and dv are essentially scratch vectors.
 // for L.size > 1, v is also essentially a scratch vector
 
@@ -52,7 +52,7 @@ void NewtonSolve(ModeArray *ma, Geometry *geo, Vec v, Vec f, Vec dv, double ftol
 		
 
 
-		double fnorm = FormJf(ma, geo, v, f, ftol);
+		double fnorm = FormJf(ma, geo, v, f, ftol, printnewton);
 		
 		if(  fnorm < ftol)	break;
 		gettimeofday(&t2, NULL);
@@ -91,7 +91,7 @@ void NewtonSolve(ModeArray *ma, Geometry *geo, Vec v, Vec f, Vec dv, double ftol
 
 
 
-void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray *mah, Vec vNh, Mode *m, Geometry *geo, Vec f, Vec dv, double thresholdw_tol, double ftol){
+void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray *mah, Vec vNh, Mode *m, Geometry *geo, Vec f, Vec dv, double thresholdw_tol, double ftol, int printnewton){
 
 	
 	dcomp mw = get_w(m);
@@ -105,13 +105,13 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 
 
 	geo->D = D_lo - (D_hi - D_lo)/(wimag_hi - wimag_lo) * wimag_lo;
-	if(mah->size>0) NewtonSolve(mah, geo, vNh, f, dv, ftol);
+	if(mah->size>0) NewtonSolve(mah, geo, vNh, f, dv, ftol, printnewton);
 
 	ModeArray Ma, *ma = &Ma;	
 	CreateModeArray(ma, m);
 	
 		// if searching a single mode with no lasing, pass empty list
-	NewtonSolve(ma, geo, m->vpsi, f, dv, ftol);
+	NewtonSolve(ma, geo, m->vpsi, f, dv, ftol, printnewton);
 	DestroyModeArray(ma);
 
 	mw = get_w(m);
@@ -128,5 +128,5 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 	if(OptionsInt("-printnewton"))
 	PetscPrintf(PETSC_COMM_WORLD, 
 		"Searching... D=%g --> Im[w] = %g\n", geo->D, cimag(mw));
-	ThresholdSearch(wimag_lo, wimag_hi, D_lo, D_hi, mah, vNh, m, geo, f, dv, thresholdw_tol, ftol); 	
+	ThresholdSearch(wimag_lo, wimag_hi, D_lo, D_hi, mah, vNh, m, geo, f, dv, thresholdw_tol, ftol, printnewton); 	
 }
