@@ -78,7 +78,7 @@ void NewtonSolve(ModeArray *ma, Geometry *geo, Vec v, Vec f, Vec dv){
 		for(ih=0; ih<ma->size; ih++){
 			dcomp w = getw(ma->L[ih]);
 			PetscPrintf(PETSC_COMM_WORLD, "%s at D = %g: w = %g + i(%g)", 
-				ma->L[ih]->name,  geo->D, w.real(), w.imag());
+				ma->L[ih]->name,  geo->D, creal(w), cimag(w));
 				
 			if( ma->L[ih]->lasing && geo->LowerPML==0 )  PetscPrintf(PETSC_COMM_WORLD, ", |psi|^2_edge = %g", EdgeIntensity(ma->L[ih], geo));
 				
@@ -95,8 +95,8 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 
 	
 	dcomp mw = getw(m);
-	if( std::abs(mw.imag()) < OptionsDouble("-thresholdw_tol") ){
-		SetLast2(m->vpsi, mw.real(), 0.0);
+	if( std::abs(cimag(mw)) < OptionsDouble("-thresholdw_tol") ){
+		SetLast2(m->vpsi, creal(mw), 0.0);
 		PetscPrintf(PETSC_COMM_WORLD, "Threshold found for mode \"%s\" at D = %1.10g\n", m->name, geo->D);
 		m->lasing = 1;
 		return;
@@ -117,16 +117,16 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 	mw = getw(m);
 	
 	if( wimag_lo*wimag_hi > 0){ // both on same side of threshold
-		if(wimag_lo > 0){ wimag_hi = wimag_lo; wimag_lo = mw.imag(); D_hi = D_lo; D_lo = geo->D;}
-		else { wimag_lo = wimag_hi; wimag_hi = mw.imag(); D_lo = D_hi; D_hi = geo->D;}
+		if(wimag_lo > 0){ wimag_hi = wimag_lo; wimag_lo = cimag(mw); D_hi = D_lo; D_lo = geo->D;}
+		else { wimag_lo = wimag_hi; wimag_hi = cimag(mw); D_lo = D_hi; D_hi = geo->D;}
 	}else{// straddling threshold
-		if(mw.imag() > 0) {wimag_hi = mw.imag(); D_hi = geo->D;}
-		else { wimag_lo = mw.imag(); D_lo = geo->D;}
+		if(cimag(mw) > 0) {wimag_hi = cimag(mw); D_hi = geo->D;}
+		else { wimag_lo = cimag(mw); D_lo = geo->D;}
 	}
 
 
 	if(OptionsInt("-printnewton"))
 	PetscPrintf(PETSC_COMM_WORLD, 
-		"Searching... D=%g --> Im[w] = %g\n", geo->D, mw.imag());
+		"Searching... D=%g --> Im[w] = %g\n", geo->D, cimag(mw));
 	ThresholdSearch(wimag_lo, wimag_hi, D_lo, D_hi, mah, vNh, m, geo, f, dv); 	
 }

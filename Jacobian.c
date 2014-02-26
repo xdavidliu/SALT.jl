@@ -2,8 +2,8 @@
 
 void VecSetComplex(Vec vR, Vec vI, int i, int ir, dcomp val, InsertMode addv){
 
-		VecSetValue(vR, i, ir? val.imag() : val.real(), addv );
-		VecSetValue(vI, i, ir? val.real() : -val.imag(), addv );
+		VecSetValue(vR, i, ir? cimag(val) : creal(val), addv );
+		VecSetValue(vI, i, ir? creal(val) : -cimag(val), addv );
 }
 
 
@@ -73,7 +73,7 @@ void TensorDerivative(Mode *m, Mode *mj, Geometry *geo, int jc, int jr, Vec df, 
 		if( valr(&f, i) == 0.0) continue;			
 		dcomp ket_term = -sqr(mw ) * sqr(mjc) * sqr(std::abs(yjw)) * 2.0
 			* sqr(valr(&H, i) ) * geo->D * valr(&f, i) * yw * valc(&psi, i);		
-		double val = valr(&psibra, i) * (ir(geo, i)? ket_term.imag() : ket_term.real() );
+		double val = valr(&psibra, i) * (ir(geo, i)? cimag(ket_term) : creal(ket_term) );
 		
 		VecSetValue(df, i+offset(geo, ih), val, INSERT_VALUES);
 	}
@@ -124,8 +124,8 @@ void ColumnDerivative(Mode* m, Mode* mj, Geometry *geo, Vec dfR, Vec dfI, Vec vI
 		if( !m->lasing)
 			VecSetComplex(dfR, dfI, i+offset(geo, ih), ir(geo, i), dfdk, INSERT_VALUES);
 		else{
-			VecSetValue(dfR, i+offset(geo, ih), ir(geo, i)? dfdk.imag() : dfdk.real(), INSERT_VALUES );
-			VecSetValue(dfI, i+offset(geo, ih), ir(geo, i)? dfdc.imag() : dfdc.real(), INSERT_VALUES );
+			VecSetValue(dfR, i+offset(geo, ih), ir(geo, i)? cimag(dfdk) : creal(dfdk), INSERT_VALUES );
+			VecSetValue(dfI, i+offset(geo, ih), ir(geo, i)? cimag(dfdc) : creal(dfdc), INSERT_VALUES );
 		}
 	}
 

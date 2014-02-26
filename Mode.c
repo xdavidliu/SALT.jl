@@ -130,7 +130,7 @@ void Fix(Mode *m, Geometry *geo){
 	for(i=psiket.ns; i<psiket.ne; i++){
 
 		dcomp val = valc(&psi, i) * factor;
-		setr(&psiket, i, ir(geo, i)? val.imag() : val.real() ); 
+		setr(&psiket, i, ir(geo, i)? cimag(val) : creal(val) ); 
 	}
 
 	DestroyVecfun(&psiket);

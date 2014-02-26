@@ -307,8 +307,8 @@ dcomp valc(Complexfun *fun, int i){
 void setc(Complexfun *fun,int i, dcomp val){
 	
 	if(i/fun->Nxyzc) val /= ComplexI;
-	fun->a[i-fun->ns] = val.real();
-	fun->b[i-fun->ns] = -val.imag();
+	fun->a[i-fun->ns] = creal(val);
+	fun->b[i-fun->ns] = -cimag(val);
 }
 
 void CreateVecfun(Vecfun *fun, Vec w){
@@ -341,3 +341,8 @@ void DestroyComplexfun(Complexfun *fun){
 void DestroyVecfun(Vecfun *fun){
 	VecRestoreArray(fun->u, &fun->a);
 }
+
+
+double creal(dcomp z){ return z.real();}
+double cimag(dcomp z){ return z.imag();} // temp, DELETE!
+

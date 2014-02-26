@@ -13,6 +13,9 @@ typedef std::complex<double> dcomp;
 static const dcomp ComplexI(0.0, 1.0);
 static const char Output_Suffix[PETSC_MAX_PATH_LEN] = "_file.m";
 
+double creal(dcomp z);
+double cimag(dcomp z); //TODO temp delete
+
 int GetRank();
 int GetSize();
 int LastProcess();
@@ -205,6 +208,7 @@ dcomp pmlval(int i, int* N, int* Npml, double* h, int LowerPML, int k);
 void AddPlaceholders(Mat J, Geometry *geo);
 void AllocateJacobian(Mat J, Geometry *geo);
 void AddRowDerivatives(Mat J, Geometry *geo, int ifix, int ih);
+
 
 
 

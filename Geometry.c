@@ -101,7 +101,7 @@ void CreateGeometry(Geometry *geo){
 		CreatePoint_i(&p, i, &geo->gN);
 		project(&p, 3);
 		dcomp eps_geoal = pmlval(xyzc(&p), N, geo->Npml, geo->h, geo->LowerPML, 0);	
-		setr(&pml, i, p.ir? eps_geoal.imag() : eps_geoal.real() );
+		setr(&pml, i, p.ir? cimag(eps_geoal) : creal(eps_geoal) );
 	}
 	DestroyVecfun(&pml);
 	

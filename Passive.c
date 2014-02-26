@@ -85,7 +85,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 	EPS evps; 
         EPSCreate(PETSC_COMM_WORLD, &evps);
         EPSSetOperators(evps, Mop, Bop);
-	EPSSetTarget(evps, guess.real());
+	EPSSetTarget(evps, creal(guess));
 	EPSSetWhichEigenpairs(evps, EPS_TARGET_REAL);
 
 
@@ -135,11 +135,11 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 		//==============
 
 		
-		if( w.imag() > 0.0 || fake ) continue; // could use ^ (XOR) here, but the positive frequency ones are exact duplicates.
+		if( cimag(w) > 0.0 || fake ) continue; // could use ^ (XOR) here, but the positive frequency ones are exact duplicates.
 		else j++;
 
 
-		if(w.imag() > 0.0) w = std::conj(w);
+		if(cimag(w) > 0.0) w = std::conj(w);
 
 
 		Mode M, *m = &M;
@@ -154,8 +154,8 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 		VecPointwiseMult(geo->vscratch[0], m->vpsi, geo->vf);
 		VecNorm(geo->vscratch[0], NORM_2, &psifnorm);
 
-		PetscPrintf(PETSC_COMM_WORLD, "found mode #%i: w = %1.8g + (%1.8g) i; pumped fraction = %g\n", j, w.real(), w.imag(), psifnorm/psinorm );
-		SetLast2(m->vpsi, w.real(), w.imag() ); // make sure to get psinorm before doing this
+		PetscPrintf(PETSC_COMM_WORLD, "found mode #%i: w = %1.8g + (%1.8g) i; pumped fraction = %g\n", j, creal(w), cimag(w), psifnorm/psinorm );
+		SetLast2(m->vpsi, creal(w), cimag(w) ); // make sure to get psinorm before doing this
 
 
 		char s[PETSC_MAX_PATH_LEN];

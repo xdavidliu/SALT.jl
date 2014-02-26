@@ -100,10 +100,10 @@ for(ib=0; ib<2; ib++){
 
 	double c[4];
         hh = geo->h[p.ic]*geo->h[cp[ib]];
-	val = mucp[1-ib] * magicnum /hh; c[1] = val.real();
-	val *= cidu_phase; c[0] = -val.real();
-	val = cpidl_phase[ib] * mulcp[1-ib] * magicnum/hh; c[3] = -val.real();
-	val *= -cidu_phase; c[2] = -val.real();
+	val = mucp[1-ib] * magicnum /hh; c[1] = creal(val);
+	val *= cidu_phase; c[0] = -creal(val);
+	val = cpidl_phase[ib] * mulcp[1-ib] * magicnum/hh; c[3] = -creal(val);
+	val *= -cidu_phase; c[2] = -creal(val);
       
 
 	int dcol[4];
@@ -137,9 +137,9 @@ for(ib=0; ib<2; ib++){
 
      
 	hh =  geo->h[cp[ib]]*geo->h[cp[ib]];
-	val = -(cpidu_phase[ib] * mucp[1-ib] * magicnum)/hh; c[0] = -val.real();
-	val = +( (mucp[1-ib] + mulcp[1-ib]) * magicnum)/hh;c[1] = -val.real();
-	val = -(cpidl_phase[ib] * mulcp[1-ib] * magicnum)/hh;c[2] = -val.real();
+	val = -(cpidu_phase[ib] * mucp[1-ib] * magicnum)/hh; c[0] = -creal(val);
+	val = +( (mucp[1-ib] + mulcp[1-ib]) * magicnum)/hh;c[1] = -creal(val);
+	val = -(cpidl_phase[ib] * mulcp[1-ib] * magicnum)/hh;c[2] = -creal(val);
      
  
 	dcol[0] = cpidu[ib]; 
