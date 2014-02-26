@@ -41,11 +41,11 @@ void LinearDerivative(Mode *m, Geometry *geo, Vec dfR, Vec dfI, int ih){
 	CreateVecfun(&f, geo->vf);
 	CreateVecfun(&H, geo->vH);
 
-	dcomp mw = getw(m), yw = gamma_w(m, geo);
+	dcomp mw = get_w(m), yw = gamma_w(m, geo);
 
 	int i;
 	for(i=eps.ns; i<eps.ne; i++){
-		dcomp val = sqr(mw) * (valc(&eps, i) + geo->D * yw * valr(&f, i) * valr(&H, i) );
+		dcomp val = csqr(mw) * (valc(&eps, i) + geo->D * yw * valr(&f, i) * valr(&H, i) );
 		VecSetComplex(dfR, dfI, i+offset(geo, ih), ir(geo, i), val, INSERT_VALUES);
 	}
 	DestroyVecfun(&f);
@@ -56,8 +56,8 @@ void LinearDerivative(Mode *m, Geometry *geo, Vec dfR, Vec dfI, int ih){
 void TensorDerivative(Mode *m, Mode *mj, Geometry *geo, int jc, int jr, Vec df, Vec vpsibra, Vec vIpsi, int ih){
 
 
-	double mjc = getc(mj);
-	dcomp mw = getw(m), yw = gamma_w(m, geo), yjw = gamma_w(mj, geo);
+	double mjc = get_c(mj);
+	dcomp mw = get_w(m), yw = gamma_w(m, geo), yjw = gamma_w(mj, geo);
 
 	Vecfun f, H, psibra;
 	CreateVecfun(&f, geo->vf);
@@ -71,7 +71,7 @@ void TensorDerivative(Mode *m, Mode *mj, Geometry *geo, int jc, int jr, Vec df, 
 	for(i=f.ns; i<f.ne; i++){
 
 		if( valr(&f, i) == 0.0) continue;			
-		dcomp ket_term = -sqr(mw ) * sqr(mjc) * sqr(std::abs(yjw)) * 2.0
+		dcomp ket_term = -csqr(mw ) * sqr(mjc) * sqr(std::abs(yjw)) * 2.0
 			* sqr(valr(&H, i) ) * geo->D * valr(&f, i) * yw * valc(&psi, i);		
 		double val = valr(&psibra, i) * (ir(geo, i)? cimag(ket_term) : creal(ket_term) );
 		
@@ -89,9 +89,9 @@ void ColumnDerivative(Mode* m, Mode* mj, Geometry *geo, Vec dfR, Vec dfI, Vec vI
 	// use pointers so can check whether ih = jh
 
 	// purposely don't set df = 0 here to allow multiple ih's
-	double mjc = getc(mj);
-	dcomp mw = getw(m), yw = gamma_w(m, geo),
-			mjw = getw(mj), yjw = gamma_w(mj, geo);
+	double mjc = get_c(mj);
+	dcomp mw = get_w(m), yw = gamma_w(m, geo),
+			mjw = get_w(mj), yjw = gamma_w(mj, geo);
 	
 	Complexfun psi, eps;
 	CreateComplexfun(&psi,m->vpsi, vIpsi);
@@ -109,15 +109,15 @@ void ColumnDerivative(Mode* m, Mode* mj, Geometry *geo, Vec dfR, Vec dfI, Vec vI
 			DfywHpsi = geo->D * valr(&f, i) * yw * valr(&H, i) * valc(&psi, i);
 
 		if(m == mj)
-			dfdk += ( -sqr(mw)*yw / geo->y +2.0*mw ) * DfywHpsi + 2.0*mw* valc(&eps, i)*valc(&psi, i);
+			dfdk += ( -csqr(mw)*yw / geo->y +2.0*mw ) * DfywHpsi + 2.0*mw* valc(&eps, i)*valc(&psi, i);
 
 		if(m->lasing && valr(&f, i) != 0.0){
 			dcomp dHdk_term = -sqr(mjc) * -2.0*(mjw-geo->wa)
 			 /sqr(geo->y) * sqr(sqr(std::abs(yjw)));
-			dHdk_term *= sqr(mw)*DfywHpsi * valr(&H, i) * valr(&psisq, i);
+			dHdk_term *= csqr(mw)*DfywHpsi * valr(&H, i) * valr(&psisq, i);
 			dfdk += dHdk_term;
 
-			dfdc = sqr(mw) * DfywHpsi * valr(&H, i);
+			dfdc = csqr(mw) * DfywHpsi * valr(&H, i);
 			dfdc *= (-2.0*mjc)*sqr(std::abs(yjw)) * valr(&psisq, i);
 		}
 		
@@ -146,7 +146,7 @@ void ComputeGain(Geometry *geo, ModeArray *ma){
 	for(ih=0; ih<ma->size; ih++){
 		Mode *m = ma->L[ih];
 		dcomp yw = gamma_w(m, geo);
-		double mc = getc(m);
+		double mc = get_c(m);
 
 		// do not change this from vscratch[3], or the hack below for single mode Column derivative will fail!
 		VecSqMedium(geo, m->vpsi, geo->vscratch[3], geo->vMscratch[0]);

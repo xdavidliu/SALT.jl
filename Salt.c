@@ -161,7 +161,7 @@ int FindModeAtThreshold(ModeArray *ma){
 	
 	for(ih = 0; ih<ma->size; ih++){
 		Mode *m = ma->L[ih];
-		if( getc(m) == 0.0 && m->lasing ){
+		if( get_c(m) == 0.0 && m->lasing ){
 			n = ih;
 			break;
 		}
@@ -238,7 +238,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 		Mode *m = ma->L[ih];
 		if(m->lasing) continue;
 
-		double wi_old = cimag(getw(m));
+		double wi_old = cimag(get_w(m));
 		
 		 ModeArray Ma_single, *ma_single = &Ma_single;
 		 CreateModeArray(ma_single , m);
@@ -246,7 +246,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 		NewtonSolve(ma_single , geo,  m->vpsi, f, dv);
 	  	DestroyModeArray(ma_single);
 	  	
-		double wi_new = cimag(getw(m));
+		double wi_new = cimag(get_w(m));
 
 		if(wi_new > -OptionsDouble("-thresholdw_tol") && !m->lasing){
 		

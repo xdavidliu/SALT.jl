@@ -14,7 +14,7 @@ PetscErrorCode MyError(const char* message){
 }
 
 double sqr(double a){ return a*a;}
-dcomp sqr(dcomp a){ return a*a;}
+dcomp csqr(dcomp a){ return a*a;}
 
 void AssembleVec(Vec x){ VecAssemblyBegin(x); VecAssemblyEnd(x); }
 void AssembleMat(Mat M){ MatAssemblyBegin(M, MAT_FINAL_ASSEMBLY); MatAssemblyEnd(M, MAT_FINAL_ASSEMBLY);}

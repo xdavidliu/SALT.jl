@@ -12,7 +12,7 @@ void FillBop(Geometry *geo, Mat Bop, dcomp w){
 	CreateComplexfun(&b, geo->vscratch[0], geo->vscratch[1]);
 	int i; 
 	for(i=b.ns; i<b.ne; i++)
-		setc(&b, i, sqr(w)* valc(&b, i) );
+		setc(&b, i, csqr(w)* valc(&b, i) );
 
 	SetJacobian(geo, Bop, geo->vscratch[0], -2, 0, 0);
 	SetJacobian(geo, Bop, geo->vscratch[1], -2, 1, 0);	
@@ -67,7 +67,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 	double wguess_real, wguess_imag;
 	OptionsGetDouble("-wreal", &wguess_real);
 	OptionsGetDouble("-wimag", &wguess_imag);
-	dcomp guess = -sqr(wguess_real + ComplexI * wguess_imag);
+	dcomp guess = -csqr(wguess_real + ComplexI * wguess_imag);
 
 
 	Mat Bop; CreateSquareMatrix(2*Nxyzc(geo), 2, &Bop);

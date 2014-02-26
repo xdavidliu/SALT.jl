@@ -270,14 +270,14 @@ void Setup(Mode *m, Geometry *geo){
 }
 
 
-double getc(Mode *m){
+double get_c(Mode *m){
 
 	if( !m->lasing) return 0.0;
 	else return GetFromLast(m->vpsi, 1);
 
 }
 
-dcomp getw(Mode *m){
+dcomp get_w(Mode *m){
 
 	if( m->lasing) return GetFromLast(m->vpsi, 0);
 	else return GetFromLast(m->vpsi, 0) + ComplexI * GetFromLast(m->vpsi, 1);
@@ -285,7 +285,7 @@ dcomp getw(Mode *m){
 
 dcomp gamma_w(Mode *m, Geometry *geo){
 	
-	return geo->y/( getw(m) -geo->wa + ComplexI*geo->y);
+	return geo->y/( get_w(m) -geo->wa + ComplexI*geo->y);
 	
 }
 

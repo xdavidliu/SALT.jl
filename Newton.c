@@ -11,7 +11,7 @@ double EdgeIntensity(Mode *m, Geometry *geo){
 	double psiR = GetValue(m->vpsi, Mxyz(geo)-1 ),
 			psiI = GetValue(m->vpsi, Mxyz(geo)-1+Nxyzc(geo) );
 
-	return 2*sqr( getc(m) ) * (  sqr(psiR ) + sqr(psiI) );
+	return 2*sqr( get_c(m) ) * (  sqr(psiR ) + sqr(psiI) );
 
 }
 
@@ -76,7 +76,7 @@ void NewtonSolve(ModeArray *ma, Geometry *geo, Vec v, Vec f, Vec dv){
 	if(OptionsInt("-printnewton")){ 
 		PetscPrintf(PETSC_COMM_WORLD, "\nconverged!\n" );
 		for(ih=0; ih<ma->size; ih++){
-			dcomp w = getw(ma->L[ih]);
+			dcomp w = get_w(ma->L[ih]);
 			PetscPrintf(PETSC_COMM_WORLD, "%s at D = %g: w = %g + i(%g)", 
 				ma->L[ih]->name,  geo->D, creal(w), cimag(w));
 				
@@ -94,7 +94,7 @@ void NewtonSolve(ModeArray *ma, Geometry *geo, Vec v, Vec f, Vec dv){
 void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray *mah, Vec vNh, Mode *m, Geometry *geo, Vec f, Vec dv){
 
 	
-	dcomp mw = getw(m);
+	dcomp mw = get_w(m);
 	if( std::abs(cimag(mw)) < OptionsDouble("-thresholdw_tol") ){
 		SetLast2(m->vpsi, creal(mw), 0.0);
 		PetscPrintf(PETSC_COMM_WORLD, "Threshold found for mode \"%s\" at D = %1.10g\n", m->name, geo->D);
@@ -114,7 +114,7 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 	NewtonSolve(ma, geo, m->vpsi, f, dv);
 	DestroyModeArray(ma);
 
-	mw = getw(m);
+	mw = get_w(m);
 	
 	if( wimag_lo*wimag_hi > 0){ // both on same side of threshold
 		if(wimag_lo > 0){ wimag_hi = wimag_lo; wimag_lo = cimag(mw); D_hi = D_lo; D_lo = geo->D;}

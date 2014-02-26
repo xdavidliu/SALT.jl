@@ -132,8 +132,8 @@ void DestroyMode(Mode *m);
 void Setup(Mode *m, Geometry *geo);
 
 void Write(Mode *m, const Geometry *geo);
-double getc(Mode *m);
-dcomp getw(Mode *m);
+double get_c(Mode *m);
+dcomp get_w(Mode *m);
 dcomp gamma_w(Mode *m, Geometry *geo);
 void Fix(Mode *m, Geometry *geo);
 
@@ -159,7 +159,7 @@ void ReadVectorC(FILE *fp, int N, Vec v);
 
 PetscErrorCode MyError(const char* message);
 double sqr(const double a);
-dcomp sqr(dcomp a);
+dcomp csqr(dcomp a);
 void View(Vec x, PetscViewer viewer);
 
 void Output(Vec A, const char* name, const char* variable_name);
