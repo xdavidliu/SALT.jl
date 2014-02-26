@@ -149,6 +149,7 @@ void AddArrayMode(ModeArray *ma, Mode *m);
 void RemoveArrayMode(ModeArray *ma, int n);
 
 void CreateFromList(ModeArray *ma, modelist& L); // temp
+void CreateFilter(ModeArray *ma, ModeArray *mf, int lasing);
 
 #define FORMODES(L, it)   for(modelist::iterator it=L.begin(); it!= L.end(); it++) 
 // note no ; at end of macro!

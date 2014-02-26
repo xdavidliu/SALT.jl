@@ -166,6 +166,22 @@ void Bundle(ModeArray *ma, Geometry *geo){
 
 bool AtThreshold(Mode *m){ return getc(m) == 0.0 && m->lasing;}
 
+
+int FindModeAtThreshold(ModeArray *ma){
+
+	int n = -1, ih;
+	
+	for(ih = 0; ih<ma->size; ih++){
+		Mode *m = ma->L[ih];
+		if( getc(m) == 0.0 && m->lasing ){
+			n = ih;
+			break;
+		}
+	}
+	return n;
+	
+}
+
 int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC_NULL); {
 	Geometry Geo, *geo = &Geo;
 	CreateGeometry(geo);
@@ -246,13 +262,12 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 		
 		
 			ModeArray Mah, *mah = &Mah;
-			if(Ll.size() > 0) CreateFromList(mah, Ll);
-			else mah = NULL;
+			CreateFromList(mah, Ll);
 		
 			ThresholdSearch(  wi_old, wi_new, geo->D-dD, geo->D, 
 			mah, vNh, m, geo, f, dv); // todo: replace with vNh
 			
-			if(mah!= NULL) DestroyModeArray(mah);
+			if(mah->size>0) DestroyModeArray(mah);
 		}
 	  }
 	  
