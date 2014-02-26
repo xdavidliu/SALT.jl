@@ -263,6 +263,12 @@ void Setup(Mode *m, Geometry *geo){
 	MatStoreValues(m->J); 
 	
 	KSPSetFromOptions(m->ksp);
+	PC pc;
+	KSPGetPC(m->ksp,&pc);
+ 	PCSetType(pc,PCLU);
+  	PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);
+	// don't forget to change this in Bundle too
+
 	KSPSetOperators(m->ksp, m->J, m->J, SAME_PRECONDITIONER);
 		// this will only be called the first time KSPSolve is called. SAME_PRECONDITIONER makes this
 		// line analogous to "static". If call it here, the LU factorization

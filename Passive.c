@@ -84,7 +84,19 @@ void Passive(int BCPeriod, int bl[3], double k[3], double wreal, double wimag, d
 	
 
         EPSSetFromOptions(evps);
-    
+
+	ST st; // doing this in case using Julia interface and cannot provide solver from command line arguments
+	EPSGetST(evps, &st);
+	STSetType(st, STSINVERT);
+
+	KSP ksp;
+	STGetKSP(st, &ksp);
+	PC pc;
+	KSPGetPC(ksp,&pc);
+ 	PCSetType(pc,PCLU);
+  	PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);    
+
+
 
 
 	gettimeofday(&t2, NULL);

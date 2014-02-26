@@ -114,6 +114,12 @@ void Bundle(ModeArray *ma, Geometry *geo){
 
 
 	KSPCreate(PETSC_COMM_WORLD,&ksp);
+	PC pc;
+	KSPGetPC(ksp,&pc);
+ 	PCSetType(pc,PCLU);
+  	PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);
+	// don't forget to change this in Setup too.
+
 	KSPSetFromOptions(ksp);
 	KSPSetOperators(ksp, J, J, SAME_PRECONDITIONER);
 	// TODO: will probably want to merge all of this in with a generalized
