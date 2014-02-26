@@ -169,7 +169,8 @@ int FindModeAtThreshold(ModeArray *ma){
 	
 }
 
-int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC_NULL); {
+int main(int argc, char** argv){ 
+	SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC_NULL); 
 	Geometry Geo, *geo = &Geo;
 	CreateGeometry(geo);
 	
@@ -276,4 +277,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 	PetscPrintf(PETSC_COMM_WORLD, "future todo: add artificial crashes to enforce all the assumptions I'm making. For example, crash if any file read fails.\n");		
 	PetscPrintf(PETSC_COMM_WORLD, "future todo: Make sure all MyError crashes crash all processes the way CHKERRQ does\n");		
 	PetscPrintf(PETSC_COMM_WORLD, "TODO: compare multimode calculation speed to single mode with twice the pixels\n");		
-}SlepcFinalize();	}
+
+	SlepcFinalize();	
+
+}

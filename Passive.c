@@ -23,10 +23,7 @@ void FillBop(Geometry *geo, Mat Bop, dcomp w){
 
 }
 
-
-int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC_NULL); {
-
-
+void Passive(int BCPeriod, int bx, int by, int bz, double kx, double ky, double kz, double wreal, double wimag, char *modeout){
 
     	tv t1, t2, t3;
 	Geometry Geo;
@@ -35,11 +32,13 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 	
 	gettimeofday(&t1, NULL);
 
-	int	i, b[3][2], BCPeriod, bl[3];
-	OptionsGetInt("-BCPeriod", &BCPeriod);
-	OptionsXYZInt("-b", bl);
+	int	i, b[3][2];
 
-	for(i=0; i<3; i++){ b[i][0]=bl[i]; b[i][1] = 0;}
+	for(i=0; i<3; i++) b[i][1] = 0;
+
+	b[0][0] = bx;
+	b[1][0] = by;
+	b[2][0] = bz;
 
         Mat Mop;
 	CreateSquareMatrix(2*Nxyzc(geo), 26, &Mop);
@@ -47,8 +46,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 
 
 
-	double k[3] = {0, 0, 0};
-	OptionsXYZDouble("-k", k);
+	double k[3] = {kx, ky, kz};
 
 
 
@@ -64,10 +62,8 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 
 
 
-	double wguess_real, wguess_imag;
-	OptionsGetDouble("-wreal", &wguess_real);
-	OptionsGetDouble("-wimag", &wguess_imag);
-	dcomp guess = -csqr(wguess_real + ComplexI * wguess_imag);
+
+	dcomp guess = -csqr(wreal + ComplexI * wimag);
 
 
 	Mat Bop; CreateSquareMatrix(2*Nxyzc(geo), 2, &Bop);
@@ -158,9 +154,8 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 		SetLast2(m->vpsi, creal(w), cimag(w) ); // make sure to get psinorm before doing this
 
 
-		char s[PETSC_MAX_PATH_LEN];
-		OptionsGetString("-passiveout", s);
-		sprintf(m->name, "%s%i", s, j);
+
+		sprintf(m->name, "%s%i", modeout, j);
 		Write(m, geo);
 		DestroyMode(m);
 	}
@@ -174,5 +169,30 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 	PetscPrintf(PETSC_COMM_WORLD, "Formation and setup: %g s\nEPSSolve and Output: %g s\n", 
 		dt(t1, t2), dt(t2, t3) );
 
+} 
+
+
+int main(int argc, char** argv){ 
+
+	SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC_NULL); 
+
+
+	double wguess_real, wguess_imag;
+	OptionsGetDouble("-wreal", &wguess_real);
+	OptionsGetDouble("-wimag", &wguess_imag);
+
+	int bl[3], BCPeriod;
+	OptionsGetInt("-BCPeriod", &BCPeriod);
+	OptionsXYZInt("-b", bl);
+
+	double k[3] = {0, 0, 0};
+	OptionsXYZDouble("-k", k);
+
+	char s[PETSC_MAX_PATH_LEN];
+	OptionsGetString("-passiveout", s);
+
+	Passive(BCPeriod, bl[0], bl[1], bl[2], k[0], k[1], k[2], wguess_real, wguess_imag, s);
+
 		
-} SlepcFinalize();	}
+SlepcFinalize();	
+}
