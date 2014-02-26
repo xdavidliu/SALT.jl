@@ -114,12 +114,12 @@ void FirstStep(ModeArray *mah, Mode *m, Geometry *geo, Vec vNh, Vec f, Vec dv, d
 
 
 
-void Bundle(modelist &L, Geometry *geo){
+void Bundle(ModeArray *ma, Geometry *geo){
 
 
 
 
-	int i, Nh = L.size(), Nj = 2*Nxyzc(geo)+2;
+	int i, Nh = ma->size, Nj = 2*Nxyzc(geo)+2;
 	if(Nh < 2) MyError("Bundle function is only for multimode!");
 	
 	Mat J; KSP ksp;
@@ -144,8 +144,8 @@ void Bundle(modelist &L, Geometry *geo){
 
 	int ih = 0;
 
-	FORMODES(L, it){
-		Mode *m = *it;
+	for(ih=0; ih<ma->size; ih++){
+		Mode *m = ma->L[ih];
 		
 		DestroyMat( &m->J); // bundle shares J and v
 		m->J = J;
@@ -154,7 +154,6 @@ void Bundle(modelist &L, Geometry *geo){
 		
 		MoperatorGeneralBlochFill(geo, J, m->b, m->BCPeriod, m->k, ih);
 		AddRowDerivatives(J, geo, m->ifix, ih);
-		ih++;
 	}	
 	
 	AssembleMat(J);
@@ -195,7 +194,13 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 
 	  if( Ll.size() > 0){ // lasing modes
 		  modelist::iterator it = std::find_if(Ll.begin(), Ll.end(), AtThreshold);
-		  if( it != Ll.end() && Ll.size() > 1) Bundle(Ll, geo);
+		  if( it != Ll.end() && Ll.size() > 1){
+
+			ModeArray Ma, *mah = &Ma;
+			CreateFromList(mah, Ll);		  
+		  	Bundle(mah, geo);
+		  	DestroyModeArray(mah);
+		  }
 
 		  if(Ll.size() > 1){	 // these vectors will have been properly created in the last block
 			vNh = geo->vNhscratch[2];
