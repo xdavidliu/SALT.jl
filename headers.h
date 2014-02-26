@@ -19,6 +19,8 @@ static const dcomp ComplexI(0.0, 1.0);
 typedef double complex dcomp;
 static const dcomp ComplexI = I;
 
+#define MAXMODES 10
+// TODO: allow more than 10 modes
 
 
 
@@ -181,6 +183,8 @@ void View(Vec x, PetscViewer viewer);
 void Output(Vec A, const char* name, const char* variable_name);
 
 
+
+
 void NewtonSolve(ModeArray *ma, Geometry *geo, Vec v, Vec f, Vec dv, double ftol, int printnewton);
 void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray *mah, Vec vNh, Mode *m, Geometry *geo, Vec f, Vec dv, double thresholdw_tol, double ftol, int printnewton);
 double FormJf(ModeArray *ma, Geometry *geo, Vec v, Vec f, double ftol, int printnewton);
@@ -225,6 +229,6 @@ void AddPlaceholders(Mat J, Geometry *geo);
 void AllocateJacobian(Mat J, Geometry *geo);
 void AddRowDerivatives(Mat J, Geometry *geo, int ifix, int ih);
 
-
+void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, char namesin[MAXMODES][PETSC_MAX_PATH_LEN], char namesout[MAXMODES][PETSC_MAX_PATH_LEN], int printnewton, int Nm, Geometry *geo);
 
 

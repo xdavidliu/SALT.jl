@@ -24,12 +24,9 @@ void FillBop(Geometry *geo, Mat Bop, dcomp w){
 }
 
 // everything after modeout is directly from ReadGeometry
-void Passive(int BCPeriod, int bl[3], double k[3], double wreal, double wimag, double modenorm, int nev, char *modeout, int N[3], int M[3], double h[3], int Npml[3], int Nc, int LowerPML, char *epsfile, char *fproffile, double wa, double y){
+void Passive(int BCPeriod, int bl[3], double k[3], double wreal, double wimag, double modenorm, int nev, char *modeout, Geometry *geo){
 
-    	tv t1, t2, t3;
-	Geometry Geo;
-	Geometry *geo = &Geo; // to make consistent with other functions
-	CreateGeometry(geo, N, M, h, Npml, Nc, LowerPML, epsfile, fproffile, wa, y);	
+    	tv t1, t2, t3;	
 
 	gettimeofday(&t1, NULL);
 
@@ -170,7 +167,7 @@ void Passive(int BCPeriod, int bl[3], double k[3], double wreal, double wimag, d
 	EPSDestroy(&evps);
 	DestroyMat(&Mop);	DestroyMat(&Bop);
 	DestroyVec(&v);	DestroyVec(&vi);
-	DestroyGeometry(geo);
+
 
 	gettimeofday(&t3, NULL);	
 	
@@ -227,8 +224,12 @@ int main(int argc, char** argv){
 
 	// ======== copied directly from ReadGeometry ======== //
 
-	Passive(BCPeriod, bl, k, wguess_real, wguess_imag, modenorm, nev, s,N, M, h, Npml, Nc, LowerPML, epsfile, fproffile, wa, y);
 
+	Geometry Geo, *geo = &Geo;
+	CreateGeometry(geo, N, M, h, Npml, Nc, LowerPML, epsfile, fproffile, wa, y);
+
+	Passive(BCPeriod, bl, k, wguess_real, wguess_imag, modenorm, nev, s, geo);
+	DestroyGeometry(geo);
 		
 SlepcFinalize();	
 }

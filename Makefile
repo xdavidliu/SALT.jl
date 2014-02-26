@@ -6,7 +6,7 @@ include ${SLEPC_DIR}/conf/slepc_common
 
 
 BASIC_OFILES = Geometry.o Tools.o Mode.o Moperator.o Pml.o
-NEWTON_OFILES = Newton.o Jacobian.o
+NEWTON_OFILES = Newton.o Jacobian.o Creeper.o
 
 NLOPT = /usr/include/nlopt.hpp
 CHEBPACK = /Users/daveliu/chebpack
