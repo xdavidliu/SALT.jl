@@ -165,10 +165,11 @@ int FindModeAtThreshold(ModeArray *ma){
 }
 
 
-void Salt(double dD, double Dmax, double thresholdw_tol, double ftol, char namesin[MAXMODES][PETSC_MAX_PATH_LEN], char namesout[MAXMODES][PETSC_MAX_PATH_LEN], int Nm){
+// everything after Nm copied directly from ReadMode
+void Salt(double dD, double Dmax, double thresholdw_tol, double ftol, char namesin[MAXMODES][PETSC_MAX_PATH_LEN], char namesout[MAXMODES][PETSC_MAX_PATH_LEN], int Nm, int N[3], int M[3], double h[3], int Npml[3], int Nc, int LowerPML, char *epsfile, char *fproffile, double wa, double y){
 
 	Geometry Geo, *geo = &Geo;
-	ReadGeometry(geo);
+	CreateGeometry(geo, N, M, h, Npml, Nc, LowerPML, epsfile, fproffile, wa, y);
 	
 
 
@@ -304,8 +305,34 @@ int main(int argc, char** argv){
 	}
 	int Nm = i;
 
+	// ======== copied directly from ReadGeometry ======== //
 
-	Salt(dD, Dmax, thresholdw_tol, ftol, namesin, namesout, Nm);
+	int N[3], M[3], Npml[3], Nc, LowerPML;
+	double h[3];
+
+	OptionsXYZInt("-N", N);
+	OptionsXYZInt("-M", M);
+
+	OptionsXYZInt("-Npml", Npml);
+	OptionsXYZDouble("-h", h);
+
+	OptionsGetInt("-Nc", &Nc);
+	OptionsGetInt("-LowerPML", &LowerPML);
+
+
+	char epsfile[PETSC_MAX_PATH_LEN], fproffile[PETSC_MAX_PATH_LEN];
+
+	OptionsGetString("-epsfile", epsfile);
+	OptionsGetString("-fproffile", fproffile);
+
+	double wa, y;
+	OptionsGetDouble("-wa", &wa);
+	OptionsGetDouble("-gamma", &y);
+
+	// ======== copied directly from ReadGeometry ======== //
+
+
+	Salt(dD, Dmax, thresholdw_tol, ftol, namesin, namesout, Nm,  N, M, h, Npml, Nc, LowerPML, epsfile, fproffile, wa, y);
 
 	PetscPrintf(PETSC_COMM_WORLD, "\n");
 	PetscPrintf(PETSC_COMM_WORLD, "TODO: a whole bunch of TODOs in Salt.c related to first step of multimode\n");	

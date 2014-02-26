@@ -90,14 +90,18 @@ void ReadGeometry(Geometry *geo){
 	OptionsGetString("-epsfile", epsfile);
 	OptionsGetString("-fproffile", fproffile);
 
-	CreateGeometry(geo, N, M, h, Npml, Nc, LowerPML, epsfile, fproffile);
+	double wa, y;
+	OptionsGetDouble("-wa", &wa);
+	OptionsGetDouble("-gamma", &y);
+
+	CreateGeometry(geo, N, M, h, Npml, Nc, LowerPML, epsfile, fproffile, wa, y);
 
 
 
 }
 
 
-void CreateGeometry(Geometry *geo, int N[3], int M[3], double h[3], int Npml[3], int Nc, int LowerPML, char *epsfile, char *fproffile){
+void CreateGeometry(Geometry *geo, int N[3], int M[3], double h[3], int Npml[3], int Nc, int LowerPML, char *epsfile, char *fproffile, double wa, double y){
 
 
 	int i;
@@ -163,8 +167,10 @@ void CreateGeometry(Geometry *geo, int N[3], int M[3], double h[3], int Npml[3],
 
 
 	geo->D = 0.0;
-	OptionsGetDouble("-wa", &geo->wa);
-	OptionsGetDouble("-gamma", &geo->y);
+
+
+	geo->wa = wa;
+	geo->y = y;
 
 
 	VecDuplicate(geo->veps, &geo->vf);

@@ -23,30 +23,26 @@ void FillBop(Geometry *geo, Mat Bop, dcomp w){
 
 }
 
-void Passive(int BCPeriod, int bx, int by, int bz, double kx, double ky, double kz, double wreal, double wimag, char *modeout){
+// everything after modeout is directly from ReadGeometry
+void Passive(int BCPeriod, int bl[3], double k[3], double wreal, double wimag, char *modeout, int N[3], int M[3], double h[3], int Npml[3], int Nc, int LowerPML, char *epsfile, char *fproffile, double wa, double y){
 
     	tv t1, t2, t3;
 	Geometry Geo;
-	ReadGeometry(&Geo);
 	Geometry *geo = &Geo; // to make consistent with other functions
-	
+	CreateGeometry(geo, N, M, h, Npml, Nc, LowerPML, epsfile, fproffile, wa, y);	
+
 	gettimeofday(&t1, NULL);
 
 	int	i, b[3][2];
 
-	for(i=0; i<3; i++) b[i][1] = 0;
-
-	b[0][0] = bx;
-	b[1][0] = by;
-	b[2][0] = bz;
-
-        Mat Mop;
+	for(i=0; i<3; i++){
+		b[i][0] = bl[i];
+		b[i][1] = 0;
+	}
+	
+	Mat Mop;
 	CreateSquareMatrix(2*Nxyzc(geo), 26, &Mop);
 
-
-
-
-	double k[3] = {kx, ky, kz};
 
 
 
@@ -191,7 +187,33 @@ int main(int argc, char** argv){
 	char s[PETSC_MAX_PATH_LEN];
 	OptionsGetString("-passiveout", s);
 
-	Passive(BCPeriod, bl[0], bl[1], bl[2], k[0], k[1], k[2], wguess_real, wguess_imag, s);
+	// ======== copied directly from ReadGeometry ======== //
+
+	int N[3], M[3], Npml[3], Nc, LowerPML;
+	double h[3];
+
+	OptionsXYZInt("-N", N);
+	OptionsXYZInt("-M", M);
+
+	OptionsXYZInt("-Npml", Npml);
+	OptionsXYZDouble("-h", h);
+
+	OptionsGetInt("-Nc", &Nc);
+	OptionsGetInt("-LowerPML", &LowerPML);
+
+
+	char epsfile[PETSC_MAX_PATH_LEN], fproffile[PETSC_MAX_PATH_LEN];
+
+	OptionsGetString("-epsfile", epsfile);
+	OptionsGetString("-fproffile", fproffile);
+
+	double wa, y;
+	OptionsGetDouble("-wa", &wa);
+	OptionsGetDouble("-gamma", &y);
+
+	// ======== copied directly from ReadGeometry ======== //
+
+	Passive(BCPeriod, bl, k, wguess_real, wguess_imag, s ,N, M, h, Npml, Nc, LowerPML, epsfile, fproffile, wa, y);
 
 		
 SlepcFinalize();	
