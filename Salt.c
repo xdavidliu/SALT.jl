@@ -1,35 +1,30 @@
 #include "headers.h"
 
+#define MAXMODES 10
+// TODO: allow more than 10 modes
 
+PetscErrorCode ReadModes(ModeArray *ma, Geometry *geo, char namesin[MAXMODES][PETSC_MAX_PATH_LEN], char namesout[MAXMODES][PETSC_MAX_PATH_LEN], int Nm){
 
-PetscErrorCode ReadModes(ModeArray *ma, Geometry *geo){
-
-	char modename[PETSC_MAX_PATH_LEN], 
-	     optionin[PETSC_MAX_PATH_LEN] = "-in0",
-	     optionout[PETSC_MAX_PATH_LEN] = "-out0";
 
 	int i;
-	for(i=0; OptionsGetString(optionin, modename); i++){
+	for(i=0; i<Nm; i++){
 
 		double D;
 		Mode* m = (Mode*) malloc(sizeof( Mode));
-		ModeRead(m, modename, geo, &D);
+		ModeRead(m, namesin[i], geo, &D);
 
 		if(i==0) geo->D = D;
 		else if(D != geo->D)
 			MyError("The input modes should all be at the same pump strength!");		
 
-		if( !OptionsGetString(optionout, modename) )
-			MyError("number of -out less than number of -in!");
-		sprintf(m->name, "%s", modename);
+		sprintf(m->name, "%s", namesout[i]);
 
 		if(i == 0) CreateModeArray(ma,m);
 		else AddArrayMode(ma, m);
 
 		Setup(m, geo);
 
-		sprintf(optionin, "-in%i", i+1);
-		sprintf(optionout, "-out%i", i+1);
+
 	}
 	return 0;
 
@@ -179,7 +174,30 @@ void Salt(double dD, double Dmax, double thresholdw_tol, double ftol){
 
 	
   	ModeArray Ma, *ma = &Ma;
-	ReadModes(ma, geo);
+
+
+	char optionin[PETSC_MAX_PATH_LEN] = "-in0",
+	     optionout[PETSC_MAX_PATH_LEN] = "-out0",
+		 namesin[MAXMODES][PETSC_MAX_PATH_LEN],
+   		 namesout[MAXMODES][PETSC_MAX_PATH_LEN]; 
+		;
+
+	int i=0;
+	while(1){
+
+		if( !OptionsGetString(optionin, namesin[i]) ) break;
+
+		if( !OptionsGetString(optionout, namesout[i]) )
+			MyError("number of -out less than number of -in!");
+		
+		i++;
+		if(i > MAXMODES) MyError("exceeded mode limit!");
+		sprintf(optionin, "-in%i", i);
+		sprintf(optionout, "-out%i", i);
+	}
+
+	// i is now number of modes read
+	ReadModes(ma, geo, namesin, namesout, i);
 	
 	
     Vec f, dv;
