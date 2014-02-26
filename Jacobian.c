@@ -136,15 +136,15 @@ void ColumnDerivative(Mode* m, Mode* mj, Geometry *geo, Vec dfR, Vec dfI, Vec vI
 	DestroyVecfun(&psisq);
 }
 
-void ComputeGain(Geometry *geo, modelist& L){
+void ComputeGain(Geometry *geo, ModeArray *ma){
 
 	VecSet(geo->vH, 0.0);
 
 	Vecfun H;
 	CreateVecfun(&H, geo->vH);
-	int i;
-	FORMODES(L, it){
-		Mode *m = *it;
+	int i, ih;
+	for(ih=0; ih<ma->size; ih++){
+		Mode *m = ma->L[ih];
 		dcomp yw = gamma_w(m, geo);
 		double mc = getc(m);
 
@@ -165,16 +165,15 @@ void ComputeGain(Geometry *geo, modelist& L){
 	DestroyVecfun(&H);
 }
 
-double FormJf(modelist& L, Geometry *geo, Vec v, Vec f){
+double FormJf(ModeArray *ma, Geometry *geo, Vec v, Vec f){
 
 
-
-	Mode *m = *(L.begin());
+	Mode *m = ma->L[0];
 	bool lasing = m->lasing;
 	Mat J = m->J; // for multimode, all m share same J
 
 	if(lasing)
-		ComputeGain(geo, L); // do this before naming scratch vectors!
+		ComputeGain(geo, ma); // do this before naming scratch vectors!
 
 	// ================== name scratch vectors ================== //
 
@@ -182,7 +181,7 @@ double FormJf(modelist& L, Geometry *geo, Vec v, Vec f){
 		vIpsi = geo->vscratch[2];
 
 	Vec dfR, dfI;
-	if(L.size() == 1){
+	if(ma->size == 1){
 		dfR = geo->vscratch[0];
 		dfI = geo->vscratch[1];
 	}else{
@@ -196,8 +195,7 @@ double FormJf(modelist& L, Geometry *geo, Vec v, Vec f){
 
 	int ih, jh, kh, ir, jr, jc;
 
-	ModeArray Ma, *ma = &Ma;
-	CreateFromList(ma, L);
+
 
 	for(ih=0; ih<ma->size; ih++){
 		m = ma->L[ih];
@@ -217,7 +215,7 @@ double FormJf(modelist& L, Geometry *geo, Vec v, Vec f){
 
 	MatMult(J, v, f);
 
-	for(kh = 0; kh<L.size(); kh++) for(ir=0; ir<2; ir++)
+	for(kh = 0; kh<ma->size; kh++) for(ir=0; ir<2; ir++)
 		VecSetValue(f, kh*NJ(geo) + Nxyzcr(geo)+ir, 0.0, INSERT_VALUES);
 
 	AssembleVec(f);
@@ -244,7 +242,7 @@ double FormJf(modelist& L, Geometry *geo, Vec v, Vec f){
 		VecSet(dfR, 0.0);
 		VecSet(dfI, 0.0);
 
-		if(L.size() > 1)  // hack: only recompute vpsisq if ComputeGain didn't already do it, i.e. for multimode
+		if(ma->size > 1)  // hack: only recompute vpsisq if ComputeGain didn't already do it, i.e. for multimode
 			VecSqMedium(geo, mj->vpsi, vpsisq, geo->vMscratch[0]);
 
 		for(ih=0; ih<ma->size; ih++){
@@ -291,7 +289,7 @@ double FormJf(modelist& L, Geometry *geo, Vec v, Vec f){
 	}
   }
 	AssembleMat(J);
-	DestroyModeArray(ma);
+
 
 	return fnorm;	
 

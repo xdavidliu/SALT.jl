@@ -50,7 +50,14 @@ void NewtonSolve(modelist &L, Geometry *geo, Vec v, Vec f, Vec dv){
 		
 
 		gettimeofday(&t1, NULL);
-		if( FormJf(L, geo, v, f) < OptionsDouble("-newtonf_tol"))	break;
+		
+
+		ModeArray Ma, *ma = &Ma;
+		CreateFromList(ma, L);
+		double fnorm = FormJf(ma, geo, v, f);
+		DestroyModeArray(ma);		
+		
+		if(  fnorm < OptionsDouble("-newtonf_tol"))	break;
 		gettimeofday(&t2, NULL);
 		KSPSolve(ksp, f, dv);
 		gettimeofday(&t3, NULL);

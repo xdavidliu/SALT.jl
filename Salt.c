@@ -77,7 +77,13 @@ void FirstStep(modelist Lh, Mode *m, Geometry *geo, Vec vNh, Vec f, Vec dv, doub
 	AssembleVec(vNh);
 	AssembleVec(m->vpsi);
 
-	if( FormJf(Lh, geo, vNh, f) < OptionsDouble("-newtonf_tol")) break;
+	ModeArray Ma, *mah = &Ma;
+	CreateFromList(mah, Lh);
+	double fnorm = FormJf(mah, geo, vNh, f);
+	DestroyModeArray(mah);
+
+	if(  fnorm < OptionsDouble("-newtonf_tol")) break;
+	
 	KSPSolve( (*Lh.begin())->ksp, f, dv);
 	PetscPrintf(PETSC_COMM_WORLD, "\n");
 
