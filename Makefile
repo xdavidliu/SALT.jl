@@ -11,18 +11,18 @@ NEWTON_OFILES = Newton.o Jacobian.o Creeper.o
 NLOPT = /usr/include/nlopt.hpp
 CHEBPACK = /Users/daveliu/chebpack
 #CFLAGS = -I${NLOPT} -I${CHEBPACK} -L${CHEBPACK} -lnlopt -lchebpack -lfftw3
-CFLAGS = -lnlopt
-CLEANFILES = PassiveOut SaltOut log* #.o files removed by default!
-COMMAND = ${CLINKER} $^ -o $@Out ${SLEPC_LIB}
+#CFLAGS = -lnlopt
+SALTLIB = saltlib.dylib
+CLEANFILES = *Out* #.o files removed by default!
 
 		
-SaltShared: Salt.o ${BASIC_OFILES} ${NEWTON_OFILES}
-	${CLINKER} $^ -shared -o saltlib.dylib ${SLEPC_LIB}
+Salt: Salt.o ${BASIC_OFILES} ${NEWTON_OFILES}
+	${CLINKER} $^ -shared -o ${SALTLIB} ${SLEPC_LIB}
 
 main: main.o
-	${CLINKER} $^ -o SaltOut saltlib.dylib ${SLEPC_LIB}
+	${CLINKER} $^ -o SaltOut ${SALTLIB} ${SLEPC_LIB}
 
 Test: Test.o
-	${CLINKER} $^ -o TestOut saltlib.dylib ${SLEPC_LIB}
+	${CLINKER} $^ -o TestOut ${SALTLIB} ${SLEPC_LIB}
 
 

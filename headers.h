@@ -133,7 +133,7 @@ typedef struct Mode_s{
 } Mode;
 
 void CreateMode(Mode *m, Geometry *geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]);
-void ModeRead(Mode *m, char *Name, Geometry *geo, double *Dout);
+void ModeRead(Mode *m, const char *Name, Geometry *geo, double *Dout);
 void DestroyMode(Mode *m);
 void Setup(Mode *m, Geometry *geo);
 
@@ -217,7 +217,7 @@ void AddPlaceholders(Mat J, Geometry *geo);
 void AllocateJacobian(Mat J, Geometry *geo);
 void AddRowDerivatives(Mat J, Geometry *geo, int ifix, int ih);
 
-void Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, char *modeout, Geometry *geo);
-void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char **namesout, int printnewton, int Nm, Geometry *geo);
+void Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, const char *modeout, Geometry *geo);
+void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, const char **namesin, const char **namesout, int printnewton, int Nm, Geometry *geo);
 
 

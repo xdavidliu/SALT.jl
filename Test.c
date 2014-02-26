@@ -3,7 +3,7 @@
 
 void Salt(int *N, int *M, double *h, int *Npml, int Nc, int LowerPML, char *epsfile, char *fproffile, double wa, double y,  // <-- Geometry parameters
 int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, char *modeout,  // <--- Passive parameters
-double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char **namesout, int printnewton, int Nm // <--- Creeper parameters
+double dD, double Dmax, double thresholdw_tol, double ftol, const char **namesin, const char **namesout, int printnewton, int Nm // <--- Creeper parameters
 );
 
 

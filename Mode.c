@@ -19,7 +19,7 @@ void CreateMode(Mode *m, Geometry *geo, int ifix_, int b_[3][2], int BCPeriod_, 
 
 
 
-void ModeRead(Mode *m, char *Name, Geometry *geo, double *Dout){
+void ModeRead(Mode *m, const char *Name, Geometry *geo, double *Dout){
 
 	sprintf(m->name, "%s", Name );
 	CreateVec(2*Nxyzc(geo)+2, &m->vpsi);
