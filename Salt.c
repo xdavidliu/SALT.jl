@@ -165,7 +165,7 @@ int FindModeAtThreshold(ModeArray *ma){
 }
 
 
-void Salt(double dD, double Dmax, double thresholdw_tol, double ftol){
+void Salt(double dD, double Dmax, double thresholdw_tol, double ftol, char namesin[MAXMODES][PETSC_MAX_PATH_LEN], char namesout[MAXMODES][PETSC_MAX_PATH_LEN], int Nm){
 
 	Geometry Geo, *geo = &Geo;
 	CreateGeometry(geo);
@@ -176,28 +176,10 @@ void Salt(double dD, double Dmax, double thresholdw_tol, double ftol){
   	ModeArray Ma, *ma = &Ma;
 
 
-	char optionin[PETSC_MAX_PATH_LEN] = "-in0",
-	     optionout[PETSC_MAX_PATH_LEN] = "-out0",
-		 namesin[MAXMODES][PETSC_MAX_PATH_LEN],
-   		 namesout[MAXMODES][PETSC_MAX_PATH_LEN]; 
-		;
 
-	int i=0;
-	while(1){
-
-		if( !OptionsGetString(optionin, namesin[i]) ) break;
-
-		if( !OptionsGetString(optionout, namesout[i]) )
-			MyError("number of -out less than number of -in!");
-		
-		i++;
-		if(i > MAXMODES) MyError("exceeded mode limit!");
-		sprintf(optionin, "-in%i", i);
-		sprintf(optionout, "-out%i", i);
-	}
 
 	// i is now number of modes read
-	ReadModes(ma, geo, namesin, namesout, i);
+	ReadModes(ma, geo, namesin, namesout, Nm);
 	
 	
     Vec f, dv;
@@ -300,7 +282,30 @@ int main(int argc, char** argv){
 	
 	double ftol = OptionsDouble("-newtonf_tol");
 
-	Salt(dD, Dmax, thresholdw_tol, ftol);
+
+	char optionin[PETSC_MAX_PATH_LEN] = "-in0",
+	     optionout[PETSC_MAX_PATH_LEN] = "-out0",
+		 namesin[MAXMODES][PETSC_MAX_PATH_LEN],
+   		 namesout[MAXMODES][PETSC_MAX_PATH_LEN]; 
+		
+
+	int i=0;
+	while(1){
+
+		if( !OptionsGetString(optionin, namesin[i]) ) break;
+
+		if( !OptionsGetString(optionout, namesout[i]) )
+			MyError("number of -out less than number of -in!");
+		
+		i++;
+		if(i > MAXMODES) MyError("exceeded mode limit!");
+		sprintf(optionin, "-in%i", i);
+		sprintf(optionout, "-out%i", i);
+	}
+	int Nm = i;
+
+
+	Salt(dD, Dmax, thresholdw_tol, ftol, namesin, namesout, Nm);
 
 	PetscPrintf(PETSC_COMM_WORLD, "\n");
 	PetscPrintf(PETSC_COMM_WORLD, "TODO: a whole bunch of TODOs in Salt.c related to first step of multimode\n");	
