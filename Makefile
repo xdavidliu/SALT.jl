@@ -15,12 +15,12 @@ CFLAGS = -lnlopt
 CLEANFILES = PassiveOut SaltOut log* #.o files removed by default!
 COMMAND = ${CLINKER} $^ -o $@Out ${SLEPC_LIB}
 
-
-Salt: Salt.o ${BASIC_OFILES} ${NEWTON_OFILES}
-	${COMMAND}
-	
+		
 SaltShared: Salt.o ${BASIC_OFILES} ${NEWTON_OFILES}
 	${CLINKER} $^ -shared -o saltlib.dylib ${SLEPC_LIB}
+
+main: main.o
+	${CLINKER} $^ -o SaltOut saltlib.dylib ${SLEPC_LIB}
 
 Test: Test.o
 	${CLINKER} $^ -o TestOut saltlib.dylib ${SLEPC_LIB}
