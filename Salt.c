@@ -1,6 +1,66 @@
 #include "headers.h"
 
-void Salt(int N[3], int M[3], double h[3], int Npml[3], int Nc, int LowerPML, char *epsfile, char *fproffile, double wa, double y,  // <-- Geometry parameters
+
+
+
+
+
+
+int OptionsGetString(const char* c, char* a){ 
+	PetscBool flg;
+	PetscOptionsGetString(PETSC_NULL,c, a, PETSC_MAX_PATH_LEN, &flg); 
+	return flg;
+}
+
+int OptionsGetInt(const char* c, int* a){
+	PetscBool flg;
+	PetscOptionsGetInt(PETSC_NULL,c,a,&flg);
+	return flg;
+}
+
+int OptionsInt(const char* c){
+	int out;
+	OptionsGetInt(c, &out);
+	return out;
+}
+
+void OptionsXYZInt(const char* prefix, int* a){
+	int i;
+	char option[PETSC_MAX_PATH_LEN];
+	const char x[3] = {'x', 'y', 'z'};
+	for(i=0; i<3; i++){
+		sprintf(option, "%s%c", prefix, x[i]);
+		OptionsGetInt(option, &a[i]);
+	}
+
+}
+
+int OptionsGetDouble(const char* c, double* a){
+	PetscBool flg;
+	PetscOptionsGetReal(PETSC_NULL,c,a,&flg); 
+	return flg;
+}
+
+double OptionsDouble(const char* c){
+	double out;
+	OptionsGetDouble(c, &out);
+	return out;
+}
+
+void OptionsXYZDouble(const char* prefix, double* a){
+	int i;
+	char option[PETSC_MAX_PATH_LEN];
+	const char x[3] = {'x', 'y', 'z'};
+	for(i=0; i<3; i++){
+		sprintf(option, "%s%c", prefix, x[i]);
+		OptionsGetDouble(option, &a[i]);
+	}
+
+}
+
+
+
+void Salt(int *N, int *M, double *h, int *Npml, int Nc, int LowerPML, char *epsfile, char *fproffile, double wa, double y,  // <-- Geometry parameters
 int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, char *modeout,  // <--- Passive parameters
 double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char **namesout, int printnewton, int Nm // <--- Creeper parameters
 )

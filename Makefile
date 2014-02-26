@@ -18,9 +18,11 @@ COMMAND = ${CLINKER} $^ -o $@Out ${SLEPC_LIB}
 
 Salt: Salt.o ${BASIC_OFILES} ${NEWTON_OFILES}
 	${COMMAND}
-
+	
+SaltShared: Salt.o ${BASIC_OFILES} ${NEWTON_OFILES}
+	${CLINKER} $^ -shared -o saltlib.dylib ${SLEPC_LIB}
 
 Test: Test.o
-	${COMMAND}
+	${CLINKER} $^ -o TestOut saltlib.dylib ${SLEPC_LIB}
 
 

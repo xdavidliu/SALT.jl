@@ -46,16 +46,6 @@ void AssembleMat(Mat M);
 void DestroyVec(Vec *x);
 void DestroyMat(Mat *A);
 
-int OptionsInt(const char* c);
-double OptionsDouble(const char* c);
-
-int OptionsGetInt(const char* c, int* a);
-int OptionsGetDouble(const char* c, double* a);
-int OptionsGetString(const char* c, char* a);
-
-
-void OptionsXYZDouble(const char* prefix, double* a);
-void OptionsXYZInt(const char* prefix, int* a);
 
 
 

@@ -30,59 +30,6 @@ void DestroyMat(Mat *A){
 
 void View(Vec x, PetscViewer viewer){ VecView(x, viewer); }
 
-void OptionsXYZDouble(const char* prefix, double* a){
-	int i;
-	char option[PETSC_MAX_PATH_LEN];
-	const char x[3] = {'x', 'y', 'z'};
-	for(i=0; i<3; i++){
-		sprintf(option, "%s%c", prefix, x[i]);
-		OptionsGetDouble(option, &a[i]);
-	}
-
-}
-
-
-void OptionsXYZInt(const char* prefix, int* a){
-	int i;
-	char option[PETSC_MAX_PATH_LEN];
-	const char x[3] = {'x', 'y', 'z'};
-	for(i=0; i<3; i++){
-		sprintf(option, "%s%c", prefix, x[i]);
-		OptionsGetInt(option, &a[i]);
-	}
-
-}
-
-int OptionsGetString(const char* c, char* a){ 
-	PetscBool flg;
-	PetscOptionsGetString(PETSC_NULL,c, a, PETSC_MAX_PATH_LEN, &flg); 
-	return flg;
-}
-
-int OptionsGetInt(const char* c, int* a){
-	PetscBool flg;
-	PetscOptionsGetInt(PETSC_NULL,c,a,&flg);
-	return flg;
-}
-
-int OptionsInt(const char* c){
-	int out;
-	OptionsGetInt(c, &out);
-	return out;
-}
-
-
-double OptionsDouble(const char* c){
-	double out;
-	OptionsGetDouble(c, &out);
-	return out;
-}
-
-int OptionsGetDouble(const char* c, double* a){
-	PetscBool flg;
-	PetscOptionsGetReal(PETSC_NULL,c,a,&flg); 
-	return flg;
-}
 
 
 void ScatterRange (Vec x, Vec y, int ix, int iy, int N){

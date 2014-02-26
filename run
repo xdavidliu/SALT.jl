@@ -24,8 +24,8 @@ PASSIVE="-wreal 15.7 -wimag -1.07
 -passiveout pass
 -nev 1";
 
-CREEPER="-in0 pass1 -in1 pass0
--out0 last16 -out1 last14
+CREEPER="-in0 pass0 -in1 pass1
+-out0 last14 -out1 last16
 -dD 0.05 -Dmax 0.5
 -newtonf_tol 1e-7 -thresholdw_tol 1e-7";
 
