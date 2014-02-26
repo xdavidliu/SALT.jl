@@ -1,8 +1,8 @@
 all:
 
 include ${SLEPC_DIR}/conf/slepc_common
-PCC=${CXX}
-PCC_LINKER=${CXX}
+#PCC=${CXX}
+#PCC_LINKER=${CXX}
 
 
 BASIC_OFILES = Geometry.o Tools.o Mode.o Moperator.o Pml.o

@@ -9,28 +9,28 @@ typedef struct timeval tv;
 
 double dt(tv t1, tv t2);
 
-
+/*
 #include <complex>
 typedef std::complex<double> dcomp;
 static const dcomp ComplexI(0.0, 1.0);
+*/
 
-/*
 #include <complex.h>
 typedef double complex dcomp;
 static const dcomp ComplexI = I;
-*/
+
 
 
 
 static const char Output_Suffix[PETSC_MAX_PATH_LEN] = "_file.m";
 
-
+/*
 double creal(dcomp z);
 double cimag(dcomp z); //TODO temp delete
 double cabs(dcomp z);
 dcomp cexp(dcomp z);
 dcomp csqrt(dcomp z);
-
+*/
 
 int GetRank();
 int GetSize();
