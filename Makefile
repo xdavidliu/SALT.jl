@@ -24,5 +24,8 @@ main: main.o
 
 Test: Test.o
 	${CLINKER} $^ -o TestOut ${SALTLIB} ${SLEPC_LIB}
+	
+jtest: juliatest.o
+	${CLINKER} $^ -shared -o ${JTESTNAME}.dylib ${SLEPC_LIB}
 
 
