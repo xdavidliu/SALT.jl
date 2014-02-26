@@ -208,7 +208,13 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 				if(geo->D > Dmax) geo->D = Dmax;
 		  		FirstStep(Ll, *it, geo, vNh, fNh, dvNh, 1.0);
 		  }
-		  NewtonSolve(Ll, geo,  vNh, fNh, dvNh);  
+		  
+		 ModeArray Mah, *mah = &Mah;
+		 CreateFromList(mah, Ll);
+		  
+		  NewtonSolve(mah, geo,  vNh, fNh, dvNh);  
+		  	DestroyModeArray(mah);
+		  
 	  }
 
 	  FORMODES(Ln, it){
@@ -218,7 +224,13 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 		Lm.push_back(m); // for non-lasing modes, do one by one
 
 		double wi_old = getw(m).imag();
-		NewtonSolve(Lm, geo,  m->vpsi, f, dv);
+		
+		 ModeArray Ma, *ma = &Ma;
+		 CreateFromList(ma, Lm);
+		
+		NewtonSolve(ma, geo,  m->vpsi, f, dv);
+	  	DestroyModeArray(ma);
+	  	
 		double wi_new = getw(m).imag();
 
 		if(wi_new > -OptionsDouble("-thresholdw_tol") && !m->lasing)
