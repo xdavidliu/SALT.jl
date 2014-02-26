@@ -113,7 +113,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 	if(nconv>0) for(i=0; i<nconv; i++){
 		double lr, li;
 		EPSGetEigenpair(evps, i, &lr, &li, v, vi);
-		w = std::sqrt(-lr - ComplexI * li);
+		w = csqrt(-lr - ComplexI * li);
 		
 		//==============
 		// tests if the eigenvector is conjugated. if unconjugated, vi should be
@@ -139,7 +139,7 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 		else j++;
 
 
-		if(cimag(w) > 0.0) w = std::conj(w);
+		if(cimag(w) > 0.0) w = conj(w);
 
 
 		Mode M, *m = &M;

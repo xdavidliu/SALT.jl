@@ -71,7 +71,7 @@ void TensorDerivative(Mode *m, Mode *mj, Geometry *geo, int jc, int jr, Vec df, 
 	for(i=f.ns; i<f.ne; i++){
 
 		if( valr(&f, i) == 0.0) continue;			
-		dcomp ket_term = -csqr(mw ) * sqr(mjc) * sqr(std::abs(yjw)) * 2.0
+		dcomp ket_term = -csqr(mw ) * sqr(mjc) * sqr(cabs(yjw)) * 2.0
 			* sqr(valr(&H, i) ) * geo->D * valr(&f, i) * yw * valc(&psi, i);		
 		double val = valr(&psibra, i) * (ir(geo, i)? cimag(ket_term) : creal(ket_term) );
 		
@@ -113,12 +113,12 @@ void ColumnDerivative(Mode* m, Mode* mj, Geometry *geo, Vec dfR, Vec dfI, Vec vI
 
 		if(m->lasing && valr(&f, i) != 0.0){
 			dcomp dHdk_term = -sqr(mjc) * -2.0*(mjw-geo->wa)
-			 /sqr(geo->y) * sqr(sqr(std::abs(yjw)));
+			 /sqr(geo->y) * sqr(sqr(cabs(yjw)));
 			dHdk_term *= csqr(mw)*DfywHpsi * valr(&H, i) * valr(&psisq, i);
 			dfdk += dHdk_term;
 
 			dfdc = csqr(mw) * DfywHpsi * valr(&H, i);
-			dfdc *= (-2.0*mjc)*sqr(std::abs(yjw)) * valr(&psisq, i);
+			dfdc *= (-2.0*mjc)*sqr(cabs(yjw)) * valr(&psisq, i);
 		}
 		
 		if( !m->lasing)
@@ -156,7 +156,7 @@ void ComputeGain(Geometry *geo, ModeArray *ma){
 
 	
 		for(i=H.ns; i<H.ne; i++)
-			setr(&H, i, valr(&H, i) + sqr(std::abs(yw)) *sqr(mc) * valr(&psisq, i) ) ;
+			setr(&H, i, valr(&H, i) + sqr(cabs(yw)) *sqr(mc) * valr(&psisq, i) ) ;
 	}
 
 	for(i=H.ns; i<H.ne; i++)

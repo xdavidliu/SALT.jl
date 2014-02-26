@@ -95,7 +95,7 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 
 	
 	dcomp mw = get_w(m);
-	if( std::abs(cimag(mw)) < OptionsDouble("-thresholdw_tol") ){
+	if( cabs(cimag(mw)) < OptionsDouble("-thresholdw_tol") ){
 		SetLast2(m->vpsi, creal(mw), 0.0);
 		PetscPrintf(PETSC_COMM_WORLD, "Threshold found for mode \"%s\" at D = %1.10g\n", m->name, geo->D);
 		m->lasing = 1;

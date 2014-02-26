@@ -79,7 +79,7 @@ void FirstStep(ModeArray *mah, Mode *m, Geometry *geo, Vec vNh, Vec f, Vec dv, d
 
 	double dc = -GetValue(dv, offset(geo, nh)+Nxyzcr(geo)+1 );
 
-	if( std::abs(dc)/c < 0.5){
+	if( cabs(dc)/c < 0.5){
 		VecAXPY(vNh, -1.0, dv);
 
 		if(vNh != m->vpsi){ // update vpsi's from v

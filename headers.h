@@ -15,6 +15,9 @@ static const char Output_Suffix[PETSC_MAX_PATH_LEN] = "_file.m";
 
 double creal(dcomp z);
 double cimag(dcomp z); //TODO temp delete
+double cabs(dcomp z);
+dcomp cexp(dcomp z);
+dcomp csqrt(dcomp z);
 
 int GetRank();
 int GetSize();

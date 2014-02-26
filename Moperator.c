@@ -85,13 +85,13 @@ for(ib=0; ib<2; ib++){
 	if(p.ix[p.ic] == N[p.ic]-1){
 		int per = periodic(p.ic, DimPeriod );
 		cidu = per ? (1-N[p.ic])*cid : 0;
-		cidu_phase = per? std::exp(ComplexI*blochbc[p.ic]) : bc[p.ic][1][cp[ib]];
+		cidu_phase = per? cexp(ComplexI*blochbc[p.ic]) : bc[p.ic][1][cp[ib]];
 	}
 
 	if(p.ix[cp[ib]] == 0){
 		int per = periodic(cp[ib], DimPeriod );
 		cpidl[ib] = per ? (1-N[cp[ib]])*cpid[ib] : 0;
-		cpidl_phase[ib] = per ? std::exp(-ComplexI*blochbc[cp[ib]]) : bc[cp[ib]][0][cp[ib]];
+		cpidl_phase[ib] = per ? cexp(-ComplexI*blochbc[cp[ib]]) : bc[cp[ib]][0][cp[ib]];
 	}
 
         mucp[1-ib] = pmlval(icp[1-ib], N, geo->Npml, geo->h, geo->LowerPML, 1);
@@ -126,13 +126,13 @@ for(ib=0; ib<2; ib++){
 	if(p.ix[cp[ib]] == N[cp[ib]]-1){
 		int per = periodic(cp[ib], DimPeriod );
 		cpidu[ib] = per ? (1-N[cp[ib]])*cpid[ib] : 0;
-		cpidu_phase[ib] = per? std::exp(ComplexI*blochbc[cp[ib]]) : bc[cp[ib]][1][p.ic];
+		cpidu_phase[ib] = per? cexp(ComplexI*blochbc[cp[ib]]) : bc[cp[ib]][1][p.ic];
 	}
 
 	if(p.ix[cp[ib]] == 0){
 		int per = periodic(cp[ib], DimPeriod );
 		cpidl[ib] = per ? (1-N[cp[ib]])*cpid[ib] : -cpidu[ib];
-		cpidl_phase[ib] = per? std::exp(-ComplexI*blochbc[cp[ib]]) : bc[cp[ib]][0][p.ic];
+		cpidl_phase[ib] = per? cexp(-ComplexI*blochbc[cp[ib]]) : bc[cp[ib]][0][p.ic];
 	}   
 
      
