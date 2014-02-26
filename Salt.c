@@ -168,7 +168,7 @@ int FindModeAtThreshold(ModeArray *ma){
 void Salt(double dD, double Dmax, double thresholdw_tol, double ftol, char namesin[MAXMODES][PETSC_MAX_PATH_LEN], char namesout[MAXMODES][PETSC_MAX_PATH_LEN], int Nm){
 
 	Geometry Geo, *geo = &Geo;
-	CreateGeometry(geo);
+	ReadGeometry(geo);
 	
 
 

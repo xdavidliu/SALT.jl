@@ -70,35 +70,56 @@ void VecSqMedium(Geometry *geo, Vec v, Vec vsq, Vec scratchM){
 		InterpolateVec(geo, scratchM, vsq);
 }
 
+void ReadGeometry(Geometry *geo){
 
-void CreateGeometry(Geometry *geo){
-
-
-	int N[3], M[3];
-
-	
-
+	int N[3], M[3], Npml[3], Nc, LowerPML;
+	double h[3];
 
 	OptionsXYZInt("-N", N);
 	OptionsXYZInt("-M", M);
-	OptionsXYZInt("-Npml", geo->Npml);
-	OptionsXYZDouble("-h", geo->h);
 
-	OptionsGetInt("-Nc", &geo->Nc);
-	OptionsGetInt("-LowerPML", &geo->LowerPML);
-	
+	OptionsXYZInt("-Npml", Npml);
+	OptionsXYZDouble("-h", h);
+
+	OptionsGetInt("-Nc", &Nc);
+	OptionsGetInt("-LowerPML", &LowerPML);
+
+
+	char epsfile[PETSC_MAX_PATH_LEN], fproffile[PETSC_MAX_PATH_LEN];
+
+	OptionsGetString("-epsfile", epsfile);
+	OptionsGetString("-fproffile", fproffile);
+
+	CreateGeometry(geo, N, M, h, Npml, Nc, LowerPML, epsfile, fproffile);
+
+
+
+}
+
+
+void CreateGeometry(Geometry *geo, int N[3], int M[3], double h[3], int Npml[3], int Nc, int LowerPML, char *epsfile, char *fproffile){
+
+
+	int i;
+
+
+	geo->Nc = Nc;
+	geo->LowerPML = LowerPML;
+
+	for(i=0; i<3; i++){
+		geo->h[i] = h[i];
+		geo->Npml[i] = Npml[i];
+	}
+
 	CreateGrid(&geo->gN, N, geo->Nc, 2);
 	CreateGrid(&geo->gM, M, 1, 1);
 
 
 	CreateVec(2*Nxyzc(geo)+2, &geo->vepspml);
 
-
-
 	Vecfun pml;
 	CreateVecfun(&pml,geo->vepspml);
 	
-	int i;
 	for(i=pml.ns; i<pml.ne; i++){
 		Point p;
 		CreatePoint_i(&p, i, &geo->gN);
@@ -111,15 +132,14 @@ void CreateGeometry(Geometry *geo){
 	CreateVec(Mxyz(geo), &geo->vMscratch[0]);
 
 	for(i=1; i<SCRATCHNUM; i++) VecDuplicate(geo->vMscratch[0], &geo->vMscratch[i]);
-	char file[PETSC_MAX_PATH_LEN];
-	OptionsGetString("-epsfile", file);
+
 
 	FILE *fp;
 	
-	fp = fopen(file, "r");
+	fp = fopen(epsfile, "r");
 	if(fp==NULL){
 		char message[PETSC_MAX_PATH_LEN];
-		sprintf(message, "failed to read %s", file);
+		sprintf(message, "failed to read %s", epsfile);
 		MyError(message);
 	}
 	ReadVectorC(fp, Mxyz(geo), geo->vMscratch[0]);
@@ -149,12 +169,11 @@ void CreateGeometry(Geometry *geo){
 
 	VecDuplicate(geo->veps, &geo->vf);
 
-	OptionsGetString("-fproffile", file);
 
-	fp = fopen(file, "r");	
+	fp = fopen(fproffile, "r");	
 	if(fp==NULL){
 		char message[PETSC_MAX_PATH_LEN];
-		sprintf(message, "failed to read %s", file);
+		sprintf(message, "failed to read %s", fproffile);
 		MyError(message);
 	}	
 	ReadVectorC(fp, Mxyz(geo), geo->vMscratch[1]);

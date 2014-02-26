@@ -27,7 +27,7 @@ void Passive(int BCPeriod, int bx, int by, int bz, double kx, double ky, double 
 
     	tv t1, t2, t3;
 	Geometry Geo;
-	CreateGeometry(&Geo);
+	ReadGeometry(&Geo);
 	Geometry *geo = &Geo; // to make consistent with other functions
 	
 	gettimeofday(&t1, NULL);

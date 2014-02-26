@@ -110,7 +110,8 @@ typedef struct Geometry_s{
 
 } Geometry;
 
-void CreateGeometry(Geometry *geo);
+void ReadGeometry(Geometry *geo);
+void CreateGeometry(Geometry *geo, int N[3], int M[3], double h[3], int Npml[3], int Nc, int LowerPML, char *epsfile, char *fproffile);
 void DestroyGeometry(Geometry *geo);	
 void InterpolateVec(Geometry *geo, Vec vM, Vec vN);
 void CollectVec(Geometry *geo, Vec vN, Vec vM);
