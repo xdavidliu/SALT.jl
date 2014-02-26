@@ -36,7 +36,7 @@ void NewtonSolve(ModeArray *ma, Geometry *geo, Vec v, Vec f, Vec dv){
 	KSP ksp = ma->L[0]->ksp;
 
 	VecSet(dv, 0.0);
-	while(true){
+	while(1){
 
 		// removed stability hack for simplicity	
 		VecAXPY(v, -1.0, dv);	

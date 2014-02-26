@@ -7,17 +7,17 @@ void VecSetComplex(Vec vR, Vec vI, int i, int ir, dcomp val, InsertMode addv){
 }
 
 
-void Isolate(Vec v, Grid& gN, int ic, int ir){
+void Isolate(Vec v, Grid *gN, int ic, int ir){
 
 	int ns, ne, i;
 	VecGetOwnershipRange(v, &ns, &ne);
 	double *a;
 	VecGetArray(v, &a);
 
-	for(i=ns; i<ne && i<xyzcrGrid(&gN); i++){
+	for(i=ns; i<ne && i<xyzcrGrid(gN); i++){
 
 		Point p;
-		CreatePoint_i(&p, i, &gN);
+		CreatePoint_i(&p, i, gN);
 		if(p.ic != ic || p.ir != ir) a[i-ns] = 0.0;
 	}
 	VecRestoreArray(v, &a);
@@ -27,7 +27,7 @@ void Isolate(Vec v, Grid& gN, int ic, int ir){
 
 void Stamp(Geometry *geo, Vec vN, int ic, int ir, Vec scratchM){
 
-	Isolate(vN, geo->gN, ic, ir);
+	Isolate(vN, &geo->gN, ic, ir);
 	CollectVec(geo, vN, scratchM);
 	InterpolateVec(geo, scratchM, vN);
 
@@ -169,7 +169,7 @@ double FormJf(ModeArray *ma, Geometry *geo, Vec v, Vec f){
 
 
 	Mode *m = ma->L[0];
-	bool lasing = m->lasing;
+	int lasing = m->lasing;
 	Mat J = m->J; // for multimode, all m share same J
 
 	if(lasing)
@@ -223,7 +223,7 @@ double FormJf(ModeArray *ma, Geometry *geo, Vec v, Vec f){
 	double fnorm;
 	VecNorm(f, NORM_2, &fnorm);
 	
-	static int printnewton = OptionsInt("-printnewton");
+	int printnewton = OptionsInt("-printnewton");
 	if( printnewton ) PetscPrintf(PETSC_COMM_WORLD, "|f| = %.0e;", fnorm);
 	// no \n here to make room for timing printf statement immediately afterwards
 

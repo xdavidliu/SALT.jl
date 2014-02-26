@@ -12,9 +12,9 @@ dcomp zval(int i, const double* f, int Nxyzc){
 	return f[i] + ComplexI*f[i + Nxyzc];
 }
 
-int cyclic(Point& P, int ic, int* N){
+int cyclic(Point *P, int ic, int* N){
 
-	return (P.ic==ic)*N[1]*N[2] + (P.ic==(ic+1)%3 )*N[2] + (P.ic==(ic+2)%3 );
+	return (P->ic==ic)*N[1]*N[2] + (P->ic==(ic+1)%3 )*N[2] + (P->ic==(ic+2)%3 );
 } 
 
 void MoperatorGeneralBlochFill(Geometry *geo, Mat A, int b[3][2], int DimPeriod, double k[3], int ih){
@@ -59,15 +59,15 @@ for (int itrue = ns; itrue < ne && itrue < 2*Nxyzc(geo); ++itrue) {
 
 		cp[j] = (p.ic+1+j) % NC;
 		icp[j] = i + (cp[j]-p.ic ) *Nxyz(geo);
-		cpidu[j] = cyclic(p, 2-j, N);
-		cpidl[j] = cyclic(p, 2-j, N);
-		cpid[j] = cyclic(p, 2-j, N);
+		cpidu[j] = cyclic(&p, 2-j, N);
+		cpidl[j] = cyclic(&p, 2-j, N);
+		cpid[j] = cyclic(&p, 2-j, N);
 
 		cpidu_phase[j] = 1.0;
 		cpidl_phase[j] = 1.0;
 	}	  
-	cidu = cyclic(p, 0, N);
-	cid = cyclic(p, 0, N);
+	cidu = cyclic(&p, 0, N);
+	cid = cyclic(&p, 0, N);
 
 	cidu_phase = 1.0;
     

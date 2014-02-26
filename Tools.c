@@ -298,9 +298,19 @@ int ir(Geometry *geo, int i){ return i%NJ(geo) / Nxyzc(geo); }
 double valr(Vecfun *fun, int i) { return fun->a[i-fun->ns];}
 void setr(Vecfun *fun, int i, double val){ fun->a[i-fun->ns] = val;}
 
+void CreateVecfun(Vecfun *fun, Vec w){
+	fun->u = w;
+	VecGetOwnershipRange(w, &fun->ns, &fun->ne); // TODO: take into account Nxyzcr+2 here
+	int N;
+	VecGetSize(w, &N);
+	if(fun->ne >= N-2) fun->ne = N-2;
+	
+	VecGetArray(w, &fun->a);
+}
+
 dcomp valc(Complexfun *fun, int i){
 
-	dcomp z( fun->a[i-fun->ns], -fun->b[i-fun->ns] );
+	dcomp z = fun->a[i-fun->ns] + ComplexI * -fun->b[i-fun->ns];
 	if(i/fun->Nxyzc) z*= ComplexI;
 	return z;
 }
@@ -311,15 +321,7 @@ void setc(Complexfun *fun,int i, dcomp val){
 	fun->b[i-fun->ns] = -cimag(val);
 }
 
-void CreateVecfun(Vecfun *fun, Vec w){
-	fun->u = w;
-	VecGetOwnershipRange(w, &fun->ns, &fun->ne); // TODO: take into account Nxyzcr+2 here
-	int N;
-	VecGetSize(w, &N);
-	if(fun->ne >= N-2) fun->ne = N-2;
-	
-	VecGetArray(w, &fun->a);
-}
+
 
 void CreateComplexfun(Complexfun *fun, Vec w, Vec x){
 	fun->u = w;
@@ -349,4 +351,3 @@ double cabs(dcomp z){ return std::abs(z);}
 dcomp cexp(dcomp z){ return std::exp(z);}
 dcomp csqrt(dcomp z){ return std::sqrt(z);}
 dcomp conj(dcomp z){ return std::conj(z);}
-
