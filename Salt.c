@@ -242,10 +242,18 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 	  	
 		double wi_new = getw(m).imag();
 
-		if(wi_new > -OptionsDouble("-thresholdw_tol") && !m->lasing)
+		if(wi_new > -OptionsDouble("-thresholdw_tol") && !m->lasing){
+		
+		
+			ModeArray Mah, *mah = &Mah;
+			if(Ll.size() > 0) CreateFromList(mah, Ll);
+			else mah = NULL;
+		
 			ThresholdSearch(  wi_old, wi_new, geo->D-dD, geo->D, 
-			Ll, vNh, m, geo, f, dv); // todo: replace with vNh
-
+			mah, vNh, m, geo, f, dv); // todo: replace with vNh
+			
+			if(mah!= NULL) DestroyModeArray(mah);
+		}
 	  }
 	  
 	  if(geo->D==Dmax) break;
