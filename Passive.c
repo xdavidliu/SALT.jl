@@ -24,7 +24,7 @@ void FillBop(Geometry *geo, Mat Bop, dcomp w){
 }
 
 // everything after modeout is directly from ReadGeometry
-void Passive(int BCPeriod, int bl[3], double k[3], double wreal, double wimag, double modenorm, char *modeout, int N[3], int M[3], double h[3], int Npml[3], int Nc, int LowerPML, char *epsfile, char *fproffile, double wa, double y){
+void Passive(int BCPeriod, int bl[3], double k[3], double wreal, double wimag, double modenorm, int nev, char *modeout, int N[3], int M[3], double h[3], int Npml[3], int Nc, int LowerPML, char *epsfile, char *fproffile, double wa, double y){
 
     	tv t1, t2, t3;
 	Geometry Geo;
@@ -79,7 +79,7 @@ void Passive(int BCPeriod, int bl[3], double k[3], double wreal, double wimag, d
         EPSSetOperators(evps, Mop, Bop);
 	EPSSetTarget(evps, creal(guess));
 	EPSSetWhichEigenpairs(evps, EPS_TARGET_REAL);
-
+	EPSSetDimensions(evps, nev,PETSC_DECIDE, PETSC_DECIDE);
 
 	
 
@@ -223,10 +223,11 @@ int main(int argc, char** argv){
 	OptionsGetDouble("-wa", &wa);
 	OptionsGetDouble("-gamma", &y);
 	
+	int nev = OptionsInt("-nev");
 
 	// ======== copied directly from ReadGeometry ======== //
 
-	Passive(BCPeriod, bl, k, wguess_real, wguess_imag, modenorm, s,N, M, h, Npml, Nc, LowerPML, epsfile, fproffile, wa, y);
+	Passive(BCPeriod, bl, k, wguess_real, wguess_imag, modenorm, nev, s,N, M, h, Npml, Nc, LowerPML, epsfile, fproffile, wa, y);
 
 		
 SlepcFinalize();	
