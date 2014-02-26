@@ -69,20 +69,35 @@ int main(int argc, char** argv){
 
 		char optionin[PETSC_MAX_PATH_LEN] = "-in0",
 			 optionout[PETSC_MAX_PATH_LEN] = "-out0",
-			 namesin[MAXMODES][PETSC_MAX_PATH_LEN],
-			 namesout[MAXMODES][PETSC_MAX_PATH_LEN]; 
+			 name[PETSC_MAX_PATH_LEN], name2[PETSC_MAX_PATH_LEN],
+			 **namesin,
+			 **namesout;
 		
 
 		int i=0;
 		while(1){
 
-			if( !OptionsGetString(optionin, namesin[i]) ) break;
-
-			if( !OptionsGetString(optionout, namesout[i]) )
+			if( !OptionsGetString(optionin, name) ) break;
+			if( !OptionsGetString(optionout, name2) )
 				MyError("number of -out less than number of -in!");
 		
-			i++;
-			if(i > MAXMODES) MyError("exceeded mode limit!");
+
+if(i==0){
+	namesin = (char **) malloc( 1*sizeof(char*) );
+	namesout = (char **) malloc( 1*sizeof(char*) );
+}else{
+	namesin = (char **) realloc( namesin, (i+1)*sizeof(char*) );
+	namesout = (char **) realloc( namesout, (i+1)*sizeof(char*) );
+}
+
+	namesin[i] = (char *) malloc( PETSC_MAX_PATH_LEN * sizeof(char) );
+	namesout[i] = (char *) malloc( PETSC_MAX_PATH_LEN * sizeof(char) );
+
+sprintf(namesin[i], "%s", name);
+sprintf(namesout[i], "%s", name2);
+
+	i++;
+
 			sprintf(optionin, "-in%i", i);
 			sprintf(optionout, "-out%i", i);
 		}
@@ -91,6 +106,13 @@ int main(int argc, char** argv){
 		int printnewton = OptionsInt("-printnewton");
 
 		Creeper(dD, Dmax, thresholdw_tol, ftol, namesin, namesout, printnewton, Nm, geo);
+
+		for(i=0; i<Nm; i++){
+			free( namesin[i]);
+			free( namesout[i]);
+		}
+		free(namesin);
+		free(namesout);
 
 	}
 

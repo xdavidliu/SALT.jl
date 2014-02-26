@@ -2,7 +2,7 @@
 
 
 
-PetscErrorCode ReadModes(ModeArray *ma, Geometry *geo, char namesin[MAXMODES][PETSC_MAX_PATH_LEN], char namesout[MAXMODES][PETSC_MAX_PATH_LEN], int Nm){
+PetscErrorCode ReadModes(ModeArray *ma, Geometry *geo, char **namesin, char **namesout, int Nm){
 
 
 	int i;
@@ -171,7 +171,7 @@ int FindModeAtThreshold(ModeArray *ma){
 
 
 // everything after Nm copied directly from ReadMode
-void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, char namesin[MAXMODES][PETSC_MAX_PATH_LEN], char namesout[MAXMODES][PETSC_MAX_PATH_LEN], int printnewton, int Nm, Geometry *geo){
+void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char **namesout, int printnewton, int Nm, Geometry *geo){
 
 	
   	ModeArray Ma, *ma = &Ma;

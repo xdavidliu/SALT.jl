@@ -19,8 +19,6 @@ static const dcomp ComplexI(0.0, 1.0);
 typedef double complex dcomp;
 static const dcomp ComplexI = I;
 
-#define MAXMODES 10
-// TODO: allow more than 10 modes
 
 
 
@@ -230,6 +228,6 @@ void AllocateJacobian(Mat J, Geometry *geo);
 void AddRowDerivatives(Mat J, Geometry *geo, int ifix, int ih);
 
 void Passive(int BCPeriod, int bl[3], double k[3], double wreal, double wimag, double modenorm, int nev, char *modeout, Geometry *geo);
-void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, char namesin[MAXMODES][PETSC_MAX_PATH_LEN], char namesout[MAXMODES][PETSC_MAX_PATH_LEN], int printnewton, int Nm, Geometry *geo);
+void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char **namesout, int printnewton, int Nm, Geometry *geo);
 
 
