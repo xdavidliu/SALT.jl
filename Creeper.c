@@ -217,6 +217,9 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, char **
 			dvNh = geo->vNhscratch[4];
 		  }
 
+		  if(mah->size == 1)
+		  	vNh = mah->L[0]->vpsi;
+
 		  if( nt != -1 ){
 		  		geo->D += 0.5*dD;
 				if(geo->D > Dmax) geo->D = Dmax;
@@ -248,7 +251,7 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, char **
 		
 		
 			ThresholdSearch(  wi_old, wi_new, geo->D-dD, geo->D, 
-			mah, vNh, m, geo, f, dv, thresholdw_tol, ftol, printnewton); // todo: replace with vNh
+			mah, vNh, m, geo, f, dv, thresholdw_tol, ftol, printnewton);
 			
 		}
 	  }
