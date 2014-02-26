@@ -250,11 +250,11 @@ void Setup(Mode *m, Geometry *geo){
 
 	AllocateJacobian(m->J, geo);
 	
-    MoperatorGeneralBlochFill(geo, m->J, m->b, m->BCPeriod, m->k);
+    MoperatorGeneralBlochFill(geo, m->J, m->b, m->BCPeriod, m->k, 0);
 
 
 	AddPlaceholders(m->J, geo);
-	AddRowDerivatives(m->J, geo, m->ifix);
+	AddRowDerivatives(m->J, geo, m->ifix, 0);
 	AssembleMat(m->J);
 	MatSetOption(m->J,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
 	MatStoreValues(m->J); 

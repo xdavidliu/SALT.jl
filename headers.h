@@ -1,6 +1,6 @@
 #include <slepc.h>
-#include <cmath>
-#include <cstdio>
+#include <math.h>
+#include <stdio.h>
 #include <complex>
 
 
@@ -101,7 +101,7 @@ void VecSqMedium(Geometry *geo, Vec v, Vec vsq, Vec scratchM);
 int Last2(Geometry *geo, int i);
 void SetJacobian(Geometry *geo, Mat J, Vec v, int jc, int jr, int jh);
 
-void MoperatorGeneralBlochFill(Geometry *geo, Mat A,  int b[3][2], int DimPeriod, double k[3], int ih=0);	
+void MoperatorGeneralBlochFill(Geometry *geo, Mat A,  int b[3][2], int DimPeriod, double k[3], int ih);	
 
 int Nxyz(Geometry *geo);
 int Nxyzc(Geometry *geo);
@@ -204,7 +204,7 @@ void DestroyComplexfun(Complexfun *fun);
 dcomp pmlval(int i, int* N, int* Npml, double* h, int LowerPML, int k);
 void AddPlaceholders(Mat J, Geometry *geo);
 void AllocateJacobian(Mat J, Geometry *geo);
-void AddRowDerivatives(Mat J, Geometry *geo, int ifix, int ih=0);
+void AddRowDerivatives(Mat J, Geometry *geo, int ifix, int ih);
 
 
 
