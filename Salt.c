@@ -49,54 +49,54 @@ int CountLasing(modelist L){ // makes copy
 
 
 
-void FirstStep(modelist Lh, Mode *m, Geometry *geo, Vec vNh, Vec f, Vec dv, double c){
+void FirstStep(ModeArray *mah, Mode *m, Geometry *geo, Vec vNh, Vec f, Vec dv, double c){
 
 
 	PetscPrintf(PETSC_COMM_WORLD, "Taking first step for mode \"%s\"...\n", m->name );
 
-  int ih=0;
-  FORMODES(Lh, it){ // find ih of m
-		if( *it == m) break;
-		else ih++;
+  int nh=0, ih;
+  for(ih=0; ih<mah->size; ih++){ // find nh of m
+		if( mah->L[ih] == m) break;
+		else nh++;
   }
+
 
 	if(vNh != m->vpsi){ // update vpsi's from v
 		int ih =0;
-		FORMODES(Lh, it){
-			ScatterRange((*it)->vpsi, vNh, 0, ih*NJ(geo), NJ(geo) );
-			ih++;
+		for(ih=0; ih<mah->size; ih++){
+			ScatterRange((mah->L[ih])->vpsi, vNh, 0, ih*NJ(geo), NJ(geo) );
+			
 		}
 	}
 
   while(1){
 
 	if( LastProcess() ){ // try new c
-		VecSetValue(vNh, offset(geo, ih)+Nxyzcr(geo)+1, c, INSERT_VALUES);	
+		VecSetValue(vNh, offset(geo, nh)+Nxyzcr(geo)+1, c, INSERT_VALUES);	
 		if( vNh != m->vpsi) VecSetValue(m->vpsi, Nxyzcr(geo)+1, c, INSERT_VALUES);
 	}
 	AssembleVec(vNh);
 	AssembleVec(m->vpsi);
 
-	ModeArray Ma, *mah = &Ma;
-	CreateFromList(mah, Lh);
+
 	double fnorm = FormJf(mah, geo, vNh, f);
-	DestroyModeArray(mah);
+
 
 	if(  fnorm < OptionsDouble("-newtonf_tol")) break;
 	
-	KSPSolve( (*Lh.begin())->ksp, f, dv);
+	KSPSolve( m->ksp, f, dv);
 	PetscPrintf(PETSC_COMM_WORLD, "\n");
 
-	double dc = -GetValue(dv, offset(geo, ih)+Nxyzcr(geo)+1 );
+	double dc = -GetValue(dv, offset(geo, nh)+Nxyzcr(geo)+1 );
 
 	if( std::abs(dc)/c < 0.5){
 		VecAXPY(vNh, -1.0, dv);
 
 		if(vNh != m->vpsi){ // update vpsi's from v
 			int ih =0;
-			FORMODES(Lh, it){
-				ScatterRange(vNh, (*it)->vpsi, ih*NJ(geo), 0, NJ(geo) );
-				ih++;
+			for(ih=0; ih<mah->size; ih++){
+				ScatterRange(vNh, (mah->L[ih])->vpsi, ih*NJ(geo), 0, NJ(geo) );
+				
 			}
 		}
 		// don't NewtonSolve here, that will be done immediately after
@@ -206,7 +206,11 @@ int main(int argc, char** argv){ SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC
 		  if( it != Ll.end() ){
 		  		geo->D += 0.5*dD;
 				if(geo->D > Dmax) geo->D = Dmax;
-		  		FirstStep(Ll, *it, geo, vNh, fNh, dvNh, 1.0);
+				ModeArray Ma, *mah = &Ma;
+				CreateFromList(mah, Ll);
+				
+		  		FirstStep(mah, *it, geo, vNh, fNh, dvNh, 1.0);
+		  			DestroyModeArray(mah);
 		  }
 		  
 		 ModeArray Mah, *mah = &Mah;
