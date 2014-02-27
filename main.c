@@ -44,8 +44,10 @@ void OptionsXYZDouble(const char* prefix, double* a){
 }
 
 PetscErrorCode MyError(const char* message);
+void CreateVec(int N, Vec *x);
+void ReadVectorC(FILE *fp, int N, Vec v);
 
-void Salt(int *N, int *M, double *h, int *Npml, int Nc, int LowerPML, char *epsfile, char *fproffile, double wa, double y,  // <-- Geometry parameters
+void Salt(int *N, int *M, double *h, int *Npml, int Nc, int LowerPML, double *eps, double *fprof, double wa, double y,  // <-- Geometry parameters
 int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, char *modeout,  // <--- Passive parameters
 double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char **namesout, int printnewton, int Nm // <--- Creeper parameters
 );
@@ -75,10 +77,7 @@ int main(int argc, char** argv){
 	OptionsGetInt("-LowerPML", &LowerPML);
 
 
-	char epsfile[PETSC_MAX_PATH_LEN], fproffile[PETSC_MAX_PATH_LEN];
 
-	OptionsGetString("-epsfile", epsfile);
-	OptionsGetString("-fproffile", fproffile);
 
 	double wa, y;
 	OptionsGetDouble("-wa", &wa);
@@ -152,10 +151,56 @@ int main(int argc, char** argv){
 		OptionsGetInt("-printnewton", &printnewton);
 	}
 
+// ======== read eps and fprof from file ======= //
 
-Salt(N, M, h, Npml, Nc, LowerPML, epsfile, fproffile, wa, y,
+
+	char epsfile[PETSC_MAX_PATH_LEN], fproffile[PETSC_MAX_PATH_LEN];
+
+	OptionsGetString("-epsfile", epsfile);
+	OptionsGetString("-fproffile", fproffile);
+
+	Vec veps, vfprof;
+	CreateVec(M[0]*M[1]*M[2], &veps);
+	VecDuplicate(veps, &vfprof);
+
+	FILE *fp;
+	
+	fp = fopen(epsfile, "r");
+	if(fp==NULL){
+		char message[PETSC_MAX_PATH_LEN];
+		sprintf(message, "failed to read %s", epsfile);
+		MyError(message);
+	}
+	ReadVectorC(fp, M[0]*M[1]*M[2], veps);
+	fclose(fp);
+
+	fp = fopen(fproffile, "r");	
+	if(fp==NULL){
+		char message[PETSC_MAX_PATH_LEN];
+		sprintf(message, "failed to read %s", fproffile);
+		MyError(message);
+	}	
+	ReadVectorC(fp, M[0]*M[1]*M[2], vfprof);
+	fclose(fp);	
+
+
+
+	double *eps, *fprof;
+	VecGetArray(veps, &eps);
+	VecGetArray(vfprof, &fprof);
+
+
+
+
+Salt(N, M, h, Npml, Nc, LowerPML, eps, fprof, wa, y,
 BCPeriod, bl, k, wreal, wimag, modenorm, nev, modeout,
 dD, Dmax, thresholdw_tol, ftol, namesin, namesout, printnewton, Nm);
+
+	VecRestoreArray(veps, &eps);
+	VecRestoreArray(vfprof, &fprof);
+
+	VecDestroy(&veps);
+	VecDestroy(&vfprof);
 
 
 	for(i=0; i<Nm; i++){
