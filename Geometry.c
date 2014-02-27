@@ -18,8 +18,13 @@ void InterpolateVec(Geometry *geo, Vec vM, Vec vN){
 		
 		Point p;
 		CreatePoint_i(&p, i, &geo->gN);
-		if( projectmedium(&p, &geo->gM, geo->LowerPML) )
-			VecSetValue(vN, i, vals[xyz(&p)-ms], ADD_VALUES);
+		if( projectmedium(&p, &geo->gM, geo->LowerPML) ){
+	
+			int ixyz = xyz(&p);
+			if( ms <= ixyz && ixyz < me)
+				VecSetValue(vN, i, vals[ixyz-ms], ADD_VALUES);
+
+		}
 	}
 
 	VecRestoreArrayRead(vM, &vals);	
