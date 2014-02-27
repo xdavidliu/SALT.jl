@@ -190,13 +190,6 @@ int main(int argc, char** argv){
 	VecGetArray(vfprof, &fprof);
 
 
-	int rank; MPI_Comm_rank(PETSC_COMM_WORLD, &rank);
-        double norm;
-        VecNorm(vfprof, NORM_2, &norm);
-        PetscPrintf(PETSC_COMM_WORLD, "|v| = %g, rank = %i\n", norm, rank);
-
-
-
 Salt(N, M, h, Npml, Nc, LowerPML, eps, fprof, wa, y,
 BCPeriod, bl, k, wreal, wimag, modenorm, nev, modeout,
 dD, Dmax, thresholdw_tol, ftol, namesin, namesout, printnewton, Nm);

@@ -13,7 +13,7 @@ else
 	EXTENSION = .so
 endif
 
-SALTLIB = saltlib${EXTENSION}
+SALTLIB = ${PWD}/saltlib${EXTENSION}
 SALTOUT = SaltOut
 TESTOUT = TestOut
 CLEANFILES = *.dylib *.so *Out
