@@ -19,13 +19,11 @@ TESTOUT = TestOut
 CLEANFILES = *.dylib *.so *Out
 
 		
-Salt: Salt.o ${BASIC_OFILES} ${NEWTON_OFILES}
+Shared: Salt.o ${BASIC_OFILES} ${NEWTON_OFILES}
 	${CLINKER} $^ -shared -o ${SALTLIB} ${SLEPC_LIB}
-	rm *.o;
 
-Main: main.o
-	${CLINKER} $^ -o ${SALTOUT} ${SALTLIB} ${SLEPC_LIB}
-	echo ${UNAME}
+Salt: main.o Salt.o ${BASIC_OFILES} ${NEWTON_OFILES}
+	${CLINKER} $^ -o ${SALTOUT} ${SLEPC_LIB}
 
 Test: Test.o
 	${CLINKER} $^ -o ${TESTOUT} ${SALTLIB} ${SLEPC_LIB}

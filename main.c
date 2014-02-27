@@ -1,5 +1,5 @@
-#include <slepc.h>
 
+#include "headers.h"
 
 int OptionsGetString(const char* c, char* a){ 
 	PetscBool flg;
@@ -42,15 +42,6 @@ void OptionsXYZDouble(const char* prefix, double* a){
 	}
 
 }
-
-PetscErrorCode MyError(const char* message);
-void CreateVec(int N, Vec *x);
-void ReadVectorC(FILE *fp, int N, Vec v);
-
-void Salt(int *N, int *M, double *h, int *Npml, int Nc, int LowerPML, double *eps, double *fprof, double wa, double y,  // <-- Geometry parameters
-int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, char *modeout,  // <--- Passive parameters
-double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char **namesout, int printnewton, int Nm // <--- Creeper parameters
-);
 
 
 int main(int argc, char** argv){ 
