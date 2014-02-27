@@ -1,4 +1,4 @@
-const saltlib = "/Users/daveliu/Documents/saltc/saltlib";
+const saltlib = joinpath(pwd(), "saltlib");
 const slepc = joinpath(ENV["SLEPC_DIR"], get(ENV, "PETSC_ARCH", ""), "lib", "libslepc");
 typealias PetscErrorCode Cint  # from petscsys.h
 const PETSC_COMM_WORLD = unsafe_load(cglobal((:PETSC_COMM_WORLD,slepc), Ptr{Void}));
