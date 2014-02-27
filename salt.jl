@@ -25,11 +25,11 @@ modenorm = 0.01;
 ftol = 1.0e-7;
 thresholdw_tol = 1.0e-7;
 dD = 0.05;
-Dmax = 0.0;
+Dmax = 0.5;
 
 epsfile = "eps1d.txt";
 fproffile = "fprof1d.txt";
-modeout = "pass1";
+modeout = "pass";
 namesin = ["pass0", "pass1"];
 namesout = ["after0", "after1"];
 Nm = 2;

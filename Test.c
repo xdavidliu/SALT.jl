@@ -29,7 +29,7 @@ int main(int argc, char** argv){
 	
 	char epsfile[] = "eps1d.txt",
 	fproffile[] = "fprof1d.txt",
-	modeout[] = "pass1",
+	modeout[] = "pass",
 	Namesin[2][PETSC_MAX_PATH_LEN] = {"pass0", "pass1"},
 	Namesout[2][PETSC_MAX_PATH_LEN] = {"last14", "last16"}
 	; int Nm = 2;
