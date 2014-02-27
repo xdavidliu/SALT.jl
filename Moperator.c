@@ -48,7 +48,8 @@ void MoperatorGeneralBlochFill(Geometry *geo, Mat A, int b[3][2], int DimPeriod,
 	
 	MatGetOwnershipRange(A, &ns, &ne);
 
-for (int itrue = ns; itrue < ne && itrue < 2*Nxyzc(geo); ++itrue) {
+	int itrue;
+for (itrue = ns; itrue < ne && itrue < 2*Nxyzc(geo); ++itrue) {
 
 	Point p;
 	CreatePoint_i(&p, itrue, &gc); 

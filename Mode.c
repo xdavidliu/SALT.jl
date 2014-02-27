@@ -40,7 +40,7 @@ void ModeRead(Mode *m, const char *Name, Geometry *geo, double *Dout){
 		MyError(w );
 	}
 
-   if(GetRank()==0){ fscanf(fp, "%*[^\n]\n", NULL); } // "mode = ["
+   if(GetRank()==0){ fgets(w, PETSC_MAX_PATH_LEN, fp); } // "mode = ["
 
 
 
@@ -338,7 +338,8 @@ void CreateFilter(ModeArray *ma, ModeArray *mf, int lasing){
 
 	mf->size =0;
 	
-	for(int i=0; i<ma->size; i++){
+	int i;
+	for(i=0; i<ma->size; i++){
 	
 		if( ma->L[i]->lasing != lasing) continue;
 
