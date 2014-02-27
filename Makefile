@@ -1,4 +1,5 @@
-all:
+all: Salt Shared
+	rm *.o
 
 include ${SLEPC_DIR}/conf/slepc_common
 
@@ -28,5 +29,5 @@ Salt: main.o Salt.o ${BASIC_OFILES} ${NEWTON_OFILES}
 Test: Test.o
 	${CLINKER} $^ -o ${TESTOUT} ${SALTLIB} ${SLEPC_LIB}
 
-cleanout:
-	rm ${SALTLIB} ${SALTOUT} ${TESTOUT}
+clean_data:
+	rm *_file.m
