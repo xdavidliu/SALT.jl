@@ -12,9 +12,14 @@ end  # from Julia/examples
 
 
 function quadrants( A, bx, by, centerstrip, hx, hy )
-    A = [bx*fliplr(A), A[:, 1+centerstrip:end] ];
+
+
+
+    A = [bx*fliplr(A) A[:, 1+centerstrip:end] ];  # note in Julia , also does vertical concatenation, so you need space here!
     A = [by*flipud(A); A[1+centerstrip:end, :] ];
-    
+
+
+
     Nx = size(A, 2);
     Ny = size(A, 1);
     Lx = (Nx-1)*hx;
@@ -23,6 +28,13 @@ function quadrants( A, bx, by, centerstrip, hx, hy )
     y = linspace(-Ly/2, Ly/2, Ny);
     X, Y, nothing = meshgrid(x, y, [0.0]); 
 		# julia  base has no meshgrid, so I needed to copy the above implementation from examples
+		# also, meshgrid here is 3d while matlab's is 2d, so I have to 
+		# provide a 3rd dummy argument and return value
+
+	X = X[:, :, 1];
+	Y = Y[:, :, 1]; # change back into two-dimensional array
+
+
 
 	return A, X, Y;
 end
@@ -54,6 +66,7 @@ function plotTEslice(v, N, h, b, nz=1)
  
     v = [real(Exy); imag(Exy); misc];
     
+
     #================
     # from plotfield
     
@@ -65,14 +78,17 @@ function plotTEslice(v, N, h, b, nz=1)
     dyEx = diff(Ex,1)/hx;
     dxEy = diff(Ey,2)/hy; # julia's diff is missing the middle argument of Matlab's 3 arg version
     Hz = dxEy[1:end-1, :] - dyEx[:, 1:end-1];
- 
+
+
+
     
     psi, X, Y = quadrants(Hz, -bx, -by, 0, hx, hy); 
         # magnetic field is pseudovector, so it works by the opposite BCs
 
-	print(size(X), size(Y), size(psi) );
 
-  #  pcolor(X, Y, -real(psi), cmap="RdBu"); axis("equal"); axis("off");
+
+
+    pcolor(X, Y, -real(psi), cmap="RdBu"); axis("equal"); axis("off");
 
     
 end

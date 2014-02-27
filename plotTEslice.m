@@ -31,6 +31,7 @@ function [X, Y, psi] = plotTEslice(v, N, h, b, nz)
  
     v = [real(Exy); imag(Exy); misc];
     
+
     %================
     % from plotfield
     
@@ -43,6 +44,8 @@ function [X, Y, psi] = plotTEslice(v, N, h, b, nz)
     dxEy = diff(Ey,1,2)/hy; % these are not square matrices
     Hz = dxEy(1:end-1, :) - dyEx(:, 1:end-1);
  
+
+
     
     [psi, X, Y] = quadrants(Hz, -bx, -by, 0, hx, hy); 
     %[psi, X, Y] = quadrants(Ex, -bx, by, 0, hx, hy); 
@@ -51,6 +54,7 @@ function [X, Y, psi] = plotTEslice(v, N, h, b, nz)
     bluered;
     pcolor(X, Y, -real(psi)); shading flat; axis equal; axis off; 
  
+
     X = X(:);
     Y = Y(:);
     psi = -real(psi(:));
@@ -73,9 +77,14 @@ end
 
 
 function [ A, X, Y ] = quadrants( A, bx, by, centerstrip, hx, hy )
+
+   
+
+
     A = [bx*fliplr(A), A(:, 1+centerstrip:end) ];
     A = [by*flipud(A); A(1+centerstrip:end, :)];
-    
+
+ 
     Nx = size(A, 2);
     Ny = size(A, 1);
     Lx = (Nx-1)*hx;
