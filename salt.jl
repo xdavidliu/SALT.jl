@@ -1,20 +1,20 @@
 const saltlib = "/Users/daveliu/Documents/saltc/saltlib";
-const petsc = joinpath(ENV["PETSC_DIR"], get(ENV, "PETSC_ARCH", ""), "lib", "libpetsc");
+const slepc = joinpath(ENV["SLEPC_DIR"], get(ENV, "PETSC_ARCH", ""), "lib", "libslepc");
 typealias PetscErrorCode Cint  # from petscsys.h
-const PETSC_COMM_WORLD = unsafe_load(cglobal((:PETSC_COMM_WORLD,petsc), Ptr{Void}));
-ccall((:PetscInitialize, petsc), PetscErrorCode,
+const PETSC_COMM_WORLD = unsafe_load(cglobal((:PETSC_COMM_WORLD,slepc), Ptr{Void}));
+ccall((:SlepcInitialize, slepc), PetscErrorCode,
               (Ptr{Cint}, Ptr{Ptr{Ptr{Uint8}}}, Ptr{Uint8}, Ptr{Uint8}),
               C_NULL, C_NULL, C_NULL, C_NULL);
 
 
-N = [100, 1, 1];
-Nc = 1;
-M = [50, 1, 1];
-Npml = [20, 0, 0];
-LowerPML = 0;
-bl = [1, -1, 1];
-BCPeriod = -1; nev = 1;
-printnewton = 1;
+N = int32([100, 1, 1]);
+Nc = int32(1);
+M = int32([50, 1, 1]);
+Npml = int32([20, 0, 0]);
+LowerPML = int32(0);
+bl = int32([1, -1, 1]);
+BCPeriod = int32(-1); nev = int32(1);
+printnewton = int32(1);
 h = [.01, .1, .2];
 wa = 15.0;
 y = 3.0;
@@ -27,8 +27,8 @@ thresholdw_tol = 1.0e-7;
 dD = 0.05;
 Dmax = 0.0;
 
-epsfile = "/Users/daveliu/Documents/saltc/eps1d.txt";
-fproffile = "/Users/daveliu/Documents/saltc/fprof1d.txt";
+epsfile = "eps1d.txt";
+fproffile = "fprof1d.txt";
 modeout = "pass1";
 namesin = ["pass0", "pass1"];
 namesout = ["after0", "after1"];
