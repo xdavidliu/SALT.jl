@@ -24,8 +24,8 @@ PASSIVE="-wreal 1.725 -wimag -0.0
 -passiveout pass3d
 -nev 1";
 
-CREEPER="-in0 pass14 -in1 pass16
--out0 last14 -out1 last16
+CREEPER="-in0 pass3d
+-out0 after
 -dD 0.05 -Dmax 0.5
 -newtonf_tol 1e-7 -thresholdw_tol 1e-7";
 

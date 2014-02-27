@@ -81,8 +81,11 @@ void NewtonSolve(ModeArray *ma, Geometry *geo, Vec v, Vec f, Vec dv, double ftol
 			PetscPrintf(PETSC_COMM_WORLD, "%s at D = %g: w = %g + i(%g)", 
 				ma->L[ih]->name,  geo->D, creal(w), cimag(w));
 				
-			if( ma->L[ih]->lasing && geo->LowerPML==0 )  PetscPrintf(PETSC_COMM_WORLD, ", |psi|^2_edge = %g", EdgeIntensity(ma->L[ih], geo));
-				
+			if( ma->L[ih]->lasing && geo->LowerPML==0 
+			&& geo->gN.N[1] == 1 && geo->gN.N[2] == 1 && geo->Nc == 1)  
+				PetscPrintf(PETSC_COMM_WORLD, ", |psi|^2_edge = %g", EdgeIntensity(ma->L[ih], geo));
+			
+
 			PetscPrintf(PETSC_COMM_WORLD, "\n");	
 		}
 	}
