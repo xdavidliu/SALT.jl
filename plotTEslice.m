@@ -70,3 +70,17 @@ function bluered(n)
   caxis([-c c]);
   
 end
+
+
+function [ A, X, Y ] = quadrants( A, bx, by, centerstrip, hx, hy )
+    A = [bx*fliplr(A), A(:, 1+centerstrip:end) ];
+    A = [by*flipud(A); A(1+centerstrip:end, :)];
+    
+    Nx = size(A, 2);
+    Ny = size(A, 1);
+    Lx = (Nx-1)*hx;
+    Ly = (Ny-1)*hy;
+    x = linspace(-Lx/2, Lx/2, Nx);
+    y = linspace(-Ly/2, Ly/2, Ny);
+    [X, Y] = meshgrid(x, y);
+end
