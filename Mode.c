@@ -162,6 +162,15 @@ void Write(Mode *m, const Geometry *geo){
 	fprintf(fp, "D=%1.15g;\n", geo->D);
 	fprintf(fp, "k=[\n%1.15g\n%1.15g\n%1.15g\n];\n", m->k[0], m->k[1], m->k[2]);	
 	// "read" constructor for Mode depends on this
+
+
+
+	// additional lines for plotting only, not read in ReadMode
+	const int *N = &(geo->gN.N[0]);
+	const double *h = &(geo->h[0]);
+	fprintf(fp, "N = [%i, %i, %i];\n", N[0],  N[1], N[2]);
+	fprintf(fp, "h = [%1.8g, %1.8g, %1.8g];\n", h[0],  h[1], h[2]);	
+	fprintf(fp, "LowerPML = %i;\n", geo->LowerPML);
 	
 	fclose(fp);
    }
