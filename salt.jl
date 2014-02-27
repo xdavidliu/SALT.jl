@@ -1,11 +1,16 @@
+#=========== libraries ============ #
 const saltlib = joinpath(pwd(), "saltlib");
 const slepc = joinpath(ENV["SLEPC_DIR"], get(ENV, "PETSC_ARCH", ""), "lib", "libslepc");
+
+
 typealias PetscErrorCode Cint;
 const PETSC_COMM_WORLD = unsafe_load(cglobal((:PETSC_COMM_WORLD,slepc), Ptr{Void}));
 ccall((:SlepcInitialize, slepc), PetscErrorCode,
               (Ptr{Cint}, Ptr{Ptr{Ptr{Uint8}}}, Ptr{Uint8}, Ptr{Uint8}),
               C_NULL, C_NULL, C_NULL, C_NULL);
 
+
+#=========== master Salt function from C code ============ #
 
 Salt(N, Nc, M, Npml, LowerPML, bl, BCPeriod, printnewton, 
 h, wa, y, wreal, wimag, k, modenorm, ftol, thresholdw_tol,
@@ -19,6 +24,27 @@ eps, fprof, wa, y, int32(BCPeriod), int32(bl), k, wreal, wimag, modenorm,
 int32(nev), modeout, dD, Dmax, thresholdw_tol, ftol, namesin, namesout, 
 int32(printnewton), int32(Nm));
 
+
+#============ sub-function for Passive resonance eigensolver ========== #
+
+Passive(N, Nc, M, Npml, LowerPML, bl, BCPeriod, 
+h, wreal, wimag, k, modenorm, eps, fprof, modeout) =
+ 
+Salt(N, Nc, M, Npml, LowerPML, bl, BCPeriod, 0, 
+h, 0.0, 0.0, wreal, wimag, k, modenorm, 1.0e-7, 1.0e-7,
+0.0, 0.0, eps, fprof, modeout, [""], [""], 0);
+
+#============ sub-function for Newton solver ======= #
+
+Creeper(N, Nc, M, Npml, LowerPML, printnewton, 
+h, wa, y, ftol, thresholdw_tol,
+dD, Dmax, eps, fprof, namesin, namesout, Nm) =
+
+Salt(N, Nc, M, Npml, LowerPML, [0,0,0], 0, printnewton, 
+h, wa, y, 0, 0, [0, 0, 0], 1.0, ftol, thresholdw_tol,
+dD, Dmax, eps, fprof, "", namesin, namesout, Nm);
+
+#=========== parameters =================
 
 N = [100, 1, 1];
 Nc = 1;
@@ -43,23 +69,25 @@ namesout = [""];
 Nm = 0;
 
 
+# =============== find first lasing mode passive resonance ==========
 
 
 modeout = "pass14";  
 bl = [-1, -1, 1];
 wreal = 14.7
-wimag = -1.07;  # find first lasing mode passive resonance
-Salt(N, Nc, M, Npml, LowerPML, bl, BCPeriod, printnewton, 
-h, wa, y, wreal, wimag, k, modenorm, ftol, thresholdw_tol,
-dD, Dmax, eps, fprof, modeout, namesin, namesout, Nm);
+wimag = -1.07;  
+Passive(N, Nc, M, Npml, LowerPML, bl, BCPeriod, 
+h, wreal, wimag, k, modenorm, eps, fprof, modeout)
+
+
+#================ find second lasing mode passive resonance ==========
 
 modeout = "pass16";  
 bl = [1, -1, 1];
 wreal = 16.7
-wimag = -1.07;  # find first lasing mode passive resonance
-Salt(N, Nc, M, Npml, LowerPML, bl, BCPeriod, printnewton, 
-h, wa, y, wreal, wimag, k, modenorm, ftol, thresholdw_tol,
-dD, Dmax, eps, fprof, modeout, namesin, namesout, Nm);
+wimag = -1.07;  
+Passive(N, Nc, M, Npml, LowerPML, bl, BCPeriod, 
+h, wreal, wimag, k, modenorm, eps, fprof, modeout)
 
 
 dD = 0.05;
@@ -68,11 +96,12 @@ namesin = ["pass14", "pass16"];
 namesout = ["after14", "after16"];
 Nm = 2;
 # turn up pump to D = 0.5
-Salt(N, Nc, M, Npml, LowerPML, bl, BCPeriod, printnewton, 
-h, wa, y, wreal, wimag, k, modenorm, ftol, thresholdw_tol,
-dD, Dmax, eps, fprof, modeout, namesin, namesout, Nm);
+Creeper(N, Nc, M, Npml, LowerPML, printnewton, 
+h, wa, y, ftol, thresholdw_tol,
+dD, Dmax, eps, fprof, namesin, namesout, Nm)
 
 
 
-
-ccall((:SlepcFinalize, slepc), PetscErrorCode, ());
+if !isinteractive()  # calling SlepcFinalize from an interactive session kills the session
+	ccall((:SlepcFinalize, slepc), PetscErrorCode, ());
+end
