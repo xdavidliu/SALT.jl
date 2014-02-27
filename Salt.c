@@ -8,10 +8,38 @@ double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char
 )
 {
 
+
+	Vec veps, vfprof;
+	CreateVec(M[0]*M[1]*M[2], &veps);
+	VecDuplicate(veps, &vfprof);
+
+	FILE *fp;
+	
+	fp = fopen(epsfile, "r");
+	if(fp==NULL){
+		char message[PETSC_MAX_PATH_LEN];
+		sprintf(message, "failed to read %s", epsfile);
+		MyError(message);
+	}
+	ReadVectorC(fp, M[0]*M[1]*M[2], veps);
+	fclose(fp);
+
+	fp = fopen(fproffile, "r");	
+	if(fp==NULL){
+		char message[PETSC_MAX_PATH_LEN];
+		sprintf(message, "failed to read %s", fproffile);
+		MyError(message);
+	}	
+	ReadVectorC(fp, M[0]*M[1]*M[2], vfprof);
+	fclose(fp);	
+
+
 	Geometry Geo, *geo = &Geo;
+	CreateGeometry(geo, N, M, h, Npml, Nc, LowerPML, veps, vfprof, wa, y);	
 
-	CreateGeometry(geo, N, M, h, Npml, Nc, LowerPML, epsfile, fproffile, wa, y);	
-
+	VecDestroy(&veps);
+	VecDestroy(&vfprof);
+	
 
 	if(Dmax == 0.0)
 		Passive(BCPeriod, bl, k, wreal, wimag, modenorm, nev, modeout, geo);		
