@@ -160,9 +160,15 @@ void Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, doubl
 
 
 
-		sprintf(m->name, "%s%i", modeout, j);
+		if(nev == 1)
+			sprintf(m->name, "%s", modeout);
+		else 
+			sprintf(m->name, "%s%i", modeout, j);
+
 		Write(m, geo);
 		DestroyMode(m);
+
+		if(nev == 1) break;
 	}
 	EPSDestroy(&evps);
 	DestroyMat(&Mop);	DestroyMat(&Bop);
@@ -171,8 +177,7 @@ void Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, doubl
 
 	gettimeofday(&t3, NULL);	
 	
-	PetscPrintf(PETSC_COMM_WORLD, "Formation and setup: %g s\nEPSSolve and Output: %g s\n", 
-		dt(t1, t2), dt(t2, t3) );
+//	PetscPrintf(PETSC_COMM_WORLD, "Formation and setup: %g s\nEPSSolve and Output: %g s\n", dt(t1, t2), dt(t2, t3) );
 
 } 
 
