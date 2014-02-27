@@ -34,8 +34,18 @@ double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char
 	fclose(fp);	
 
 
+
+
+
+	double *eps, *fprof;
+	VecGetArray(veps, &eps);
+	VecGetArray(vfprof, &fprof);
+
 	Geometry Geo, *geo = &Geo;
-	CreateGeometry(geo, N, M, h, Npml, Nc, LowerPML, veps, vfprof, wa, y);	
+	CreateGeometry(geo, N, M, h, Npml, Nc, LowerPML, eps, fprof, wa, y);	
+
+	VecRestoreArray(veps, &eps);
+	VecRestoreArray(vfprof, &fprof);
 
 	VecDestroy(&veps);
 	VecDestroy(&vfprof);

@@ -71,7 +71,7 @@ void VecSqMedium(Geometry *geo, Vec v, Vec vsq, Vec scratchM){
 }
 
 
-void CreateGeometry(Geometry *geo, int N[3], int M[3], double h[3], int Npml[3], int Nc, int LowerPML, Vec vMeps, Vec vMfprof, double wa, double y){
+void CreateGeometry(Geometry *geo, int N[3], int M[3], double h[3], int Npml[3], int Nc, int LowerPML, double *eps, double *fprof, double wa, double y){
 
 
 	int i;
@@ -106,8 +106,20 @@ void CreateGeometry(Geometry *geo, int N[3], int M[3], double h[3], int Npml[3],
 	CreateVec(Mxyz(geo), &geo->vMscratch[0]);
 
 	for(i=1; i<SCRATCHNUM; i++) VecDuplicate(geo->vMscratch[0], &geo->vMscratch[i]);
-	VecCopy(vMeps, geo->vMscratch[0]);
 	
+	{ double *scratch;
+	int ns, ne;
+	VecGetOwnershipRange(geo->vMscratch[0], &ns, &ne);
+
+	VecGetArray(geo->vMscratch[0], &scratch);
+
+	for(i=ns; i<ne;i++)
+		scratch[i-ns] = eps[i-ns];
+	
+	VecRestoreArray(geo->vMscratch[0], &scratch);
+	
+	}
+
 	CreateVec(2*Nxyzc(geo)+2, &geo->vH);
 	VecDuplicate(geo->vH, &geo->veps);
 	VecDuplicate(geo->vH, &geo->vIeps);
@@ -136,8 +148,19 @@ void CreateGeometry(Geometry *geo, int N[3], int M[3], double h[3], int Npml[3],
 
 
 
+	{ double *scratch;
+	int ns, ne;
+	VecGetOwnershipRange(geo->vMscratch[1], &ns, &ne);
 
-	VecCopy(vMfprof, geo->vMscratch[1]);
+	VecGetArray(geo->vMscratch[1], &scratch);
+
+	for(i=ns; i<ne;i++)
+		scratch[i-ns] = fprof[i-ns];
+	
+	VecRestoreArray(geo->vMscratch[1], &scratch);
+	
+	}
+
 	
 	InterpolateVec(geo, geo->vMscratch[1], geo->vf);
 
