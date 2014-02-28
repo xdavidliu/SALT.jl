@@ -30,8 +30,9 @@ type Geometry
     end
 end
 
-function Geometry(ε::Array{Cdouble}, h_, Npml_, Nc::Integer, LowerPML::Bool,
-                  gain_prof::Array{Cdouble}, ω_gain::Real, γ_gain::Real)
+function Geometry(ε::Array{Cdouble}, h_, Npml_,
+                  gain_prof::Array{Cdouble}, ω_gain::Real, γ_gain::Real;
+                  Nc::Integer=3, LowerPML::Bool=true)
     ndims(ε) > 3 && throw(ArgumentError("ε array must be <= 3-dimensional"))
     size(ε) != size(gain_prof) && throw(ArgumentError("gain profile must be same size as ε array"))
     N = Cint[size(ε)...]
