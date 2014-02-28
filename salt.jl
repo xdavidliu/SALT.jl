@@ -1,5 +1,5 @@
 #=========== libraries ============ #
-const saltlib = joinpath(pwd(), "saltlib");
+const saltlib = joinpath(pwd(), "src", "saltlib");
 const slepc = joinpath(ENV["SLEPC_DIR"], get(ENV, "PETSC_ARCH", ""), "lib", "libslepc");
 
 
