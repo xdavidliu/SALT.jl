@@ -2,7 +2,7 @@
 
 
 
-PetscErrorCode ReadModes(ModeArray *ma, Geometry *geo, char **namesin, char **namesout, int Nm){
+PetscErrorCode ReadModes(ModeArray *ma, Geometry geo, char **namesin, char **namesout, int Nm){
 
 
 	int i;
@@ -32,7 +32,7 @@ PetscErrorCode ReadModes(ModeArray *ma, Geometry *geo, char **namesin, char **na
 
 
 
-void FirstStep(ModeArray *mah, Mode *m, Geometry *geo, Vec vNh, Vec f, Vec dv, double c, double ftol, int printnewton){
+void FirstStep(ModeArray *mah, Mode *m, Geometry geo, Vec vNh, Vec f, Vec dv, double c, double ftol, int printnewton){
 
 
 	PetscPrintf(PETSC_COMM_WORLD, "Taking first step for mode \"%s\"...\n", m->name );
@@ -97,7 +97,7 @@ void FirstStep(ModeArray *mah, Mode *m, Geometry *geo, Vec vNh, Vec f, Vec dv, d
 
 
 
-void Bundle(ModeArray *ma, Geometry *geo){
+void Bundle(ModeArray *ma, Geometry geo){
 
 
 
@@ -171,7 +171,7 @@ int FindModeAtThreshold(ModeArray *ma){
 
 
 // everything after Nm copied directly from ReadMode
-void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char **namesout, int printnewton, int Nm, Geometry *geo){
+void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char **namesout, int printnewton, int Nm, Geometry geo){
 
 	
   	ModeArray Ma, *ma = &Ma;

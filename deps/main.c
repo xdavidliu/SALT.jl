@@ -209,5 +209,5 @@ dD, Dmax, thresholdw_tol, ftol, namesin, namesout, printnewton, Nm);
 */
 
 	SlepcFinalize();	
-
+        return 0;
 }

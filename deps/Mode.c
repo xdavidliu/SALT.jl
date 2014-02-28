@@ -3,7 +3,7 @@
 
 
 
-void CreateMode(Mode *m, Geometry *geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]){
+void CreateMode(Mode *m, Geometry geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]){
 
 	CreateVec(2*Nxyzc(geo)+2, &m->vpsi);
 	CreateSquareMatrix(2*Nxyzc(geo)+2, 0, &m->J);
@@ -19,7 +19,7 @@ void CreateMode(Mode *m, Geometry *geo, int ifix_, int b_[3][2], int BCPeriod_, 
 
 
 
-void ModeRead(Mode *m, const char *Name, Geometry *geo, double *Dout){
+void ModeRead(Mode *m, const char *Name, Geometry geo, double *Dout){
 
 	sprintf(m->name, "%s", Name );
 	CreateVec(2*Nxyzc(geo)+2, &m->vpsi);
@@ -104,7 +104,7 @@ void DestroyMode(Mode *m){
 }
 
 
-void Fix(Mode *m, Geometry *geo, double norm){
+void Fix(Mode *m, Geometry geo, double norm){
 
 	int N;
 	VecGetSize(m->vpsi, &N);
@@ -140,7 +140,7 @@ void Fix(Mode *m, Geometry *geo, double norm){
 
 
 
-void Write(Mode *m, const Geometry *geo){
+void Write(Mode *m, const Geometry geo){
 
 
 	Output(m->vpsi, m->name, "psi");
@@ -180,7 +180,7 @@ void Write(Mode *m, const Geometry *geo){
 }
 
 
-void AddPlaceholders(Mat J, Geometry *geo){
+void AddPlaceholders(Mat J, Geometry geo){
 
         int ns, ne,N, i, jh, j, jr, jc;
         MatGetOwnershipRange(J, &ns, &ne);
@@ -224,7 +224,7 @@ void AddPlaceholders(Mat J, Geometry *geo){
 
 }
 
-void AddRowDerivatives(Mat J, Geometry *geo, int ifix, int ih){
+void AddRowDerivatives(Mat J, Geometry geo, int ifix, int ih){
 
 	int offset =  ih*(Nxyzcr(geo)+2);
 
@@ -241,7 +241,7 @@ void AddRowDerivatives(Mat J, Geometry *geo, int ifix, int ih){
 
 }
 
-void AllocateJacobian(Mat J, Geometry *geo){
+void AllocateJacobian(Mat J, Geometry geo){
 
 
 	int N, ns, ne;
@@ -258,7 +258,7 @@ void AllocateJacobian(Mat J, Geometry *geo){
 
 }
 
-void Setup(Mode *m, Geometry *geo){
+void Setup(Mode *m, Geometry geo){
 
 
 	AllocateJacobian(m->J, geo);
@@ -302,7 +302,7 @@ dcomp get_w(Mode *m){
 	else return GetFromLast(m->vpsi, 0) + ComplexI * GetFromLast(m->vpsi, 1);
 }
 
-dcomp gamma_w(Mode *m, Geometry *geo){
+dcomp gamma_w(Mode *m, Geometry geo){
 	
 	return geo->y/( get_w(m) -geo->wa + ComplexI*geo->y);
 	

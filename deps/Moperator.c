@@ -17,7 +17,7 @@ int cyclic(Point *P, int ic, int* N){
 	return (P->ic==ic)*N[1]*N[2] + (P->ic==(ic+1)%3 )*N[2] + (P->ic==(ic+2)%3 );
 } 
 
-void MoperatorGeneralBlochFill(Geometry *geo, Mat A, int b[3][2], int DimPeriod, double k[3], int ih){
+void MoperatorGeneralBlochFill(Geometry geo, Mat A, int b[3][2], int DimPeriod, double k[3], int ih){
 
 
 	int N[3], i, j, l, ib, w, jr, ic;

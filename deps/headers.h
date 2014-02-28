@@ -98,28 +98,28 @@ typedef struct Geometry_s{
 	Vec vscratch[SCRATCHNUM], vMscratch[SCRATCHNUM], vNhscratch[SCRATCHNUM], vH, veps, vIeps, vf;
 	double D, wa, y;
 
-} Geometry;
+} *Geometry;
 
-void CreateGeometry(Geometry *geo, int N[3], int M[3], double h[3], int Npml[3], int Nc, int LowerPML, double *eps, double *fprof, double wa, double y);
-void DestroyGeometry(Geometry *geo);	
-void InterpolateVec(Geometry *geo, Vec vM, Vec vN);
-void CollectVec(Geometry *geo, Vec vN, Vec vM);
-void Stamp(Geometry *geo, Vec vN, int ic, int ir, Vec scratchM);
-void TimesI(Geometry *geo, Vec v, Vec Iv);
-void VecSqMedium(Geometry *geo, Vec v, Vec vsq, Vec scratchM);
-int Last2(Geometry *geo, int i);
-void SetJacobian(Geometry *geo, Mat J, Vec v, int jc, int jr, int jh);
+Geometry CreateGeometry(int N[3], int M[3], double h[3], int Npml[3], int Nc, int LowerPML, double *eps, double *fprof, double wa, double y);
+void DestroyGeometry(Geometry geo);	
+void InterpolateVec(Geometry geo, Vec vM, Vec vN);
+void CollectVec(Geometry geo, Vec vN, Vec vM);
+void Stamp(Geometry geo, Vec vN, int ic, int ir, Vec scratchM);
+void TimesI(Geometry geo, Vec v, Vec Iv);
+void VecSqMedium(Geometry geo, Vec v, Vec vsq, Vec scratchM);
+int Last2(Geometry geo, int i);
+void SetJacobian(Geometry geo, Mat J, Vec v, int jc, int jr, int jh);
 
-void MoperatorGeneralBlochFill(Geometry *geo, Mat A,  int b[3][2], int DimPeriod, double k[3], int ih);	
+void MoperatorGeneralBlochFill(Geometry geo, Mat A,  int b[3][2], int DimPeriod, double k[3], int ih);	
 
-int Nxyz(Geometry *geo);
-int Nxyzc(Geometry *geo);
-int Nxyzcr(Geometry *geo);
-int Mxyz(Geometry *geo);
+int Nxyz(Geometry geo);
+int Nxyzc(Geometry geo);
+int Nxyzcr(Geometry geo);
+int Mxyz(Geometry geo);
 
-int NJ(Geometry *geo);
-int offset(Geometry *geo, int ih);
-int ir(Geometry *geo, int i);
+int NJ(Geometry geo);
+int offset(Geometry geo, int ih);
+int ir(Geometry geo, int i);
 
 typedef struct Mode_s{
 
@@ -132,16 +132,16 @@ typedef struct Mode_s{
 
 } Mode;
 
-void CreateMode(Mode *m, Geometry *geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]);
-void ModeRead(Mode *m, const char *Name, Geometry *geo, double *Dout);
+void CreateMode(Mode *m, Geometry geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]);
+void ModeRead(Mode *m, const char *Name, Geometry geo, double *Dout);
 void DestroyMode(Mode *m);
-void Setup(Mode *m, Geometry *geo);
+void Setup(Mode *m, Geometry geo);
 
-void Write(Mode *m, const Geometry *geo);
+void Write(Mode *m, const Geometry geo);
 double get_c(Mode *m);
 dcomp get_w(Mode *m);
-dcomp gamma_w(Mode *m, Geometry *geo);
-void Fix(Mode *m, Geometry *geo, double norm);
+dcomp gamma_w(Mode *m, Geometry geo);
+void Fix(Mode *m, Geometry geo, double norm);
 
 
 
@@ -173,9 +173,9 @@ void Output(Vec A, const char* name, const char* variable_name);
 
 
 
-void NewtonSolve(ModeArray *ma, Geometry *geo, Vec v, Vec f, Vec dv, double ftol, int printnewton);
-void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray *mah, Vec vNh, Mode *m, Geometry *geo, Vec f, Vec dv, double thresholdw_tol, double ftol, int printnewton);
-double FormJf(ModeArray *ma, Geometry *geo, Vec v, Vec f, double ftol, int printnewton);
+void NewtonSolve(ModeArray *ma, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int printnewton);
+void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray *mah, Vec vNh, Mode *m, Geometry geo, Vec f, Vec dv, double thresholdw_tol, double ftol, int printnewton);
+double FormJf(ModeArray *ma, Geometry geo, Vec v, Vec f, double ftol, int printnewton);
 
 
 typedef struct Vecfun_s{
@@ -213,12 +213,12 @@ void CreateComplexfun(Complexfun *fun, Vec w, Vec x);
 void DestroyComplexfun(Complexfun *fun);
 
 dcomp pmlval(int i, int* N, int* Npml, double* h, int LowerPML, int k);
-void AddPlaceholders(Mat J, Geometry *geo);
-void AllocateJacobian(Mat J, Geometry *geo);
-void AddRowDerivatives(Mat J, Geometry *geo, int ifix, int ih);
+void AddPlaceholders(Mat J, Geometry geo);
+void AllocateJacobian(Mat J, Geometry geo);
+void AddRowDerivatives(Mat J, Geometry geo, int ifix, int ih);
 
-void Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, const char *modeout, Geometry *geo);
-void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char **namesout, int printnewton, int Nm, Geometry *geo);
+void Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, const char *modeout, Geometry geo);
+void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char **namesout, int printnewton, int Nm, Geometry geo);
 
 
 

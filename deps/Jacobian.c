@@ -25,7 +25,7 @@ void Isolate(Vec v, Grid *gN, int ic, int ir){
 }
 
 
-void Stamp(Geometry *geo, Vec vN, int ic, int ir, Vec scratchM){
+void Stamp(Geometry geo, Vec vN, int ic, int ir, Vec scratchM){
 
 	Isolate(vN, &geo->gN, ic, ir);
 	CollectVec(geo, vN, scratchM);
@@ -33,7 +33,7 @@ void Stamp(Geometry *geo, Vec vN, int ic, int ir, Vec scratchM){
 
 }
 
-void LinearDerivative(Mode *m, Geometry *geo, Vec dfR, Vec dfI, int ih){
+void LinearDerivative(Mode *m, Geometry geo, Vec dfR, Vec dfI, int ih){
 
 	Complexfun eps;
 	CreateComplexfun(&eps, geo->veps, geo->vIeps);
@@ -53,7 +53,7 @@ void LinearDerivative(Mode *m, Geometry *geo, Vec dfR, Vec dfI, int ih){
 	DestroyComplexfun(&eps);
 }
 
-void TensorDerivative(Mode *m, Mode *mj, Geometry *geo, int jc, int jr, Vec df, Vec vpsibra, Vec vIpsi, int ih){
+void TensorDerivative(Mode *m, Mode *mj, Geometry geo, int jc, int jr, Vec df, Vec vpsibra, Vec vIpsi, int ih){
 
 
 	double mjc = get_c(mj);
@@ -84,7 +84,7 @@ void TensorDerivative(Mode *m, Mode *mj, Geometry *geo, int jc, int jr, Vec df, 
 }
 
 
-void ColumnDerivative(Mode* m, Mode* mj, Geometry *geo, Vec dfR, Vec dfI, Vec vIpsi, Vec vpsisq, int ih){
+void ColumnDerivative(Mode* m, Mode* mj, Geometry geo, Vec dfR, Vec dfI, Vec vIpsi, Vec vpsisq, int ih){
 	// vIpsi is for m, vpsisq is for mj	
 	// use pointers so can check whether ih = jh
 
@@ -136,7 +136,7 @@ void ColumnDerivative(Mode* m, Mode* mj, Geometry *geo, Vec dfR, Vec dfI, Vec vI
 	DestroyVecfun(&psisq);
 }
 
-void ComputeGain(Geometry *geo, ModeArray *ma){
+void ComputeGain(Geometry geo, ModeArray *ma){
 
 	VecSet(geo->vH, 0.0);
 
@@ -165,7 +165,7 @@ void ComputeGain(Geometry *geo, ModeArray *ma){
 	DestroyVecfun(&H);
 }
 
-double FormJf(ModeArray *ma, Geometry *geo, Vec v, Vec f, double ftol, int printnewton){
+double FormJf(ModeArray *ma, Geometry geo, Vec v, Vec f, double ftol, int printnewton){
 
 
 	Mode *m = ma->L[0];

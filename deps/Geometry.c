@@ -4,7 +4,7 @@
 
 
 
-void InterpolateVec(Geometry *geo, Vec vM, Vec vN){
+void InterpolateVec(Geometry geo, Vec vM, Vec vN){
 
 	VecSet(vN, 0.0);
 
@@ -32,7 +32,7 @@ void InterpolateVec(Geometry *geo, Vec vM, Vec vN){
 
 }
 
-void CollectVec(Geometry *geo, Vec vN, Vec vM){
+void CollectVec(Geometry geo, Vec vN, Vec vM){
 
 	VecSet(vM, 0.0);
 
@@ -56,7 +56,7 @@ void CollectVec(Geometry *geo, Vec vN, Vec vM){
 }
 
 
-void TimesI(Geometry *geo, Vec v, Vec Iv){
+void TimesI(Geometry geo, Vec v, Vec Iv){
 
 	VecSet(Iv, 0.0);
 	ScatterRange (v, Iv, Nxyzc(geo), 0, Nxyzc(geo));
@@ -67,7 +67,7 @@ void TimesI(Geometry *geo, Vec v, Vec Iv){
 
 }
 
-void VecSqMedium(Geometry *geo, Vec v, Vec vsq, Vec scratchM){
+void VecSqMedium(Geometry geo, Vec v, Vec vsq, Vec scratchM){
 		VecCopy(v, vsq);
 		VecPointwiseMult(vsq, vsq, vsq);
 
@@ -76,12 +76,12 @@ void VecSqMedium(Geometry *geo, Vec v, Vec vsq, Vec scratchM){
 }
 
 
-void CreateGeometry(Geometry *geo, int N[3], int M[3], double h[3], int Npml[3], int Nc, int LowerPML, double *eps, double *fprof, double wa, double y){
+Geometry CreateGeometry(int N[3], int M[3], double h[3], int Npml[3], int Nc, int LowerPML, double *eps, double *fprof, double wa, double y){
 
 
 	int i;
 
-
+        Geometry geo = (Geometry) malloc(sizeof(struct Geometry_s));
 	geo->Nc = Nc;
 	geo->LowerPML = LowerPML;
 
@@ -171,32 +171,33 @@ void CreateGeometry(Geometry *geo, int N[3], int M[3], double h[3], int Npml[3],
 
 
 
- 
+        return geo;
 }
 
 
 
-void DestroyGeometry(Geometry *geo){
-
+void DestroyGeometry(Geometry geo){
+    if (geo) {
 	int i; for(i=0; i<SCRATCHNUM; i++){
-		DestroyVec(&geo->vscratch[i]);
-		DestroyVec(&geo->vNhscratch[i]);		
-		DestroyVec(&geo->vMscratch[i]);
+            DestroyVec(&geo->vscratch[i]);
+            DestroyVec(&geo->vNhscratch[i]);		
+            DestroyVec(&geo->vMscratch[i]);
 	}
 	DestroyVec(&geo->vH);
 	DestroyVec(&geo->veps);
 	DestroyVec(&geo->vIeps);
 	DestroyVec(&geo->vepspml);
 	DestroyVec(&geo->vf);
-
+        free(geo);
+    }
 }
 
-int Last2(Geometry *geo, int i){
+int Last2(Geometry geo, int i){
 	return i%(Nxyzcr(geo)+2) / Nxyzcr(geo);
 }
 
 
-void SetJacobian(Geometry *geo, Mat J, Vec v, int jc, int jr, int jh){
+void SetJacobian(Geometry geo, Mat J, Vec v, int jc, int jr, int jh){
 // use jc = -1 for last 2 columns, and jc = -2 for blocks (all jc)
 
 	AssembleVec(v);

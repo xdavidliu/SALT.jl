@@ -2,7 +2,7 @@
 
 
 
-void FillBop(Geometry *geo, Mat Bop, dcomp w){
+void FillBop(Geometry geo, Mat Bop, dcomp w){
 
 
 	VecCopy(geo->veps, geo->vscratch[0]);
@@ -24,7 +24,7 @@ void FillBop(Geometry *geo, Mat Bop, dcomp w){
 }
 
 // everything after modeout is directly from ReadGeometry
-void Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, const char *modeout, Geometry *geo){
+void Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, const char *modeout, Geometry geo){
 
     	tv t1, t2, t3;	
 
