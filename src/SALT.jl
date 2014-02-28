@@ -12,6 +12,56 @@ ccall((:SlepcInitialize, slepc), PetscErrorCode,
               (Ptr{Cint}, Ptr{Ptr{Ptr{Uint8}}}, Ptr{Uint8}, Ptr{Uint8}),
               C_NULL, C_NULL, C_NULL, C_NULL);
 
+###########################################################################
+# Managing the Geometry type
+
+immutable Geometry_s; end
+typealias Geometry_ Ptr{Geometry_s}
+
+DestroyGeometry(geo::Geometry_) = ccall((:DestroyGeometry, saltlib), Void,
+                                        (Geometry_,), geo)
+
+type Geometry
+    geo::Geometry_
+    function Geometry(geo::Geometry_)
+        g = new(geo)
+        finalizer(g, DestroyGeometry)
+        return g
+    end
+end
+
+function Geometry(ε::Array{Cdouble}, h_, Npml_, Nc::Integer, LowerPML::Bool,
+                  gain_prof::Array{Cdouble}, ω_gain::Real, γ_gain::Real)
+    ndims(ε) > 3 && throw(ArgumentError("ε array must be <= 3-dimensional"))
+    size(ε) != size(gain_prof) && throw(ArgumentError("gain profile must be same size as ε array"))
+    N = Cint[size(ε)...]
+    while length(N) < 3
+        push!(N, 1)
+    end
+    h = Cdouble[h_...]
+    length(h) > 3 && throw(ArgumentError("h must have length <= 3"))
+    while length(h) < 3
+        push!(h, h[end])
+    end
+    Npml = Cint[Npml_...]
+    length(Npml) > 3 && throw(ArgumentError("Npml must have length <= 3"))
+    while length(Npml) < 3
+        push!(Npml, Npml[end])
+    end
+
+    Geometry(ccall(("CreateGeometry",saltlib), Geometry_,
+                   (Ptr{Cint}, Ptr{Cint}, Ptr{Cdouble}, Ptr{Cint},
+                    Cint, Cint, Ptr{Cdouble}, Ptr{Cdouble}, Cdouble, Cdouble),
+                   N, N, h, Npml, Nc, LowerPML, ε, gain_prof, ω_gain, γ_gain))
+end
+
+import Base.show
+
+function show(io::IO, g::Geometry)
+    print(io, "SALT Geometry: ", g.geo)
+end
+
+###########################################################################
 
 #=========== master Salt function from C code ============ #
 
