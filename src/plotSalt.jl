@@ -1,6 +1,4 @@
-if !isdefined(:plot)
-	using PyPlot;
-end
+using PyPlot
 
 function meshgrid{T}(vx::AbstractVector{T}, vy::AbstractVector{T},
                      vz::AbstractVector{T})
