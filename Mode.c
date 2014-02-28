@@ -171,7 +171,8 @@ void Write(Mode *m, const Geometry *geo){
 	fprintf(fp, "N = [%i, %i, %i];\n", N[0],  N[1], N[2]);
 	fprintf(fp, "h = [%1.8g, %1.8g, %1.8g];\n", h[0],  h[1], h[2]);	
 	fprintf(fp, "LowerPML = %i;\n", geo->LowerPML);
-	
+	fprintf(fp, "Nc = %i;\n", geo->Nc);
+
 	fclose(fp);
    }
 	MPI_Barrier(PETSC_COMM_WORLD);
