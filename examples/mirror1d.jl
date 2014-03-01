@@ -1,6 +1,3 @@
-if !isdefined(:Salt)
-	include("salt.jl")
-end
 
 #=========== parameters =================
 
@@ -29,8 +26,8 @@ modeout = "pass14";
 bl = [-1, -1, 1];
 wreal = 14.7
 wimag = -1.07;  
-Passive(N, Nc, M, Npml, LowerPML, bl, BCPeriod, 
-h, wreal, wimag, k, modenorm, eps, fprof, modeout)
+SALT.Passive(N, Nc, M, Npml, LowerPML, bl, BCPeriod, 
+h, wreal, wimag, k, modenorm, eps, fprof, modeout, nev)
 
 
 #================ find second lasing mode passive resonance ==========
@@ -39,8 +36,8 @@ modeout = "pass16";
 bl = [1, -1, 1];
 wreal = 16.7
 wimag = -1.07;  
-Passive(N, Nc, M, Npml, LowerPML, bl, BCPeriod, 
-h, wreal, wimag, k, modenorm, eps, fprof, modeout)
+SALT.Passive(N, Nc, M, Npml, LowerPML, bl, BCPeriod, 
+h, wreal, wimag, k, modenorm, eps, fprof, modeout, nev)
 
 
 dD = 0.05;
@@ -49,12 +46,12 @@ namesin = ["pass14", "pass16"];
 namesout = ["after14", "after16"];
 Nm = 2;
 # turn up pump to D = 0.5
-Creeper(N, Nc, M, Npml, LowerPML, printnewton, 
+SALT.Creeper(N, Nc, M, Npml, LowerPML, printnewton, 
 h, wa, y, ftol, thresholdw_tol,
 dD, Dmax, eps, fprof, namesin, namesout, Nm)
 
 
 
 if !isinteractive()  # calling SlepcFinalize from an interactive session kills the session
-	ccall((:SlepcFinalize, slepc), PetscErrorCode, ());
+	ccall((:SlepcFinalize, SALT.slepc), SALT.PetscErrorCode, ());
 end

@@ -68,7 +68,7 @@ end
 
 Salt(N, nc, M, nPML, lowerPML, bl, BCPeriod, printnewton, 
 h, wa, y, wreal, wimag, k, modenorm, ftol, thresholdw_tol,
-dD, Dmax, eps, fprof, modeout, namesin, namesout, Nm) = 
+dD, Dmax, eps, fprof, modeout, namesin, namesout, Nm, nev) = 
 ccall((:Salt, saltlib), Void, (Ptr{Cint}, Ptr{Cint}, Ptr{Cdouble}, Ptr{Cint}, 
 Cint, Cint, Ptr{Cdouble}, Ptr{Cdouble}, Cdouble, Cdouble,
 Cint, Ptr{Cint}, Ptr{Cdouble}, Cdouble, Cdouble, Cdouble, Cint, Ptr{Uint8}, 
@@ -82,11 +82,11 @@ int32(printnewton), int32(Nm));
 #============ sub-function for Passive resonance eigensolver ========== #
 
 Passive(N, nc, M, nPML, lowerPML, bl, BCPeriod, 
-h, wreal, wimag, k, modenorm, eps, fprof, modeout) =
+h, wreal, wimag, k, modenorm, eps, fprof, modeout, nev) =
  
 Salt(N, nc, M, nPML, lowerPML, bl, BCPeriod, 0, 
 h, 0.0, 0.0, wreal, wimag, k, modenorm, 1.0e-7, 1.0e-7,
-0.0, 0.0, eps, fprof, modeout, [""], [""], 0);
+0.0, 0.0, eps, fprof, modeout, [""], [""], 0, nev);
 
 #============ sub-function for Newton solver ======= #
 
@@ -96,7 +96,7 @@ dD, Dmax, eps, fprof, namesin, namesout, Nm) =
 
 Salt(N, nc, M, nPML, lowerPML, [0,0,0], 0, printnewton, 
 h, wa, y, 0, 0, [0, 0, 0], 1.0, ftol, thresholdw_tol,
-dD, Dmax, eps, fprof, "", namesin, namesout, Nm);
+dD, Dmax, eps, fprof, "", namesin, namesout, Nm, 0);
 
 include("plotSalt.jl")
 
