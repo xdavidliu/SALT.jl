@@ -317,11 +317,10 @@ dcomp gamma_w(Mode m, Geometry geo){
 
 
 
-void CreateModeArray(ModeArray *ma, Mode m){
+void CreateModeArray(ModeArray *ma){
 
 	ma->L = (Mode*) malloc(sizeof(Mode));
-	ma->L[0] = m;
-	ma->size = 1;
+	ma->size = 0;
 }
 
 void DestroyModeArray(ModeArray *ma){
@@ -361,8 +360,7 @@ void CreateFilter(ModeArray *ma, ModeArray *mf, int lasing){
 		if( ma->L[i]->lasing != lasing) continue;
 
 		// match found		
-		if( mf->size == 0) CreateModeArray(mf, ma->L[i]);
-		else AddArrayMode(mf, ma->L[i]);
+		AddArrayMode(mf, ma->L[i]);
 	}
 
 }

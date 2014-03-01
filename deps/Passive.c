@@ -24,7 +24,7 @@ void FillBop(Geometry geo, Mat Bop, dcomp w){
 }
 
 // everything after modeout is directly from ReadGeometry
-void Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, const char *modeout, Geometry geo){
+ModeArray *Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, const char *modeout, Geometry geo){
 
     	tv t1, t2, t3;	
 
@@ -111,6 +111,10 @@ void Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, doubl
         Vec v, vi;
         MatGetVecs(Mop, &v, &vi);
 
+		ModeArray Ma, *ma = &Ma;
+		CreateModeArray(ma);
+		
+
 	if(nconv>0) for(i=0; i<nconv; i++){
 		double lr, li;
 		EPSGetEigenpair(evps, i, &lr, &li, v, vi);
@@ -164,11 +168,9 @@ void Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, doubl
 		else 
 			sprintf(m->name, "%s%i", modeout, j);
 
-		Write(m, geo);
-
 		// TODO: free all Modes and Geometry since they are heap allocated when created
 
-		DestroyMode(m);
+		AddArrayMode(ma, m);
 
 		if(nev == 1) break;
 	}
@@ -178,6 +180,10 @@ void Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, doubl
 
 
 	gettimeofday(&t3, NULL);	
+
+
+	return ma;
+
 	
 //	PetscPrintf(PETSC_COMM_WORLD, "Formation and setup: %g s\nEPSSolve and Output: %g s\n", dt(t1, t2), dt(t2, t3) );
 

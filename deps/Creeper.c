@@ -17,8 +17,7 @@ PetscErrorCode ReadModes(ModeArray *ma, Geometry geo, char **namesin, char **nam
 
 		sprintf(m->name, "%s", namesout[i]);
 
-		if(i == 0) CreateModeArray(ma,m);
-		else AddArrayMode(ma, m);
+		AddArrayMode(ma, m);
 
 		Setup(m, geo);
 
@@ -239,7 +238,8 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, char **
 		double wi_old = cimag(get_w(m));
 		
 		 ModeArray Ma_single, *ma_single = &Ma_single;
-		 CreateModeArray(ma_single , m);
+		 CreateModeArray(ma_single);
+		AddArrayMode(ma_single, m);
 		
 		NewtonSolve(ma_single , geo,  m->vpsi, f, dv, ftol, printnewton);
 	  	DestroyModeArray(ma_single);

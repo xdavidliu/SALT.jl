@@ -8,9 +8,16 @@ double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char
     Geometry geo;
     geo = CreateGeometry(N, M, h, Npml, Nc, LowerPML, eps, fprof, wa, y);    
     
-    if(Dmax == 0.0)
-        Passive(BCPeriod, bl, k, wreal, wimag, modenorm, nev, modeout, geo);
-    else
+    if(Dmax == 0.0){
+
+		ModeArray *ma = Passive(BCPeriod, bl, k, wreal, wimag, modenorm, nev, modeout, geo);
+		int i;
+		for(i = 0; i<ma->size; i++){
+			Write(ma->L[i], geo);
+			DestroyMode(ma->L[i]);
+		}
+
+    }else
         Creeper(dD, Dmax, thresholdw_tol, ftol, namesin, namesout, printnewton, Nm, geo);    
     
     DestroyGeometry(geo);

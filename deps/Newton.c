@@ -112,7 +112,8 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 	if(mah->size>0) NewtonSolve(mah, geo, vNh, f, dv, ftol, printnewton);
 
 	ModeArray Ma, *ma = &Ma;	
-	CreateModeArray(ma, m);
+	CreateModeArray(ma);
+	AddArrayMode(ma, m);
 	
 		// if searching a single mode with no lasing, pass empty list
 	NewtonSolve(ma, geo, m->vpsi, f, dv, ftol, printnewton);
