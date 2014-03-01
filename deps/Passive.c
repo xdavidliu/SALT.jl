@@ -111,7 +111,7 @@ ModeArray *Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag,
         Vec v, vi;
         MatGetVecs(Mop, &v, &vi);
 
-		ModeArray Ma, *ma = &Ma;
+		ModeArray *ma = (ModeArray*) malloc(sizeof(struct ModeArray_s) );
 		CreateModeArray(ma);
 		
 

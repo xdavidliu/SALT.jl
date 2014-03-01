@@ -16,7 +16,7 @@ double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char
 			Write(ma->L[i], geo);
 			DestroyMode(ma->L[i]);
 		}
-
+		free(ma);
     }else
         Creeper(dD, Dmax, thresholdw_tol, ftol, namesin, namesout, printnewton, Nm, geo);    
     
