@@ -1,7 +1,7 @@
 #include "headers.h"
 
 
-double EdgeIntensity(Mode *m, Geometry geo){
+double EdgeIntensity(Mode m, Geometry geo){
 
 	if(geo->gN.N[1] != 1 || geo->gN.N[2] != 1 || geo->LowerPML != 0 || geo->Nc != 1)
 		MyError("EdgeIntensity is only for 1d symmetric TM fields!");
@@ -95,7 +95,7 @@ void NewtonSolve(ModeArray *ma, Geometry geo, Vec v, Vec f, Vec dv, double ftol,
 
 
 
-void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray *mah, Vec vNh, Mode *m, Geometry geo, Vec f, Vec dv, double thresholdw_tol, double ftol, int printnewton){
+void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray *mah, Vec vNh, Mode m, Geometry geo, Vec f, Vec dv, double thresholdw_tol, double ftol, int printnewton){
 
 	
 	dcomp mw = get_w(m);

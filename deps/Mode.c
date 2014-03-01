@@ -3,8 +3,9 @@
 
 
 
-void CreateMode(Mode *m, Geometry geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]){
+Mode CreateMode(Geometry geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]){
 
+	Mode m = (Mode) malloc(sizeof(struct Mode_s) );
 	CreateVec(2*Nxyzc(geo)+2, &m->vpsi);
 	CreateSquareMatrix(2*Nxyzc(geo)+2, 0, &m->J);
 	KSPCreate(PETSC_COMM_WORLD,&m->ksp);
@@ -15,12 +16,16 @@ void CreateMode(Mode *m, Geometry geo, int ifix_, int b_[3][2], int BCPeriod_, d
 	int i, j;
 	for(i=0; i<3; i++) for(j=0; j<2; j++) m->b[i][j] = b_[i][j];
 	for(i=0; i<3; i++) m->k[i] = k_[i];
+
+	return m;
 }
 
 
 
-void ModeRead(Mode *m, const char *Name, Geometry geo, double *Dout){
+Mode ModeRead(const char *Name, Geometry geo, double *Dout){
+// TODO free after every ModeRead
 
+	Mode m = (Mode) malloc(sizeof(struct Mode_s) );
 	sprintf(m->name, "%s", Name );
 	CreateVec(2*Nxyzc(geo)+2, &m->vpsi);
 	CreateSquareMatrix(2*Nxyzc(geo)+2, 0, &m->J);
@@ -89,9 +94,11 @@ void ModeRead(Mode *m, const char *Name, Geometry geo, double *Dout){
 	GetLast2(m->vpsi, &val1, &val2);
 	m->lasing = val2 >= 0.0;
 
+
+	return m;
 }
 
-void DestroyMode(Mode *m){
+void DestroyMode(Mode m){
 
 	DestroyVec(&m->vpsi);
 	DestroyMat(&m->J);
@@ -104,7 +111,7 @@ void DestroyMode(Mode *m){
 }
 
 
-void Fix(Mode *m, Geometry geo, double norm){
+void Fix(Mode m, Geometry geo, double norm){
 
 	int N;
 	VecGetSize(m->vpsi, &N);
@@ -140,7 +147,7 @@ void Fix(Mode *m, Geometry geo, double norm){
 
 
 
-void Write(Mode *m, const Geometry geo){
+void Write(Mode m, const Geometry geo){
 
 
 	Output(m->vpsi, m->name, "psi");
@@ -258,7 +265,7 @@ void AllocateJacobian(Mat J, Geometry geo){
 
 }
 
-void Setup(Mode *m, Geometry geo){
+void Setup(Mode m, Geometry geo){
 
 
 	AllocateJacobian(m->J, geo);
@@ -289,20 +296,20 @@ void Setup(Mode *m, Geometry geo){
 }
 
 
-double get_c(Mode *m){
+double get_c(Mode m){
 
 	if( !m->lasing) return 0.0;
 	else return GetFromLast(m->vpsi, 1);
 
 }
 
-dcomp get_w(Mode *m){
+dcomp get_w(Mode m){
 
 	if( m->lasing) return GetFromLast(m->vpsi, 0);
 	else return GetFromLast(m->vpsi, 0) + ComplexI * GetFromLast(m->vpsi, 1);
 }
 
-dcomp gamma_w(Mode *m, Geometry geo){
+dcomp gamma_w(Mode m, Geometry geo){
 	
 	return geo->y/( get_w(m) -geo->wa + ComplexI*geo->y);
 	
@@ -310,9 +317,9 @@ dcomp gamma_w(Mode *m, Geometry geo){
 
 
 
-void CreateModeArray(ModeArray *ma, Mode *m){
+void CreateModeArray(ModeArray *ma, Mode m){
 
-	ma->L = (Mode**) malloc(sizeof(Mode*));
+	ma->L = (Mode*) malloc(sizeof(Mode));
 	ma->L[0] = m;
 	ma->size = 1;
 }
@@ -321,11 +328,11 @@ void DestroyModeArray(ModeArray *ma){
 	free(ma->L);
 }
 
-void AddArrayMode(ModeArray *ma, Mode *m){
+void AddArrayMode(ModeArray *ma, Mode m){
 
 	ma->size++;
 	
-	ma->L = (Mode**) realloc( ma->L, ma->size  *sizeof(Mode*) );
+	ma->L = (Mode*) realloc( ma->L, ma->size  *sizeof(Mode) );
 	ma->L[ ma->size-1] = m;
 }
 
@@ -339,7 +346,7 @@ void RemoveArrayMode(ModeArray *ma, int n){
 	}
 
 	ma->size--;
-	ma->L = (Mode**) realloc( ma->L, ma->size  *sizeof(Mode*) );
+	ma->L = (Mode*) realloc( ma->L, ma->size  *sizeof(Mode) );
 
 }
 

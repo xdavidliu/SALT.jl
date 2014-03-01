@@ -143,8 +143,7 @@ void Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, doubl
 		if(cimag(w) > 0.0) w = conj(w);
 
 
-		Mode M, *m = &M;
-		CreateMode(m, geo, 0, b, BCPeriod, k);
+		Mode m = CreateMode(geo, 0, b, BCPeriod, k);
 		ScatterRange(v, m->vpsi, 0, 0, xyzcrGrid(&geo->gN) );
 
 
@@ -166,6 +165,9 @@ void Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, doubl
 			sprintf(m->name, "%s%i", modeout, j);
 
 		Write(m, geo);
+
+		// TODO: free all Modes and Geometry since they are heap allocated when created
+
 		DestroyMode(m);
 
 		if(nev == 1) break;

@@ -9,8 +9,7 @@ PetscErrorCode ReadModes(ModeArray *ma, Geometry geo, char **namesin, char **nam
 	for(i=0; i<Nm; i++){
 
 		double D;
-		Mode* m = (Mode*) malloc(sizeof( Mode));
-		ModeRead(m, namesin[i], geo, &D);
+		Mode m = ModeRead(namesin[i], geo, &D);
 
 		if(i==0) geo->D = D;
 		else if(D != geo->D)
@@ -32,7 +31,7 @@ PetscErrorCode ReadModes(ModeArray *ma, Geometry geo, char **namesin, char **nam
 
 
 
-void FirstStep(ModeArray *mah, Mode *m, Geometry geo, Vec vNh, Vec f, Vec dv, double c, double ftol, int printnewton){
+void FirstStep(ModeArray *mah, Mode m, Geometry geo, Vec vNh, Vec f, Vec dv, double c, double ftol, int printnewton){
 
 
 	PetscPrintf(PETSC_COMM_WORLD, "Taking first step for mode \"%s\"...\n", m->name );
@@ -134,7 +133,7 @@ void Bundle(ModeArray *ma, Geometry geo){
 	int ih = 0;
 
 	for(ih=0; ih<ma->size; ih++){
-		Mode *m = ma->L[ih];
+		Mode m = ma->L[ih];
 		
 		DestroyMat( &m->J); // bundle shares J and v
 		m->J = J;
@@ -159,7 +158,7 @@ int FindModeAtThreshold(ModeArray *ma){
 	int n = -1, ih;
 	
 	for(ih = 0; ih<ma->size; ih++){
-		Mode *m = ma->L[ih];
+		Mode m = ma->L[ih];
 		if( get_c(m) == 0.0 && m->lasing ){
 			n = ih;
 			break;
@@ -234,7 +233,7 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, char **
 	  }
 
 	  for(ih=0; ih<ma->size; ih++){ // now nonlasing modes
-		Mode *m = ma->L[ih];
+		Mode m = ma->L[ih];
 		if(m->lasing) continue;
 
 		double wi_old = cimag(get_w(m));

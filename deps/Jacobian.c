@@ -33,7 +33,7 @@ void Stamp(Geometry geo, Vec vN, int ic, int ir, Vec scratchM){
 
 }
 
-void LinearDerivative(Mode *m, Geometry geo, Vec dfR, Vec dfI, int ih){
+void LinearDerivative(Mode m, Geometry geo, Vec dfR, Vec dfI, int ih){
 
 	Complexfun eps;
 	CreateComplexfun(&eps, geo->veps, geo->vIeps);
@@ -53,7 +53,7 @@ void LinearDerivative(Mode *m, Geometry geo, Vec dfR, Vec dfI, int ih){
 	DestroyComplexfun(&eps);
 }
 
-void TensorDerivative(Mode *m, Mode *mj, Geometry geo, int jc, int jr, Vec df, Vec vpsibra, Vec vIpsi, int ih){
+void TensorDerivative(Mode m, Mode mj, Geometry geo, int jc, int jr, Vec df, Vec vpsibra, Vec vIpsi, int ih){
 
 
 	double mjc = get_c(mj);
@@ -84,7 +84,7 @@ void TensorDerivative(Mode *m, Mode *mj, Geometry geo, int jc, int jr, Vec df, V
 }
 
 
-void ColumnDerivative(Mode* m, Mode* mj, Geometry geo, Vec dfR, Vec dfI, Vec vIpsi, Vec vpsisq, int ih){
+void ColumnDerivative(Mode m, Mode mj, Geometry geo, Vec dfR, Vec dfI, Vec vIpsi, Vec vpsisq, int ih){
 	// vIpsi is for m, vpsisq is for mj	
 	// use pointers so can check whether ih = jh
 
@@ -144,7 +144,7 @@ void ComputeGain(Geometry geo, ModeArray *ma){
 	CreateVecfun(&H, geo->vH);
 	int i, ih;
 	for(ih=0; ih<ma->size; ih++){
-		Mode *m = ma->L[ih];
+		Mode m = ma->L[ih];
 		dcomp yw = gamma_w(m, geo);
 		double mc = get_c(m);
 
@@ -168,7 +168,7 @@ void ComputeGain(Geometry geo, ModeArray *ma){
 double FormJf(ModeArray *ma, Geometry geo, Vec v, Vec f, double ftol, int printnewton){
 
 
-	Mode *m = ma->L[0];
+	Mode m = ma->L[0];
 	int lasing = m->lasing;
 	Mat J = m->J; // for multimode, all m share same J
 
@@ -237,7 +237,7 @@ double FormJf(ModeArray *ma, Geometry geo, Vec v, Vec f, double ftol, int printn
 
 
 	for(jh=0; jh<ma->size; jh++){
-		Mode *mj = ma->L[jh];
+		Mode mj = ma->L[jh];
 
 		VecSet(dfR, 0.0);
 		VecSet(dfI, 0.0);
@@ -246,7 +246,7 @@ double FormJf(ModeArray *ma, Geometry geo, Vec v, Vec f, double ftol, int printn
 			VecSqMedium(geo, mj->vpsi, vpsisq, geo->vMscratch[0]);
 
 		for(ih=0; ih<ma->size; ih++){
-			Mode *mi = ma->L[ih];
+			Mode mi = ma->L[ih];
 
 			TimesI(geo, mi->vpsi, vIpsi);
 			ColumnDerivative(mi, mj, geo, dfR, dfI, vIpsi, vpsisq, ih);
@@ -267,7 +267,7 @@ double FormJf(ModeArray *ma, Geometry geo, Vec v, Vec f, double ftol, int printn
 	Vec vpsibra = vpsisq; vpsisq = 0;
 
 	for(jh=0; jh<ma->size; jh++){
-		Mode *mj = ma->L[jh];
+		Mode mj = ma->L[jh];
 
 		for(jr=0; jr<2; jr++) for(jc=0; jc< geo->gN.Nc; jc++){
 
@@ -277,7 +277,7 @@ double FormJf(ModeArray *ma, Geometry geo, Vec v, Vec f, double ftol, int printn
 			VecSet(dfR, 0.0);
 			ih = 0;
 			for(ih=0; ih<ma->size; ih++){
-				Mode *mi = ma->L[ih];
+				Mode mi = ma->L[ih];
 				TimesI(geo, mi->vpsi, vIpsi);
 	
 				TensorDerivative(mi, mj, geo, jc, jr, dfR, vpsibra, vIpsi, ih);

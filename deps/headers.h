@@ -9,11 +9,6 @@ typedef struct timeval tv;
 
 double dt(tv t1, tv t2);
 
-/*
-#include <complex>
-typedef std::complex<double> dcomp;
-static const dcomp ComplexI(0.0, 1.0);
-*/
 
 #include <complex.h>
 typedef double complex dcomp;
@@ -24,13 +19,6 @@ static const dcomp ComplexI = I;
 
 static const char Output_Suffix[PETSC_MAX_PATH_LEN] = "_file.m";
 
-/*
-double creal(dcomp z);
-double cimag(dcomp z); //TODO temp delete
-double cabs(dcomp z);
-dcomp cexp(dcomp z);
-dcomp csqrt(dcomp z);
-*/
 
 int GetRank();
 int GetSize();
@@ -130,29 +118,29 @@ typedef struct Mode_s{
 	Mat J;
 	KSP ksp; // one ksp per J seems faster
 
-} Mode;
+} *Mode;
 
-void CreateMode(Mode *m, Geometry geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]);
-void ModeRead(Mode *m, const char *Name, Geometry geo, double *Dout);
-void DestroyMode(Mode *m);
-void Setup(Mode *m, Geometry geo);
+Mode CreateMode(Geometry geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]);
+Mode ModeRead(const char *Name, Geometry geo, double *Dout);
+void DestroyMode(Mode m);
+void Setup(Mode m, Geometry geo);
 
-void Write(Mode *m, const Geometry geo);
-double get_c(Mode *m);
-dcomp get_w(Mode *m);
-dcomp gamma_w(Mode *m, Geometry geo);
-void Fix(Mode *m, Geometry geo, double norm);
+void Write(Mode m, const Geometry geo);
+double get_c(Mode m);
+dcomp get_w(Mode m);
+dcomp gamma_w(Mode m, Geometry geo);
+void Fix(Mode m, Geometry geo, double norm);
 
 
 
 typedef struct ModeArray_s{
 	int size;
-	Mode **L;
+	Mode *L;
 } ModeArray;
 
-void CreateModeArray(ModeArray *ma, Mode *m);
+void CreateModeArray(ModeArray *ma, Mode m);
 void DestroyModeArray(ModeArray *ma);
-void AddArrayMode(ModeArray *ma, Mode *m);
+void AddArrayMode(ModeArray *ma, Mode m);
 void RemoveArrayMode(ModeArray *ma, int n);
 
 void CreateFilter(ModeArray *ma, ModeArray *mf, int lasing);
@@ -174,7 +162,7 @@ void Output(Vec A, const char* name, const char* variable_name);
 
 
 void NewtonSolve(ModeArray *ma, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int printnewton);
-void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray *mah, Vec vNh, Mode *m, Geometry geo, Vec f, Vec dv, double thresholdw_tol, double ftol, int printnewton);
+void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray *mah, Vec vNh, Mode m, Geometry geo, Vec f, Vec dv, double thresholdw_tol, double ftol, int printnewton);
 double FormJf(ModeArray *ma, Geometry geo, Vec v, Vec f, double ftol, int printnewton);
 
 
