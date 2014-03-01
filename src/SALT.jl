@@ -9,7 +9,7 @@ const slepc = joinpath(ENV["SLEPC_DIR"], get(ENV, "PETSC_ARCH", ""), "lib", "lib
 typealias PetscErrorCode Cint;
 const PETSC_COMM_WORLD = unsafe_load(cglobal((:PETSC_COMM_WORLD,slepc), Ptr{Void}));
 ccall((:SlepcInitialize, slepc), PetscErrorCode,
-              (Ptr{Cint}, Ptr{Ptr{Ptr{Uint8}}}, Ptr{Uint8}, Ptr{Uint8}),
+					  (Ptr{Cint}, Ptr{Ptr{Ptr{Uint8}}}, Ptr{Uint8}, Ptr{Uint8}),
               C_NULL, C_NULL, C_NULL, C_NULL);
 
 ###########################################################################
@@ -49,6 +49,8 @@ function Geometry(ε::Array{Cdouble}, h_, nPML_,
     while length(nPML) < 3
         push!(nPML, nPML[end])
     end
+
+#void Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, const char *modeout, Geometry geo);
 
     Geometry(ccall(("CreateGeometry",saltlib), Geometry_,
                    (Ptr{Cint}, Ptr{Cint}, Ptr{Cdouble}, Ptr{Cint},
