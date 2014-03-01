@@ -7,7 +7,7 @@ void VecSetComplex(Vec vR, Vec vI, int i, int ir, dcomp val, InsertMode addv){
 }
 
 
-void Isolate(Vec v, Grid gN, int ic, int ir){
+void Isolate(Vec v, Grid *gN, int ic, int ir){
 
 	int ns, ne, i;
 	VecGetOwnershipRange(v, &ns, &ne);
@@ -16,7 +16,8 @@ void Isolate(Vec v, Grid gN, int ic, int ir){
 
 	for(i=ns; i<ne && i<xyzcrGrid(gN); i++){
 
-		Point p = CreatePoint_i(i, gN);
+		Point p;
+		CreatePoint_i(&p, i, gN);
 		if(p.ic != ic || p.ir != ir) a[i-ns] = 0.0;
 	}
 	VecRestoreArray(v, &a);
@@ -26,7 +27,7 @@ void Isolate(Vec v, Grid gN, int ic, int ir){
 
 void Stamp(Geometry geo, Vec vN, int ic, int ir, Vec scratchM){
 
-	Isolate(vN, geo->gN, ic, ir);
+	Isolate(vN, &geo->gN, ic, ir);
 	CollectVec(geo, vN, scratchM);
 	InterpolateVec(geo, scratchM, vN);
 
@@ -268,7 +269,7 @@ double FormJf(ModeArray *ma, Geometry geo, Vec v, Vec f, double ftol, int printn
 	for(jh=0; jh<ma->size; jh++){
 		Mode *mj = ma->L[jh];
 
-		for(jr=0; jr<2; jr++) for(jc=0; jc< geo->gN->Nc; jc++){
+		for(jr=0; jr<2; jr++) for(jc=0; jc< geo->gN.Nc; jc++){
 
 			VecCopy(mj->vpsi, vpsibra);
 			Stamp(geo, vpsibra, jc, jr, geo->vMscratch[0]);

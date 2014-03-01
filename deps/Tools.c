@@ -168,11 +168,11 @@ void Output(Vec A, const char* name, const char* variable_name){
 }
 
 
-void CreatePoint_i(Point *p, int i, Grid H){
+void CreatePoint_i(Point *p, int i, Grid *H){
 
 	int j;
 	for(j = 2; j>=0; j--){
-		p->G = H;
+		p->G = *H;
 		p->ix[j] = i % H->N[j]; 
 		i /= H->N[j];
 	}
@@ -182,18 +182,18 @@ void CreatePoint_i(Point *p, int i, Grid H){
 
 
 
-int xyz(Point *p) {return p->ix[0]*p->G->N[2]*p->G->N[1] + p->ix[1]*p->G->N[2] + p->ix[2];}
-int xyzc(Point *p) {return p->ic*xyzGrid(p->G) + xyz(p);}
-int xyzcr(Point *p) {return p->ir*xyzcGrid(p->G) + p->ic*xyzGrid(p->G) + xyz(p);}
+int xyz(Point *p) {return p->ix[0]*p->G.N[2]*p->G.N[1] + p->ix[1]*p->G.N[2] + p->ix[2];}
+int xyzc(Point *p) {return p->ic*xyzGrid(&p->G) + xyz(p);}
+int xyzcr(Point *p) {return p->ir*xyzcGrid(&p->G) + p->ic*xyzGrid(&p->G) + xyz(p);}
 
 int convert(Point *p, int Nc){
 
-	if(Nc==p->G->Nc ) return p->ic;
+	if(Nc==p->G.Nc ) return p->ic;
 	else if(Nc == 3){
-		if(p->G->Nc==1 && p->ic == 0) return 2;  // TM to vector
-		else if(p->G->Nc==2 && p->ic < 2) return p->ic;  // TE to vector
+		if(p->G.Nc==1 && p->ic == 0) return 2;  // TM to vector
+		else if(p->G.Nc==2 && p->ic < 2) return p->ic;  // TE to vector
 		else return -1;
-	}else if(p->G->Nc == 3){
+	}else if(p->G.Nc == 3){
 		if(Nc==1 && p->ic == 2) return 0;  // vector to TM
 		else if(Nc==2 && p->ic < 2) return p->ic;   // vector to TE 
 		else return -1;
@@ -203,49 +203,40 @@ int convert(Point *p, int Nc){
 
 int project(Point *p, int Nc){
 	p->ic = convert(p, Nc);
-	p->G->Nc = Nc;
+	p->G.Nc = Nc;
 	return p->ic;
 }
 
-int projectmedium(Point *p, Grid gm, int LowerPML){
+int projectmedium(Point *p, Grid *gm, int LowerPML){
 
 	int medium =1, j;
 	for(j=0; j<3; j++){ // position component
 
-		double d = p->ix[j] - LowerPML*floor( (p->G->N[j]-gm->N[j])/2.0 ) + ( p->ic!=j)*0.5;
+		double d = p->ix[j] - LowerPML*floor( (p->G.N[j]-gm->N[j])/2.0 ) + ( p->ic!=j)*0.5;
 		p->ix[j] = ceil(d-0.5);
 		if(p->ix[j]<0 || p->ix[j]>= gm->N[j] ) medium = 0;
 	}
-
-	// TODO: Why is it that if I free p->G here, sometimes I get malloc?
-	// doesn't the p always have an allocated G already?
-
-	p->G = gm;
+	p->G = *gm;
 	return medium;
 }
 
 
-Grid CreateGrid(int* M, int Mc, int Mr){
-
-
-	Grid g = (Grid) malloc(sizeof(struct Grid_s) );
+void CreateGrid(Grid *g, int* M, int Mc, int Mr){
 
 	int i;
 	for(i=0; i<3; i++) g->N[i] = M[i];
 	g->Nc = Mc;
 	g->Nr = Mr;
-
-	return g;
 }
 
-int xyzGrid(Grid g) {return g->N[0]* g->N[1]*g->N[2];}
-int xyzcGrid(Grid g) {return xyzGrid(g)* g->Nc;}
-int xyzcrGrid(Grid g) {return xyzcGrid(g)* g->Nr;}
+int xyzGrid(Grid *g) {return g->N[0]* g->N[1]*g->N[2];}
+int xyzcGrid(Grid *g) {return xyzGrid(g)* g->Nc;}
+int xyzcrGrid(Grid *g) {return xyzcGrid(g)* g->Nr;}
 
-int Nxyz(Geometry geo){ return xyzGrid(geo->gN); }
-int Nxyzc(Geometry geo){ return xyzcGrid(geo->gN); }
-int Nxyzcr(Geometry geo){ return xyzcrGrid(geo->gN);}
-int Mxyz(Geometry geo){ return xyzGrid(geo->gM); }
+int Nxyz(Geometry geo){ return xyzGrid(&geo->gN); }
+int Nxyzc(Geometry geo){ return xyzcGrid(&geo->gN); }
+int Nxyzcr(Geometry geo){ return xyzcrGrid(&geo->gN);}
+int Mxyz(Geometry geo){ return xyzGrid(&geo->gM); }
 
 int NJ(Geometry geo){ return Nxyzcr(geo) + 2;}
 int offset(Geometry geo, int ih){ return ih*NJ(geo); }

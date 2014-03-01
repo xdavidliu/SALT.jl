@@ -3,7 +3,7 @@
 
 double EdgeIntensity(Mode *m, Geometry geo){
 
-	if(geo->gN->N[1] != 1 || geo->gN->N[2] != 1 || geo->LowerPML != 0 || geo->Nc != 1)
+	if(geo->gN.N[1] != 1 || geo->gN.N[2] != 1 || geo->LowerPML != 0 || geo->Nc != 1)
 		MyError("EdgeIntensity is only for 1d symmetric TM fields!");
 
 	if( !m->lasing) return 0;
@@ -82,7 +82,7 @@ void NewtonSolve(ModeArray *ma, Geometry geo, Vec v, Vec f, Vec dv, double ftol,
 				ma->L[ih]->name,  geo->D, creal(w), cimag(w));
 				
 			if( ma->L[ih]->lasing && geo->LowerPML==0 
-			&& geo->gN->N[1] == 1 && geo->gN->N[2] == 1 && geo->Nc == 1)  
+			&& geo->gN.N[1] == 1 && geo->gN.N[2] == 1 && geo->Nc == 1)  
 				PetscPrintf(PETSC_COMM_WORLD, ", |psi|^2_edge = %g", EdgeIntensity(ma->L[ih], geo));
 			
 

@@ -52,15 +52,15 @@ void DestroyMat(Mat *A);
 typedef struct Grid_s{	
 	
 	int N[3], Nc, Nr;
-} *Grid;
+} Grid;
 
 
-Grid CreateGrid(int* M, int Mc, int Mr);
+void CreateGrid(Grid *g, int* M, int Mc, int Mr);
 
 
-int xyzGrid(Grid g);
-int xyzcGrid(Grid g);
-int xyzcrGrid(Grid g);
+int xyzGrid(Grid *g);
+int xyzcGrid(Grid *g);
+int xyzcrGrid(Grid *g);
 
 
 typedef struct Point_s{
@@ -68,16 +68,16 @@ typedef struct Point_s{
 
 	int ix[3], ir, ic;
 	Grid G;
-} *Point;
+} Point;
 
-void CreatePoint_i(Point p, int i, Grid H);
+void CreatePoint_i(Point *p, int i, Grid *H);
 
-int convert(Point p, int Nc);
-int project(Point p, int Nc);
-int projectmedium(Point p, Grid gm, int LowerPML);
-int xyz(Point p);
-int xyzc(Point p);
-int xyzcr(Point p);
+int convert(Point *p, int Nc);
+int project(Point *p, int Nc);
+int projectmedium(Point *p, Grid *gm, int LowerPML);
+int xyz(Point *p);
+int xyzc(Point *p);
+int xyzcr(Point *p);
 
 
 
