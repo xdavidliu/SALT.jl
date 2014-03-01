@@ -166,7 +166,7 @@ void Write(Mode *m, const Geometry geo){
 
 
 	// additional lines for plotting only, not read in ReadMode
-	const int *N = &(geo->gN.N[0]);
+	const int *N = &(geo->gN->N[0]);
 	const double *h = &(geo->h[0]);
 	fprintf(fp, "N = [%i, %i, %i];\n", N[0],  N[1], N[2]);
 	fprintf(fp, "h = [%1.8g, %1.8g, %1.8g];\n", h[0],  h[1], h[2]);	

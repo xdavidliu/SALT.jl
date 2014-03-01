@@ -16,11 +16,10 @@ void InterpolateVec(Geometry geo, Vec vM, Vec vN){
 	int i;
 	for(i=0; i< Nxyzcr(geo); i++){
 		
-		Point p;
-		CreatePoint_i(&p, i, &geo->gN);
-		if( projectmedium(&p, &geo->gM, geo->LowerPML) ){
+		Point p = CreatePoint_i(i, geo->gN);
+		if( projectmedium(p, geo->gM, geo->LowerPML) ){
 	
-			int ixyz = xyz(&p);
+			int ixyz = xyz(p);
 			if( ms <= ixyz && ixyz < me)
 				VecSetValue(vN, i, vals[ixyz-ms], ADD_VALUES);
 
@@ -45,10 +44,9 @@ void CollectVec(Geometry geo, Vec vN, Vec vM){
 	int i;
 	for(i=ns; i<ne; i++){
 		
-		Point p;
-		CreatePoint_i(&p, i, &geo->gN);
-		if( projectmedium(&p, &geo->gM, geo->LowerPML) )
-			VecSetValue(vM, xyz(&p), vals[i-ns], ADD_VALUES);
+		Point p = CreatePoint_i(i, geo->gN);
+		if( projectmedium(&p, geo->gM, geo->LowerPML) )
+			VecSetValue(vM, xyz(p), vals[i-ns], ADD_VALUES);
 	}
 	
 	VecRestoreArrayRead(vN, &vals);
@@ -90,8 +88,8 @@ Geometry CreateGeometry(int N[3], int M[3], double h[3], int Npml[3], int Nc, in
 		geo->Npml[i] = Npml[i];
 	}
 
-	CreateGrid(&geo->gN, N, geo->Nc, 2);
-	CreateGrid(&geo->gM, M, 1, 1);
+	geo->gN = CreateGrid(N, geo->Nc, 2);
+	geo->gM = CreateGrid(M, 1, 1);
 
 
 	CreateVec(2*Nxyzc(geo)+2, &geo->vepspml);
@@ -100,10 +98,9 @@ Geometry CreateGeometry(int N[3], int M[3], double h[3], int Npml[3], int Nc, in
 	CreateVecfun(&pml,geo->vepspml);
 	
 	for(i=pml.ns; i<pml.ne; i++){
-		Point p;
-		CreatePoint_i(&p, i, &geo->gN);
+		Point p =CreatePoint_i(i, geo->gN);
 		project(&p, 3);
-		dcomp eps_geoal = pmlval(xyzc(&p), N, geo->Npml, geo->h, geo->LowerPML, 0);	
+		dcomp eps_geoal = pmlval(xyzc(p), N, geo->Npml, geo->h, geo->LowerPML, 0);	
 		setr(&pml, i, p.ir? cimag(eps_geoal) : creal(eps_geoal) );
 	}
 	DestroyVecfun(&pml);
@@ -213,15 +210,14 @@ void SetJacobian(Geometry geo, Mat J, Vec v, int jc, int jr, int jh){
 		int col, offset = jh*(Nxyzcr(geo)+2),
 		ij = i%(Nxyzcr(geo)+2);
 		
-		Point p;
-		CreatePoint_i(&p, ij, &geo->gN);
+		Point p = CreatePoint_i(ij, geo->gN);
 		
 		if(jc == -1) //columns
 			col = Nxyzcr(geo)+jr;
 		else if(jc == -2) //blocks
-			col = jr*Nxyzc(geo) + xyzc(&p);
+			col = jr*Nxyzc(geo) + xyzc(p);
 		else // tensors
-			col = jr*Nxyzc(geo) + jc*Nxyz(geo) + xyz(&p);
+			col = jr*Nxyzc(geo) + jc*Nxyz(geo) + xyz(p);
 		
 		MatSetValue(J, i, col+offset, vals[i-ns], ADD_VALUES);
 		

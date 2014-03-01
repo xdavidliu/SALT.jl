@@ -2,11 +2,10 @@
 
 dcomp pmlval(int i, int* N, int* Npml, double* h, int LowerPML, int k){
 // k = 1 for muinv, k = 0 for eps
-	Grid gC;
-	CreateGrid(&gC, N, 3, 2);
+	Grid gC = CreateGrid(N, 3, 2);
 
 	Point p;
-	CreatePoint_i(&p, i, &gC );
+	CreatePoint_i(&p, i, gC );
 	int j, l;
 
 	double omega = 1.0, d[3], val[2] = {0.0, 0.0};			

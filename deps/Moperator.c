@@ -21,7 +21,7 @@ void MoperatorGeneralBlochFill(Geometry geo, Mat A, int b[3][2], int DimPeriod, 
 
 
 	int N[3], i, j, l, ib, w, jr, ic;
-	for(i=0; i<3; i++) N[i] = geo->gN.N[i];
+	for(i=0; i<3; i++) N[i] = geo->gN->N[i];
 
 	double blochbc[3];
 	for(i=0; i<3; i++) blochbc[i] = k[i]*N[i]*geo->h[i];
@@ -35,9 +35,10 @@ void MoperatorGeneralBlochFill(Geometry geo, Mat A, int b[3][2], int DimPeriod, 
 	dcomp val, magicnum, mucp[2], mulcp[2];
 	dcomp cidu_phase, cpidu_phase[2], cpidl_phase[2];
 
-	Grid gc, gC;
-	CreateGrid(&gc, N, geo->Nc, 2);
-	CreateGrid(&gC, N, 3, 2); 
+	Grid gc = CreateGrid(N, geo->Nc, 2), 
+	gC = CreateGrid(N, 3, 2);
+	
+
 
  
   /* set up b ... */
@@ -51,8 +52,7 @@ void MoperatorGeneralBlochFill(Geometry geo, Mat A, int b[3][2], int DimPeriod, 
 	int itrue;
 for (itrue = ns; itrue < ne && itrue < 2*Nxyzc(geo); ++itrue) {
 
-	Point p;
-	CreatePoint_i(&p, itrue, &gc); 
+	Point p = CreatePoint_i(itrue, gc); 
 
 	project(&p, 3); int i = xyzcr(&p);
 	int cp[2], icp[2], cidu, cpidu[2],cpidl[2], cid, cpid[2];
@@ -77,8 +77,7 @@ for (itrue = ns; itrue < ne && itrue < 2*Nxyzc(geo); ++itrue) {
    	magicnum = (p.ir==jr)*1.0 + (p.ir<jr)*1.0*ComplexI - (p.ir>jr)*1.0* ComplexI; 
 
 //=====================================================================
-	Point prow;
-	CreatePoint_i(&prow, i, &gC); 
+	Point prow = CreatePoint_i(i, gC); 
 	project(&prow, geo->Nc);
 for(ib=0; ib<2; ib++){
 
@@ -116,8 +115,7 @@ for(ib=0; ib<2; ib++){
 
 
 	for(w=0;w<4;w++){
-	Point pcol;
-	CreatePoint_i(&pcol, icp[ib] + jrd+dcol[w], &gC );
+	Point pcol = CreatePoint_i(icp[ib] + jrd+dcol[w], gC );
 
 	project(&pcol, geo->Nc);	
 	if(pcol.ic!=-1) MatSetValue(A, xyzcr(&prow)+offset, xyzcr(&pcol)+offset, c[w], ADD_VALUES);
@@ -148,8 +146,7 @@ for(ib=0; ib<2; ib++){
 	dcol[2] = -cpidl[ib];
 
 	for(w=0;w<3;w++){
-	Point pcol;
-	CreatePoint_i(&pcol, i + jrd+dcol[w], &gC );
+	Point pcol = CreatePoint_i(i + jrd+dcol[w], gC );
 	project(&pcol, geo->Nc);
 	if(pcol.ic!=-1) MatSetValue(A, xyzcr(&prow)+offset, xyzcr(&pcol)+offset, c[w], ADD_VALUES);
 	}

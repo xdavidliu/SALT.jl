@@ -122,11 +122,11 @@ void Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, doubl
 		// then || TimesI(v) + vi || > 1e-5 or something
 		
 
-		ScatterRange(v, geo->vscratch[0], 0, 0, xyzcrGrid(&geo->gN) );
+		ScatterRange(v, geo->vscratch[0], 0, 0, xyzcrGrid(geo->gN) );
 		TimesI(geo, geo->vscratch[0], geo->vscratch[2]);
 		
 		VecSet(geo->vscratch[1], 0.0); // annoying last two elements
-		ScatterRange(vi, geo->vscratch[1], 0, 0, xyzcrGrid(&geo->gN) );
+		ScatterRange(vi, geo->vscratch[1], 0, 0, xyzcrGrid(geo->gN) );
 		VecAXPY(geo->vscratch[2], -1.0, geo->vscratch[1]);
 		
 		double dvnorm, vnorm;
@@ -145,7 +145,7 @@ void Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, doubl
 
 		Mode M, *m = &M;
 		CreateMode(m, geo, 0, b, BCPeriod, k);
-		ScatterRange(v, m->vpsi, 0, 0, xyzcrGrid(&geo->gN) );
+		ScatterRange(v, m->vpsi, 0, 0, xyzcrGrid(geo->gN) );
 
 
 		Fix(m, geo, modenorm);
