@@ -317,25 +317,32 @@ dcomp gamma_w(Mode m, Geometry geo){
 
 
 
-void CreateModeArray(ModeArray *ma){
+ModeArray CreateModeArray(){
+	
+	ModeArray ma = (ModeArray) malloc(sizeof(struct ModeArray_s) );
 
 	ma->L = (Mode*) malloc(sizeof(Mode));
 	ma->size = 0;
+
+	return ma;
 }
 
-void DestroyModeArray(ModeArray *ma){
+void DestroyModeArray(ModeArray ma){
 	free(ma->L);
+	free(ma);
 }
 
-void AddArrayMode(ModeArray *ma, Mode m){
+void AddArrayMode(ModeArray ma, Mode m){
 
 	ma->size++;
-	
-	ma->L = (Mode*) realloc( ma->L, ma->size  *sizeof(Mode) );
+
+	if(ma->size ==1) ma->L = (Mode*) malloc( sizeof(Mode) );
+	else ma->L = (Mode*) realloc( ma->L, ma->size  *sizeof(Mode) );
+
 	ma->L[ ma->size-1] = m;
 }
 
-void RemoveArrayMode(ModeArray *ma, int n){
+void RemoveArrayMode(ModeArray ma, int n){
 
 	if( n >= ma->size) MyError("out of range in RemoveArrayMode");
 
@@ -350,8 +357,9 @@ void RemoveArrayMode(ModeArray *ma, int n){
 }
 
 
-void CreateFilter(ModeArray *ma, ModeArray *mf, int lasing){
+ ModeArray CreateFilter(ModeArray ma, int lasing){
 
+	ModeArray mf = (ModeArray) malloc(sizeof(struct ModeArray_s) );
 	mf->size =0;
 	
 	int i;
@@ -363,5 +371,6 @@ void CreateFilter(ModeArray *ma, ModeArray *mf, int lasing){
 		AddArrayMode(mf, ma->L[i]);
 	}
 
+	return mf;
 }
 

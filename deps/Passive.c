@@ -24,7 +24,7 @@ void FillBop(Geometry geo, Mat Bop, dcomp w){
 }
 
 // everything after modeout is directly from ReadGeometry
-ModeArray *Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, const char *modeout, Geometry geo){
+ModeArray Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, const char *modeout, Geometry geo){
 
     	tv t1, t2, t3;	
 
@@ -111,8 +111,7 @@ ModeArray *Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag,
         Vec v, vi;
         MatGetVecs(Mop, &v, &vi);
 
-		ModeArray *ma = (ModeArray*) malloc(sizeof(struct ModeArray_s) );
-		CreateModeArray(ma);
+		ModeArray ma = CreateModeArray();
 		
 
 	if(nconv>0) for(i=0; i<nconv; i++){

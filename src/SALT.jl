@@ -16,10 +16,15 @@ ccall((:SlepcInitialize, slepc), PetscErrorCode,
 # Managing the Geometry type
 
 immutable Geometry_s; end
+immutable Mode_s; end
+immutable ModeArray; end
 typealias Geometry_ Ptr{Geometry_s}
+typealias Mode_ Ptr{Mode_s}
 
 DestroyGeometry(geo::Geometry_) = ccall((:DestroyGeometry, saltlib), Void,
                                         (Geometry_,), geo)
+
+DestroyMode(m::Mode_) = ccall((:DestroyMode, saltlib), Void, (Mode_,), m )
 
 type Geometry
     geo::Geometry_
@@ -29,6 +34,17 @@ type Geometry
         return g
     end
 end
+
+
+type Mode
+	m::Mode_
+	function Mode(m::Mode_)
+		md = new(m)
+		finalizer(m, DestroyMode)
+		return md
+	end
+end
+
 
 function Geometry(ε::Array{Cdouble}, h_, nPML_,
                   gain_prof::Array{Cdouble}, ω_gain::Real, γ_gain::Real;

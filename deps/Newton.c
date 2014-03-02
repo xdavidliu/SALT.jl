@@ -17,7 +17,7 @@ double EdgeIntensity(Mode m, Geometry geo){
 
 
 
-void NewtonSolve(ModeArray *ma, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int printnewton){
+void NewtonSolve(ModeArray ma, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int printnewton){
 // f and dv are essentially scratch vectors.
 // for L.size > 1, v is also essentially a scratch vector
 
@@ -95,7 +95,7 @@ void NewtonSolve(ModeArray *ma, Geometry geo, Vec v, Vec f, Vec dv, double ftol,
 
 
 
-void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray *mah, Vec vNh, Mode m, Geometry geo, Vec f, Vec dv, double thresholdw_tol, double ftol, int printnewton){
+void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray mah, Vec vNh, Mode m, Geometry geo, Vec f, Vec dv, double thresholdw_tol, double ftol, int printnewton){
 
 	
 	dcomp mw = get_w(m);
@@ -111,12 +111,12 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 	geo->D = D_lo - (D_hi - D_lo)/(wimag_hi - wimag_lo) * wimag_lo;
 	if(mah->size>0) NewtonSolve(mah, geo, vNh, f, dv, ftol, printnewton);
 
-	ModeArray Ma, *ma = &Ma;	
-	CreateModeArray(ma);
+	ModeArray ma = CreateModeArray();
 	AddArrayMode(ma, m);
 	
-		// if searching a single mode with no lasing, pass empty list
 	NewtonSolve(ma, geo, m->vpsi, f, dv, ftol, printnewton);
+
+
 	DestroyModeArray(ma);
 
 	mw = get_w(m);

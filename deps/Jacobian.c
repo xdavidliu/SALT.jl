@@ -136,7 +136,7 @@ void ColumnDerivative(Mode m, Mode mj, Geometry geo, Vec dfR, Vec dfI, Vec vIpsi
 	DestroyVecfun(&psisq);
 }
 
-void ComputeGain(Geometry geo, ModeArray *ma){
+void ComputeGain(Geometry geo, ModeArray ma){
 
 	VecSet(geo->vH, 0.0);
 
@@ -165,7 +165,7 @@ void ComputeGain(Geometry geo, ModeArray *ma){
 	DestroyVecfun(&H);
 }
 
-double FormJf(ModeArray *ma, Geometry geo, Vec v, Vec f, double ftol, int printnewton){
+double FormJf(ModeArray ma, Geometry geo, Vec v, Vec f, double ftol, int printnewton){
 
 
 	Mode m = ma->L[0];

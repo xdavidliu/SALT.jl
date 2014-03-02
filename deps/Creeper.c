@@ -2,7 +2,7 @@
 
 
 
-PetscErrorCode ReadModes(ModeArray *ma, Geometry geo, char **namesin, char **namesout, int Nm){
+PetscErrorCode ReadModes(ModeArray ma, Geometry geo, char **namesin, char **namesout, int Nm){
 
 
 	int i;
@@ -30,7 +30,7 @@ PetscErrorCode ReadModes(ModeArray *ma, Geometry geo, char **namesin, char **nam
 
 
 
-void FirstStep(ModeArray *mah, Mode m, Geometry geo, Vec vNh, Vec f, Vec dv, double c, double ftol, int printnewton){
+void FirstStep(ModeArray mah, Mode m, Geometry geo, Vec vNh, Vec f, Vec dv, double c, double ftol, int printnewton){
 
 
 	PetscPrintf(PETSC_COMM_WORLD, "Taking first step for mode \"%s\"...\n", m->name );
@@ -95,7 +95,7 @@ void FirstStep(ModeArray *mah, Mode m, Geometry geo, Vec vNh, Vec f, Vec dv, dou
 
 
 
-void Bundle(ModeArray *ma, Geometry geo){
+void Bundle(ModeArray ma, Geometry geo){
 
 
 
@@ -152,7 +152,7 @@ void Bundle(ModeArray *ma, Geometry geo){
 
 
 
-int FindModeAtThreshold(ModeArray *ma){
+int FindModeAtThreshold(ModeArray ma){
 
 	int n = -1, ih;
 	
@@ -172,7 +172,7 @@ int FindModeAtThreshold(ModeArray *ma){
 void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char **namesout, int printnewton, int Nm, Geometry geo){
 
 	
-  	ModeArray Ma, *ma = &Ma;
+  	ModeArray ma = CreateModeArray();
 
 
 
@@ -191,8 +191,7 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, char **
 	for(; geo->D <= Dmax; geo->D = (geo->D+dD < Dmax? geo->D+dD: Dmax)){
 
 
-	  	ModeArray Mah, *mah = &Mah;
-		CreateFilter(ma, mah, 1); // lasing sub-array
+	  	ModeArray mah =	CreateFilter(ma, 1); // lasing sub-array
 
 	  
 	  Vec vNh = ma->L[0]->vpsi, fNh = f, dvNh = dv;
@@ -237,8 +236,7 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, char **
 
 		double wi_old = cimag(get_w(m));
 		
-		 ModeArray Ma_single, *ma_single = &Ma_single;
-		 CreateModeArray(ma_single);
+		 ModeArray ma_single = CreateModeArray();
 		AddArrayMode(ma_single, m);
 		
 		NewtonSolve(ma_single , geo,  m->vpsi, f, dv, ftol, printnewton);

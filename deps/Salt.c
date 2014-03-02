@@ -10,7 +10,7 @@ double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char
     
     if(Dmax == 0.0){
 
-		ModeArray *ma = Passive(BCPeriod, bl, k, wreal, wimag, modenorm, nev, modeout, geo);
+		ModeArray ma = Passive(BCPeriod, bl, k, wreal, wimag, modenorm, nev, modeout, geo);
 		int i;
 		for(i = 0; i<ma->size; i++){
 			Write(ma->L[i], geo);

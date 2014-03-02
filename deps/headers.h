@@ -136,14 +136,14 @@ void Fix(Mode m, Geometry geo, double norm);
 typedef struct ModeArray_s{
 	int size;
 	Mode *L;
-} ModeArray;
+} *ModeArray;
 
-void CreateModeArray(ModeArray *ma);
-void DestroyModeArray(ModeArray *ma);
-void AddArrayMode(ModeArray *ma, Mode m);
-void RemoveArrayMode(ModeArray *ma, int n);
+ModeArray CreateModeArray();
+void DestroyModeArray(ModeArray ma);
+void AddArrayMode(ModeArray ma, Mode m);
+void RemoveArrayMode(ModeArray ma, int n);
 
-void CreateFilter(ModeArray *ma, ModeArray *mf, int lasing);
+ModeArray CreateFilter(ModeArray ma, int lasing);
 
 
 
@@ -161,9 +161,9 @@ void Output(Vec A, const char* name, const char* variable_name);
 
 
 
-void NewtonSolve(ModeArray *ma, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int printnewton);
-void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray *mah, Vec vNh, Mode m, Geometry geo, Vec f, Vec dv, double thresholdw_tol, double ftol, int printnewton);
-double FormJf(ModeArray *ma, Geometry geo, Vec v, Vec f, double ftol, int printnewton);
+void NewtonSolve(ModeArray ma, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int printnewton);
+void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray mah, Vec vNh, Mode m, Geometry geo, Vec f, Vec dv, double thresholdw_tol, double ftol, int printnewton);
+double FormJf(ModeArray ma, Geometry geo, Vec v, Vec f, double ftol, int printnewton);
 
 
 typedef struct Vecfun_s{
@@ -205,7 +205,7 @@ void AddPlaceholders(Mat J, Geometry geo);
 void AllocateJacobian(Mat J, Geometry geo);
 void AddRowDerivatives(Mat J, Geometry geo, int ifix, int ih);
 
-ModeArray *Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, const char *modeout, Geometry geo);
+ModeArray Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, const char *modeout, Geometry geo);
 void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char **namesout, int printnewton, int Nm, Geometry geo);
 
 
