@@ -126,6 +126,12 @@ void CopyPsi(Mode m, double *psiout){
 
 }
 
+int PsiSize(Mode m){
+	int N;
+	VecGetSize(m->vpsi, &N);
+	return N;
+}
+
 
 void Fix(Mode m, Geometry geo, double norm){
 

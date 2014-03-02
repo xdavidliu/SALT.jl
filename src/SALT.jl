@@ -111,6 +111,16 @@ end
 
 
 
+function GetPsi(m::SALT.Mode)
+    
+    N = ccall( (:PsiSize, saltlib), Cint, (Mode_,), m.m );
+    v = zeros(N);
+    ccall( (:CopyPsi, saltlib), Void, (Mode_, Ptr{Cdouble}), m.m, v);
+    v;
+end
+
+
+
 import Base.show
 
 function show(io::IO, g::Geometry)

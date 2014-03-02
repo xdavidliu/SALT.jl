@@ -126,6 +126,7 @@ void DestroyMode(Mode m);
 void Setup(Mode m, Geometry geo);
 
 void CopyPsi(Mode m, double *psiout);
+int PsiSize(Mode m);
 
 void Write(Mode m, const Geometry geo);
 double get_c(Mode m);
