@@ -111,6 +111,22 @@ void DestroyMode(Mode m){
 }
 
 
+void CopyPsi(Mode m, double *psiout){
+
+	int ns, ne;
+	VecGetOwnershipRange(m->vpsi, &ns, &ne);
+
+	double *psi;
+	VecGetArray(m->vpsi, &psi);
+	int i;
+	for(i=ns; i<ne; i++)
+		psiout[i-ns] = psi[i-ns];
+
+	VecRestoreArray(m->vpsi, &psi);
+
+}
+
+
 void Fix(Mode m, Geometry geo, double norm){
 
 	int N;
@@ -355,6 +371,8 @@ void RemoveArrayMode(ModeArray ma, int n){
 	ma->L = (Mode*) realloc( ma->L, ma->size  *sizeof(Mode) );
 
 }
+
+Mode GetMode(ModeArray ma, int n){ return ma->L[n] ; }
 
 
  ModeArray CreateFilter(ModeArray ma, int lasing){

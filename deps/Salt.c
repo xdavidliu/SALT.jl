@@ -17,6 +17,15 @@ double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char
 			DestroyMode(ma->L[i]);
 		}
 		free(ma);
+
+		double *vals;
+		VecGetArray(geo->vscratch[0], &vals);
+
+		CopyPsi(ma->L[0], vals);
+		VecRestoreArray(geo->vscratch[0], &vals);
+
+		Output(geo->vscratch[0], "vals", "");
+
     }else
         Creeper(dD, Dmax, thresholdw_tol, ftol, namesin, namesout, printnewton, Nm, geo);    
     

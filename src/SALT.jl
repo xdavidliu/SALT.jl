@@ -4,7 +4,7 @@ export Salt, Passive, Creeper
 
 #=========== libraries ============ #
 const saltlib = Pkg.dir("SALT", "deps", "saltlib");
-const slepc = joinpath(ENV["SLEPC_DIR"], get(ENV, "PETSC_ARCH", ""), "lib", "libslepc");
+const slepc = joinpath(ENV["SLEPC_DIR"], ENV["PETSC_ARCH"], "lib", "libslepc");
 
 typealias PetscErrorCode Cint;
 const PETSC_COMM_WORLD = unsafe_load(cglobal((:PETSC_COMM_WORLD,slepc), Ptr{Void}));
@@ -16,15 +16,21 @@ ccall((:SlepcInitialize, slepc), PetscErrorCode,
 # Managing the Geometry type
 
 immutable Geometry_s; end
-immutable Mode_s; end
-immutable ModeArray; end
 typealias Geometry_ Ptr{Geometry_s}
+
+immutable Mode_s; end
 typealias Mode_ Ptr{Mode_s}
+
+immutable ModeArray_s; end
+typealias ModeArray_ Ptr{ModeArray_s}
 
 DestroyGeometry(geo::Geometry_) = ccall((:DestroyGeometry, saltlib), Void,
                                         (Geometry_,), geo)
 
 DestroyMode(m::Mode_) = ccall((:DestroyMode, saltlib), Void, (Mode_,), m )
+
+DestroyModeArray(ma::ModeArray_) = ccall((:DestroyModeArray, saltlib), Void, (ModeArray_,), ma);
+
 
 type Geometry
     geo::Geometry_
@@ -36,13 +42,26 @@ type Geometry
 end
 
 
+
+type ModeArray
+	ma::ModeArray_
+	function ModeArray(ma::ModeArray_)
+		mdar = new(ma)
+		finalizer(mdar, DestroyModeArray)
+		return mdar
+	end
+end
+
+
 type Mode
 	m::Mode_
 	function Mode(m::Mode_)
 		md = new(m)
-		finalizer(m, DestroyMode)
+		finalizer(md, DestroyMode)
 		return md
 	end
+
+
 end
 
 
@@ -66,13 +85,31 @@ function Geometry(ε::Array{Cdouble}, h_, nPML_,
         push!(nPML, nPML[end])
     end
 
-#void Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, const char *modeout, Geometry geo);
 
     Geometry(ccall(("CreateGeometry",saltlib), Geometry_,
                    (Ptr{Cint}, Ptr{Cint}, Ptr{Cdouble}, Ptr{Cint},
                     Cint, Cint, Ptr{Cdouble}, Ptr{Cdouble}, Cdouble, Cdouble),
                    N, N, h, nPML, nc, lowerPML, ε, gain_prof, ω_gain, γ_gain))
 end
+
+
+
+function ModeArray(BCPeriod::Int64, bl::Array{Int64,1}, k::Array{Cdouble,1},
+    wreal::Cdouble, wimag::Cdouble, modenorm::Cdouble, geo::SALT.Geometry, n::Int64)
+
+
+	ModeArray( ccall( ("Passive", saltlib), ModeArray_, (Cint, Ptr{Cint}, 
+		Ptr{Cdouble}, Cdouble, Cdouble, Cdouble, Cint, Ptr{Uint8}, SALT.Geometry), 
+		int32(BCPeriod), int32(bl), k, wreal, wimag, modenorm, 1, "", geo );
+	)
+end
+
+
+function Mode(ma::ModeArray, n::Integer)
+	Mode( ccall( ("GetMode", saltlib), Mode_, (ModeArray_, Cint), ma.ma, n) );
+end
+
+
 
 import Base.show
 

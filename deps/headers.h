@@ -125,6 +125,8 @@ Mode ModeRead(const char *Name, Geometry geo, double *Dout);
 void DestroyMode(Mode m);
 void Setup(Mode m, Geometry geo);
 
+void CopyPsi(Mode m, double *psiout);
+
 void Write(Mode m, const Geometry geo);
 double get_c(Mode m);
 dcomp get_w(Mode m);
@@ -142,6 +144,8 @@ ModeArray CreateModeArray();
 void DestroyModeArray(ModeArray ma);
 void AddArrayMode(ModeArray ma, Mode m);
 void RemoveArrayMode(ModeArray ma, int n);
+Mode GetMode(ModeArray ma, int n);
+
 
 ModeArray CreateFilter(ModeArray ma, int lasing);
 
