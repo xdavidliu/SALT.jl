@@ -1,18 +1,27 @@
 #include "headers.h"
 
 double EdgeIntensity(Mode m, Geometry geo){
-// TODO: broken because N = M, as suggested by Steven
-
-
-	if(geo->gN.N[1] != 1 || geo->gN.N[2] != 1 || geo->LowerPML != 0 || geo->Nc != 1)
-		MyError("EdgeIntensity is only for 1d symmetric TM fields!");
+// only works for sequential
 
 	if( !m->lasing) return 0;
-	
-	double psiR = GetValue(m->vpsi, Mxyz(geo)-1 ),
-			psiI = GetValue(m->vpsi, Mxyz(geo)-1+Nxyzc(geo) );
 
-	return 2*sqr( get_c(m) ) * (  sqr(psiR ) + sqr(psiI) );
+	TimesI(geo, m->vpsi, geo->vscratch[1]);
+	Complexfun psi; Vecfun fprof;
+	CreateComplexfun(&psi, m->vpsi, geo->vscratch[1]);
+	CreateVecfun(&fprof, geo->vf);
+
+	int i;
+	double lastPsiSq = 0.0;
+	for(i=0; i<Nxyzc(geo); i++){
+		
+		if( valr(&fprof, i) != 0.0 )
+			lastPsiSq = sqr( cabs( valc(&psi, i) ) );
+	} 
+
+	DestroyComplexfun(&psi);
+	DestroyVecfun(&fprof);
+
+	return 2*sqr( get_c(m) ) * lastPsiSq;
 
 }
 
@@ -82,7 +91,7 @@ void NewtonSolve(Mode *ms, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int 
 			PetscPrintf(PETSC_COMM_WORLD, "%s at D = %g: w = %g + i(%g)", 
 				ms[ih]->name,  geo->D, creal(w), cimag(w));
 				
-			if( ms[ih]->lasing && geo->LowerPML==0 
+			if( GetSize() == 1 && ms[ih]->lasing && geo->LowerPML==0 
 			&& geo->gN.N[1] == 1 && geo->gN.N[2] == 1 && geo->Nc == 1)  
 				PetscPrintf(PETSC_COMM_WORLD, ", |psi|^2_edge = %g", EdgeIntensity(ms[ih], geo));
 			
