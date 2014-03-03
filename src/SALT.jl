@@ -6,11 +6,9 @@ export Salt, Passive, Creeper
 const saltlib = Pkg.dir("SALT", "deps", "saltlib");
 const slepc = joinpath(ENV["SLEPC_DIR"], ENV["PETSC_ARCH"], "lib", "libslepc");
 
-typealias PetscErrorCode Cint;
-const PETSC_COMM_WORLD = unsafe_load(cglobal((:PETSC_COMM_WORLD,slepc), Ptr{Void}));
-ccall((:SlepcInitialize, slepc), PetscErrorCode,
-					  (Ptr{Cint}, Ptr{Ptr{Ptr{Uint8}}}, Ptr{Uint8}, Ptr{Uint8}),
-              C_NULL, C_NULL, C_NULL, C_NULL);
+ccall((:SlepcInitialize, slepc), Cint,
+	(Ptr{Void}, Ptr{Void}, Ptr{Void}, Ptr{Void}),
+	C_NULL, C_NULL, C_NULL, C_NULL); # ignore arguments for now
 
 ###########################################################################
 # Managing the Geometry type
@@ -21,15 +19,11 @@ typealias Geometry_ Ptr{Geometry_s}
 immutable Mode_s; end
 typealias Mode_ Ptr{Mode_s}
 
-immutable ModeArray_s; end
-typealias ModeArray_ Ptr{ModeArray_s}
 
 DestroyGeometry(geo::Geometry_) = ccall((:DestroyGeometry, saltlib), Void,
                                         (Geometry_,), geo)
 
 DestroyMode(m::Mode_) = ccall((:DestroyMode, saltlib), Void, (Mode_,), m )
-
-DestroyModeArray(ma::ModeArray_) = ccall((:DestroyModeArray, saltlib), Void, (ModeArray_,), ma);
 
 type Geometry
     geo::Geometry_
@@ -40,14 +34,6 @@ type Geometry
     end
 end
 
-type ModeArray
-	ma::ModeArray_
-	function ModeArray(ma::ModeArray_)
-		mdar = new(ma)
-		finalizer(mdar, DestroyModeArray)
-		return mdar
-	end
-end
 
 type Mode
 	m::Mode_
@@ -85,17 +71,21 @@ function Geometry(ε::Array{Cdouble}, h_, nPML_,
                    N, N, h, nPML, nc, lowerPML, ε, gain_prof, ω_gain, γ_gain))
 end
 
-function ModeArray(BCPeriod::Int64, bl::Array{Int64,1}, k::Array{Cdouble,1},
-    wreal::Cdouble, wimag::Cdouble, modenorm::Cdouble, geo::SALT.Geometry, n::Int64)
+function Passive(BCPeriod::Int64, bl::Array{Int64,1}, k::Array{Cdouble,1},
+    wreal::Cdouble, wimag::Cdouble, modenorm::Cdouble, geo::SALT.Geometry, nev::Integer)
 
-	ModeArray( ccall( ("Passive", saltlib), ModeArray_, (Cint, Ptr{Cint}, 
+	marray = ccall( ("Passive", saltlib), Ptr{Void}, (Cint, Ptr{Cint}, 
 		Ptr{Cdouble}, Cdouble, Cdouble, Cdouble, Cint, Ptr{Uint8}, SALT.Geometry), 
-		int32(BCPeriod), int32(bl), k, wreal, wimag, modenorm, 1, "", geo );
-	)
-end
+		int32(BCPeriod), int32(bl), k, wreal, wimag, modenorm, nev, "", geo );
 
-function Mode(ma::ModeArray, n::Integer)
-	Mode( ccall( ("GetMode", saltlib), Mode_, (ModeArray_, Cint), ma.ma, n) );
+	N = ccall( ("GetArraySize", saltlib), Cint, (Ptr{Void},), marray );
+
+	ma = Array(Mode, N);
+	for i=1:N
+		ma[i] = Mode( ccall( ("GetMode", saltlib), Mode_, (Ptr{Void}, Cint), marray, i-1) );
+	end
+
+	ma;
 end
 
 function GetPsi(m::SALT.Mode)
@@ -128,14 +118,6 @@ eps, fprof, wa, y, int32(BCPeriod), int32(bl), k, wreal, wimag, modenorm,
 int32(nev), modeout, dD, Dmax, thresholdw_tol, ftol, namesin, namesout, 
 int32(printnewton), int32(Nm));
 
-#============ sub-function for Passive resonance eigensolver ========== #
-
-Passive(N, nc, M, nPML, lowerPML, bl, BCPeriod, 
-h, wreal, wimag, k, modenorm, eps, fprof, modeout, nev) =
- 
-Salt(N, nc, M, nPML, lowerPML, bl, BCPeriod, 0, 
-h, 0.0, 0.0, wreal, wimag, k, modenorm, 1.0e-7, 1.0e-7,
-0.0, 0.0, eps, fprof, modeout, [""], [""], 0, nev);
 
 #============ sub-function for Newton solver ======= #
 

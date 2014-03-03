@@ -324,6 +324,10 @@ ModeArray CreateModeArray(){
 	return ma;
 }
 
+int GetArraySize(ModeArray ma){
+	return ma->size;
+}
+
 void DestroyModeArray(ModeArray ma){
 	free(ma->L);
 	free(ma);

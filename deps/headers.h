@@ -121,6 +121,7 @@ typedef struct ModeArray_s{
 } *ModeArray;
 
 ModeArray CreateModeArray();
+int GetArraySize(ModeArray ma);
 void DestroyModeArray(ModeArray ma);
 void AddArrayMode(ModeArray ma, Mode m);
 void RemoveArrayMode(ModeArray ma, int n);

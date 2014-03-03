@@ -6,7 +6,7 @@
 COMMAND=$1;
 MPI=mpirun;
 #MPI=${PETSC_DIR}/${PETSC_ARCH}/bin/mpiexec;
-RUN="${MPI} -n 3 ../deps/SaltOut"; 
+RUN="${MPI} -n 1 ../deps/SaltOut"; 
 # for kraken, should be "time aprun -n 12"
 # for valgrind, put valgrind after -n 2
 
@@ -22,7 +22,7 @@ PASSIVE="-wreal 15.7 -wimag -1.07
 -kx 0 -ky 0 -kz 0
 -BCPeriod -1 -norm 0.01
 -passiveout pass
--nev 1";
+-nev 5";
 
 CREEPER="-in0 pass0 -in1 pass
 -out0 last14 -out1 last16
