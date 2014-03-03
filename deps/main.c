@@ -38,7 +38,7 @@ int main(int argc, char** argv){
 
 	// ======== copied directly from ReadGeometry ======== //
 
-	int N[3], M[3], Npml[3], Nc, LowerPML, i, bl[3] = {0}, 
+	int N[3], Npml[3], Nc, LowerPML, i, bl[3] = {0}, 
 		BCPeriod=0, nev=0, Nm = 0, printnewton = 0;
 	double h[3], wreal = 0., wimag=0., modenorm=1., wa, y,
 		k[3] = {0}, dD = 0.0, thresholdw_tol=0., ftol = 0.0;
@@ -49,8 +49,6 @@ int main(int argc, char** argv){
 
 		sprintf(option, "%s%c", "-N", x[i]);
 		PetscOptionsGetInt(PETSC_NULL,option, &N[i], NULL);
-		sprintf(option, "%s%c", "-M", x[i]);
-		PetscOptionsGetInt(PETSC_NULL,option, &M[i], NULL);
 		sprintf(option, "%s%c", "-Npml", x[i]);
 		PetscOptionsGetInt(PETSC_NULL,option, &Npml[i], NULL);
 
@@ -149,7 +147,7 @@ int main(int argc, char** argv){
 
 
 	Vec veps, vfprof;
-	CreateVec(M[0]*M[1]*M[2], &veps);
+	CreateVec(N[0]*N[1]*N[2], &veps);
 	VecDuplicate(veps, &vfprof);
 
 	FILE *fp;
@@ -160,7 +158,7 @@ int main(int argc, char** argv){
 		sprintf(message, "failed to read %s", epsfile);
 		MyError(message);
 	}
-	ReadVectorC(fp, M[0]*M[1]*M[2], veps);
+	ReadVectorC(fp, N[0]*N[1]*N[2], veps);
 	fclose(fp);
 
 	fp = fopen(fproffile, "r");	
@@ -169,7 +167,7 @@ int main(int argc, char** argv){
 		sprintf(message, "failed to read %s", fproffile);
 		MyError(message);
 	}	
-	ReadVectorC(fp, M[0]*M[1]*M[2], vfprof);
+	ReadVectorC(fp, N[0]*N[1]*N[2], vfprof);
 	fclose(fp);	
 
 	double *eps, *fprof;
@@ -178,7 +176,7 @@ int main(int argc, char** argv){
 
 //============================================================
     Geometry geo;
-    geo = CreateGeometry(N, M, h, Npml, Nc, LowerPML, eps, fprof, wa, y);    
+    geo = CreateGeometry(N, h, Npml, Nc, LowerPML, eps, fprof, wa, y);    
     
     if(Dmax == 0.0){
 

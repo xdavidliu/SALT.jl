@@ -68,9 +68,9 @@ function Geometry(ε::Array{Cdouble}, h_, nPML_,
     end
 
     Geometry(ccall(("CreateGeometry",saltlib), Geometry_,
-                   (Ptr{Cint}, Ptr{Cint}, Ptr{Cdouble}, Ptr{Cint},
+                   (Ptr{Cint}, Ptr{Cdouble}, Ptr{Cint},
                     Cint, Cint, Ptr{Cdouble}, Ptr{Cdouble}, Cdouble, Cdouble),
-                   N, N, h, nPML, nc, lowerPML, ε, gain_prof, ω_gain, γ_gain))
+                   N, h, nPML, nc, lowerPML, ε, gain_prof, ω_gain, γ_gain))
 end
 
 ##################################################################

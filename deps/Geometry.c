@@ -75,7 +75,7 @@ void VecSqMedium(Geometry geo, Vec v, Vec vsq, Vec scratchM){
 		InterpolateVec(geo, scratchM, vsq);
 }
 
-Geometry CreateGeometry(int N[3], int M[3], double h[3], int Npml[3], int Nc, int LowerPML, double *eps, double *fprof, double wa, double y){
+Geometry CreateGeometry(int N[3], double h[3], int Npml[3], int Nc, int LowerPML, double *eps, double *fprof, double wa, double y){
 
 	int i;
 
@@ -89,7 +89,7 @@ Geometry CreateGeometry(int N[3], int M[3], double h[3], int Npml[3], int Nc, in
 	}
 
 	CreateGrid(&geo->gN, N, geo->Nc, 2);
-	CreateGrid(&geo->gM, M, 1, 1);
+	CreateGrid(&geo->gM, N, 1, 1); // 3/3/14: set M = N as per Steven
 
 	CreateVec(2*Nxyzc(geo)+2, &geo->vepspml);
 

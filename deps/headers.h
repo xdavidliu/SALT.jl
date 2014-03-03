@@ -62,14 +62,14 @@ typedef struct Geometry_s{
 	double h[3];
 	Vec vepspml;
 
-	Grid gN, gM;
+	Grid gN, gM; // technically could remove gM, but keep it around in case need later
 
 	Vec vscratch[SCRATCHNUM], vMscratch[SCRATCHNUM], vNhscratch[SCRATCHNUM], vH, veps, vIeps, vf;
 	double D, wa, y;
 
 } *Geometry;
 
-Geometry CreateGeometry(int N[3], int M[3], double h[3], int Npml[3], int Nc, int LowerPML, double *eps, double *fprof, double wa, double y);
+Geometry CreateGeometry(int N[3], double h[3], int Npml[3], int Nc, int LowerPML, double *eps, double *fprof, double wa, double y);
 
 void SetPump(Geometry geo, double D);
 void DestroyGeometry(Geometry geo);	
