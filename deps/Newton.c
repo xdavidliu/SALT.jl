@@ -88,7 +88,10 @@ void NewtonSolve(Mode *ms, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int 
 
 }
 
-void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray mah, Vec vNh, Mode m, Geometry geo, Vec f, Vec dv, double thresholdw_tol, double ftol, int printnewton){
+void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, Mode *msh, Vec vNh, Mode m, Geometry geo, Vec f, Vec dv, double thresholdw_tol, double ftol, int printnewton){
+
+
+
 
 	
 	dcomp mw = get_w(m);
@@ -100,7 +103,9 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 	}
 
 	geo->D = D_lo - (D_hi - D_lo)/(wimag_hi - wimag_lo) * wimag_lo;
-	if(mah->size>0) NewtonSolve(mah->L, geo, vNh, f, dv, ftol, printnewton);
+
+	// set msh = NULL before calling ThresholdSearch if no lasing
+	if( msh ) NewtonSolve(msh, geo, vNh, f, dv, ftol, printnewton);
 
 	ModeArray ma = CreateModeArray();
 
@@ -126,5 +131,5 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 	if(printnewton)
 	PetscPrintf(PETSC_COMM_WORLD, 
 		"Searching... D=%g --> Im[w] = %g\n", geo->D, cimag(mw));
-	ThresholdSearch(wimag_lo, wimag_hi, D_lo, D_hi, mah, vNh, m, geo, f, dv, thresholdw_tol, ftol, printnewton); 	
+	ThresholdSearch(wimag_lo, wimag_hi, D_lo, D_hi, msh, vNh, m, geo, f, dv, thresholdw_tol, ftol, printnewton); 	
 }

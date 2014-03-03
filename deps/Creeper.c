@@ -223,9 +223,11 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 
 		if(wi_new > -thresholdw_tol && !m->lasing){
 		
-		
+			// set msh to NULL if no lasing modes
+			Mode *msh = ( mah->size > 0? mah->L : NULL);
+
 			ThresholdSearch(  wi_old, wi_new, geo->D-dD, geo->D, 
-			mah, vNh, m, geo, f, dv, thresholdw_tol, ftol, printnewton);
+			msh, vNh, m, geo, f, dv, thresholdw_tol, ftol, printnewton);
 			
 		}
 	  }
