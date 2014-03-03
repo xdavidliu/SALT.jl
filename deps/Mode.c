@@ -191,12 +191,44 @@ void Write(Mode m, const Geometry geo){
 	
 }
 
-void AddPlaceholders(Mat J, Geometry geo){
 
-        int ns, ne,N, i, jh, j, jr, jc;
+void AddRowDerivatives(Mat J, Geometry geo, int ifix, int ih){
+
+	int offset =  ih*(Nxyzcr(geo)+2);
+
+	// last two rows; just put the row derivatives here!
+	if(LastProcess()){
+		MatSetValue(J, Nxyzcr(geo)+offset, 
+		ifix+offset, 1.0, ADD_VALUES);
+	// putting these here takes care of last two residual elements
+	// up to scaling of the first one (done below)
+		MatSetValue(J, Nxyzcr(geo) + 1+offset, 
+		Nxyzc(geo)+ ifix+offset, 1.0, ADD_VALUES);
+	}	
+	
+
+}
+
+void AllocateJacobian(Mat J, Geometry geo){
+
+	int N, ns, ne;
+	MatGetSize(J, &N, NULL);
+	MatGetOwnershipRange(J, &ns, &ne);
+	int Nh = N / NJ(geo);
+	
+	int nnz = 26+Nh*(2+2*geo->Nc);
+	// in parenthesis: 2 column derivatives plus 2Nc tensor derivatives
+
+	if(GetSize() > 1) MatMPIAIJSetPreallocation(J, nnz, NULL, nnz, NULL);
+	else MatSeqAIJSetPreallocation(J, nnz, NULL);
+	// same number for diagonal and off diagonal. Assume N >> size.
+
+	//================== Adding placeholders ================
+
+
+        int i, jh, j, jr, jc;
         MatGetOwnershipRange(J, &ns, &ne);
         MatGetSize(J, &N, NULL);
-        int Nh = N/(Nxyzcr(geo)+2);
 
 	for(i=ns; i<ne; i++){ 
 	
@@ -232,38 +264,6 @@ void AddPlaceholders(Mat J, Geometry geo){
 	}
 	*/
 
-}
-
-void AddRowDerivatives(Mat J, Geometry geo, int ifix, int ih){
-
-	int offset =  ih*(Nxyzcr(geo)+2);
-
-	// last two rows; just put the row derivatives here!
-	if(LastProcess()){
-		MatSetValue(J, Nxyzcr(geo)+offset, 
-		ifix+offset, 1.0, ADD_VALUES);
-	// putting these here takes care of last two residual elements
-	// up to scaling of the first one (done below)
-		MatSetValue(J, Nxyzcr(geo) + 1+offset, 
-		Nxyzc(geo)+ ifix+offset, 1.0, ADD_VALUES);
-	}	
-	
-
-}
-
-void AllocateJacobian(Mat J, Geometry geo){
-
-	int N, ns, ne;
-	MatGetSize(J, &N, NULL);
-	MatGetOwnershipRange(J, &ns, &ne);
-	int Nh = N / (2*Nxyzc(geo)+2);
-	
-	int nnz = 26+Nh*(2+2*geo->Nc);
-	// in parenthesis: 2 column derivatives plus 2Nc tensor derivatives
-
-	if(GetSize() > 1) MatMPIAIJSetPreallocation(J, nnz, NULL, nnz, NULL);
-	else MatSeqAIJSetPreallocation(J, nnz, NULL);
-	// same number for diagonal and off diagonal. Assume N >> size.
 
 }
 
@@ -272,8 +272,6 @@ void Setup(Mode m, Geometry geo){
 	AllocateJacobian(m->J, geo);
 	
     MoperatorGeneralBlochFill(geo, m->J, m->b, m->BCPeriod, m->k, 0);
-
-	AddPlaceholders(m->J, geo);
 	AddRowDerivatives(m->J, geo, m->ifix, 0);
 	AssembleMat(m->J);
 	MatSetOption(m->J,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);

@@ -173,7 +173,6 @@ void CreateComplexfun(Complexfun *fun, Vec w, Vec x);
 void DestroyComplexfun(Complexfun *fun);
 
 dcomp pmlval(int i, int* N, int* Npml, double* h, int LowerPML, int k);
-void AddPlaceholders(Mat J, Geometry geo);
 void AllocateJacobian(Mat J, Geometry geo);
 void AddRowDerivatives(Mat J, Geometry geo, int ifix, int ih);
 

@@ -85,8 +85,6 @@ void Bundle(Mode *ms, int size, Geometry geo){
 	CreateSquareMatrix( Nh*Nj, 0, &J);
 	AllocateJacobian(J, geo);
 
-	AddPlaceholders(J, geo);
-
 	KSPCreate(PETSC_COMM_WORLD,&ksp);
 	PC pc;
 	KSPGetPC(ksp,&pc);
