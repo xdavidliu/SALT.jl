@@ -18,10 +18,10 @@ SALTOUT = SaltOut
 CLEANFILES = *.dylib *.so *Out
 
 		
-Shared: Salt.o ${BASIC_OFILES} ${NEWTON_OFILES}
+Shared: ${BASIC_OFILES} ${NEWTON_OFILES}
 	${CLINKER} $^ -shared -o ${SALTLIB} ${SLEPC_LIB}
 
-Salt: main.o Salt.o ${BASIC_OFILES} ${NEWTON_OFILES}
+Salt: main.o ${BASIC_OFILES} ${NEWTON_OFILES}
 	${CLINKER} $^ -o ${SALTOUT} ${SLEPC_LIB}
 
 clean_data:
