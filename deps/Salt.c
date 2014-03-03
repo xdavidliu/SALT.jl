@@ -10,28 +10,20 @@ double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char
     
     if(Dmax == 0.0){
 
-		ModeArray ma = Passive(BCPeriod, bl, k, wreal, wimag, modenorm, nev, geo);
-		int i;
-		for(i = 0; i<ma->size; i++){
+		Mode *ms;
+		int i, added = Passive(&ms, BCPeriod, bl, k, wreal, wimag, modenorm, nev, geo);
+		for(i = 0; i<added; i++){
 
-			if(ma->size == 1)
-				sprintf(ma->L[i]->name, "%s", modeout);
+			if(added == 1)
+				sprintf(ms[i]->name, "%s", modeout);
 			else 
-				sprintf(ma->L[i]->name, "%s%i", modeout, i);
+				sprintf(ms[i]->name, "%s%i", modeout, i);
 
 
-			Write(ma->L[i], geo);
-			DestroyMode(ma->L[i]);
+			Write(ms[i], geo);
+			DestroyMode(ms[i]);
 		}
-		free(ma);
-
-		double *vals;
-		VecGetArray(geo->vscratch[0], &vals);
-
-		CopyPsi(ma->L[0], vals);
-		VecRestoreArray(geo->vscratch[0], &vals);
-
-		Output(geo->vscratch[0], "vals", "");
+		free(ms);
 
     }else{
 
