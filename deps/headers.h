@@ -185,7 +185,6 @@ void AddPlaceholders(Mat J, Geometry geo);
 void AllocateJacobian(Mat J, Geometry geo);
 void AddRowDerivatives(Mat J, Geometry geo, int ifix, int ih);
 
-PetscErrorCode ReadModes(ModeArray ma, Geometry geo, char **namesin, char **namesout, int Nm);
 
 Mode *Passive(int *added, int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev,  Geometry geo);
 void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *ms, int printnewton, int Nm, Geometry geo);

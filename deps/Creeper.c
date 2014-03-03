@@ -1,28 +1,6 @@
 #include "headers.h"
 
-PetscErrorCode ReadModes(ModeArray ma, Geometry geo, char **namesin, char **namesout, int Nm){
 
-	int i;
-	for(i=0; i<Nm; i++){
-
-		double D;
-		Mode m = ModeRead(namesin[i], geo, &D);
-
-		if(i==0) geo->D = D;
-		else if(D != geo->D)
-			MyError("The input modes should all be at the same pump strength!");		
-
-		sprintf(m->name, "%s", namesout[i]);
-
-
-		addArrayMode(&ma->L, ma->size, m);
-		ma->size++;
-
-
-	}
-	return 0;
-
-}
 
 void FirstStep(Mode *ms, Mode m, Geometry geo, Vec vNh, Vec f, Vec dv, double c, double ftol, int printnewton){
 
@@ -211,15 +189,9 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 
 		double wi_old = cimag(get_w(m));
 		
-		 ModeArray ma_single = CreateModeArray();
-		addArrayMode(&ma_single->L, 0, m);
-		ma_single->size = 1;
-
-	
 
 		
-		NewtonSolve(ma_single->L, geo,  m->vpsi, f, dv, ftol, printnewton);
-	  	DestroyModeArray(ma_single);
+		NewtonSolve(&m, geo,  m->vpsi, f, dv, ftol, printnewton);
 	  	
 		double wi_new = cimag(get_w(m));
 
