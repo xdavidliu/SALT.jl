@@ -346,7 +346,7 @@ void addArrayMode(Mode **ma, int old_size, Mode m){
 }
 
 
-Mode GetMode(ModeArray ma, int n){ return ma->L[n] ; }
+Mode GetMode(Mode *ms, int n){ return ms[n] ; }
 
 ModeArray CreateFilter(ModeArray ma, int lasing){
 

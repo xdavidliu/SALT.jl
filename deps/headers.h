@@ -125,7 +125,7 @@ typedef struct ModeArray_s{
 ModeArray CreateModeArray();
 int GetArraySize(ModeArray ma);
 void DestroyModeArray(ModeArray ma);
-Mode GetMode(ModeArray ma, int n);
+Mode GetMode(Mode *ms, int n);
 
 
 void addArrayMode(Mode **ma, int old_size, Mode m);
@@ -187,7 +187,7 @@ void AddRowDerivatives(Mat J, Geometry geo, int ifix, int ih);
 
 PetscErrorCode ReadModes(ModeArray ma, Geometry geo, char **namesin, char **namesout, int Nm);
 
-int Passive(Mode **msp, int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev,  Geometry geo);
+Mode *Passive(int *added, int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev,  Geometry geo);
 void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *ms, int printnewton, int Nm, Geometry geo);
 
 void Salt(int *N, int *M, double *h, int *Npml, int Nc, int LowerPML, double *eps, double *fprof, double wa, double y,  // <-- Geometry parameters

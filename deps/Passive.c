@@ -21,10 +21,8 @@ void FillBop(Geometry geo, Mat Bop, dcomp w){
 }
 
 // everything after modeout is directly from ReadGeometry
-int Passive(Mode **msp, int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, Geometry geo){
-// **msp is the pointer to the output array of modes
-// this is needed so that we can use addModeArray on msp
-// in julia, pass [ms], where ms is an array of Mode_
+Mode *Passive(int *added, int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, Geometry geo){
+
 
     	tv t1, t2, t3;	
 
@@ -86,7 +84,8 @@ int Passive(Mode **msp, int BCPeriod, int *bl, double *k, double wreal, double w
 
 		
 
-	int added = 0;		
+	*added = 0;	
+	Mode *msp;	
 
 	if(nconv>0) for(i=0; i<nconv; i++){
 		double lr, li;
@@ -136,19 +135,22 @@ int Passive(Mode **msp, int BCPeriod, int *bl, double *k, double wreal, double w
 		// TODO: free all Modes and Geometry since they are heap allocated when created
 
 
-		addArrayMode(msp, added, m);
-		added++;
+		addArrayMode(&msp, *added, m);
+		(*added)++;
 
 
 		if(nev == 1) break;
 	}
+
+	if(*added == 0) msp = NULL;
+
 	EPSDestroy(&evps);
 	DestroyMat(&Mop);	DestroyMat(&Bop);
 	DestroyVec(&v);	DestroyVec(&vi);
 
 	gettimeofday(&t3, NULL);	
 
-	return added;
+	return msp;
 
 	
 //	PetscPrintf(PETSC_COMM_WORLD, "Formation and setup: %g s\nEPSSolve and Output: %g s\n", dt(t1, t2), dt(t2, t3) );

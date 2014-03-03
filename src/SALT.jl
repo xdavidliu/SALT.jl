@@ -78,15 +78,15 @@ end
 function Passive(BCPeriod::Int64, bl::Array{Int64,1}, wreal::Cdouble, wimag::Cdouble, 
 	geo::Geometry; nev::Integer=1, modenorm::Cdouble=0.1, k::Array{Cdouble,1} = [0.0, 0.0, 0.0])
 
-	marray = ccall( ("Passive", saltlib), Ptr{Void}, (Cint, Ptr{Cint}, 
+	Nadded = [0];
+	ms = ccall( ("Passive", saltlib), Ptr{Void}, (Ptr{Cint}, Cint, Ptr{Cint}, 
 		Ptr{Cdouble}, Cdouble, Cdouble, Cdouble, Cint, SALT.Geometry), 
-		int32(BCPeriod), int32(bl), k, wreal, wimag, modenorm, nev, geo );
+		Nadded, int32(BCPeriod), int32(bl), k, wreal, wimag, modenorm, nev, geo );
+	Nadded = Nadded[1];
 
-	N = ccall( ("GetArraySize", saltlib), Cint, (Ptr{Void},), marray );
-
-	ma = Array(Mode, N);
-	for i=1:N
-		ma[i] = Mode( ccall( ("GetMode", saltlib), Mode_, (Ptr{Void}, Cint), marray, i-1) );
+	ma = Array(Mode, Nadded);
+	for i=1:Nadded
+		ma[i] = Mode( ccall( ("GetMode", saltlib), Mode_, (Ptr{Void}, Cint), ms, i-1) );
 	end
 
 	if nev==1

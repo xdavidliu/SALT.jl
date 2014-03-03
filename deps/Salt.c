@@ -10,8 +10,9 @@ double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char
     
     if(Dmax == 0.0){
 
-		Mode *ms;
-		int i, added = Passive(&ms, BCPeriod, bl, k, wreal, wimag, modenorm, nev, geo);
+
+		int i, added;
+		Mode *ms = Passive(&added, BCPeriod, bl, k, wreal, wimag, modenorm, nev, geo);
 		for(i = 0; i<added; i++){
 
 			if(added == 1)
