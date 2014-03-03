@@ -2,23 +2,16 @@
 #include <math.h>
 #include <stdio.h>
 
-
-
 #include <sys/time.h>
 typedef struct timeval tv;
 
 double dt(tv t1, tv t2);
 
-
 #include <complex.h>
 typedef double complex dcomp;
 static const dcomp ComplexI = I;
 
-
-
-
 static const char Output_Suffix[PETSC_MAX_PATH_LEN] = "_file.m";
-
 
 int GetRank();
 int GetSize();
@@ -34,25 +27,18 @@ void AssembleMat(Mat M);
 void DestroyVec(Vec *x);
 void DestroyMat(Mat *A);
 
-
-
-
 typedef struct Grid_s{	
 	
 	int N[3], Nc, Nr;
 } Grid;
 
-
 void CreateGrid(Grid *g, int* M, int Mc, int Mr);
-
 
 int xyzGrid(Grid *g);
 int xyzcGrid(Grid *g);
 int xyzcrGrid(Grid *g);
 
-
 typedef struct Point_s{
-
 
 	int ix[3], ir, ic;
 	Grid G;
@@ -67,9 +53,6 @@ int xyz(Point *p);
 int xyzc(Point *p);
 int xyzcr(Point *p);
 
-
-
-
 #define SCRATCHNUM 5
 typedef struct Geometry_s{
 
@@ -80,8 +63,6 @@ typedef struct Geometry_s{
 	Vec vepspml;
 
 	Grid gN, gM;
-
-
 
 	Vec vscratch[SCRATCHNUM], vMscratch[SCRATCHNUM], vNhscratch[SCRATCHNUM], vH, veps, vIeps, vf;
 	double D, wa, y;
@@ -134,8 +115,6 @@ dcomp get_w(Mode m);
 dcomp gamma_w(Mode m, Geometry geo);
 void Fix(Mode m, Geometry geo, double norm);
 
-
-
 typedef struct ModeArray_s{
 	int size;
 	Mode *L;
@@ -147,10 +126,7 @@ void AddArrayMode(ModeArray ma, Mode m);
 void RemoveArrayMode(ModeArray ma, int n);
 Mode GetMode(ModeArray ma, int n);
 
-
 ModeArray CreateFilter(ModeArray ma, int lasing);
-
-
 
 void CreateSquareMatrix(int N, int nz, Mat *A);
 double GetValue(Vec v, int i);
@@ -163,13 +139,9 @@ void View(Vec x, PetscViewer viewer);
 
 void Output(Vec A, const char* name, const char* variable_name);
 
-
-
-
 void NewtonSolve(ModeArray ma, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int printnewton);
 void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray mah, Vec vNh, Mode m, Geometry geo, Vec f, Vec dv, double thresholdw_tol, double ftol, int printnewton);
 double FormJf(ModeArray ma, Geometry geo, Vec v, Vec f, double ftol, int printnewton);
-
 
 typedef struct Vecfun_s{
 // always Nxyzcr()+2!	
@@ -181,7 +153,6 @@ typedef struct Vecfun_s{
 	 
 	double* a;
 
-
 } Vecfun;
 
 void CreateVecfun(Vecfun *fun, Vec w);
@@ -189,7 +160,6 @@ void CreateVecfun(Vecfun *fun, Vec w);
 double valr(Vecfun *fun, int i);
 void setr(Vecfun *fun, int i, double val);
 void DestroyVecfun(Vecfun *fun);
-
 
 typedef struct Complexfun_s{
 
@@ -210,10 +180,10 @@ void AddPlaceholders(Mat J, Geometry geo);
 void AllocateJacobian(Mat J, Geometry geo);
 void AddRowDerivatives(Mat J, Geometry geo, int ifix, int ih);
 
+PetscErrorCode ReadModes(ModeArray ma, Geometry geo, char **namesin, char **namesout, int Nm);
+
 ModeArray Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, const char *modeout, Geometry geo);
-void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char **namesout, int printnewton, int Nm, Geometry geo);
-
-
+void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, ModeArray ma, int printnewton, int Nm, Geometry geo);
 
 void Salt(int *N, int *M, double *h, int *Npml, int Nc, int LowerPML, double *eps, double *fprof, double wa, double y,  // <-- Geometry parameters
 int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, char *modeout,  // <--- Passive parameters

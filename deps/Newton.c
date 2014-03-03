@@ -1,6 +1,5 @@
 #include "headers.h"
 
-
 double EdgeIntensity(Mode m, Geometry geo){
 
 	if(geo->gN.N[1] != 1 || geo->gN.N[2] != 1 || geo->LowerPML != 0 || geo->Nc != 1)
@@ -15,8 +14,6 @@ double EdgeIntensity(Mode m, Geometry geo){
 
 }
 
-
-
 void NewtonSolve(ModeArray ma, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int printnewton){
 // f and dv are essentially scratch vectors.
 // for L.size > 1, v is also essentially a scratch vector
@@ -29,7 +26,6 @@ void NewtonSolve(ModeArray ma, Geometry geo, Vec v, Vec f, Vec dv, double ftol, 
 			ScatterRange(ma->L[ih]->vpsi, v, 0, ih*NJ(geo), NJ(geo) );
 		}
 	}
-
 
 	int its =0;
 	tv t1, t2, t3;
@@ -51,14 +47,12 @@ void NewtonSolve(ModeArray ma, Geometry geo, Vec v, Vec f, Vec dv, double ftol, 
 		gettimeofday(&t1, NULL);
 		
 
-
 		double fnorm = FormJf(ma, geo, v, f, ftol, printnewton);
 		
 		if(  fnorm < ftol)	break;
 		gettimeofday(&t2, NULL);
 		KSPSolve(ksp, f, dv);
 		gettimeofday(&t3, NULL);
-
 
 		int printtime = 0; // disable printtime for now
 		if(printtime)
@@ -70,7 +64,6 @@ void NewtonSolve(ModeArray ma, Geometry geo, Vec v, Vec f, Vec dv, double ftol, 
 	}
 
 	gettimeofday(&t2, NULL);
-
 
 	
 	// removed print statement; redo these for multimode.
@@ -92,9 +85,6 @@ void NewtonSolve(ModeArray ma, Geometry geo, Vec v, Vec f, Vec dv, double ftol, 
 
 }
 
-
-
-
 void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray mah, Vec vNh, Mode m, Geometry geo, Vec f, Vec dv, double thresholdw_tol, double ftol, int printnewton){
 
 	
@@ -106,8 +96,6 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 		return;
 	}
 
-
-
 	geo->D = D_lo - (D_hi - D_lo)/(wimag_hi - wimag_lo) * wimag_lo;
 	if(mah->size>0) NewtonSolve(mah, geo, vNh, f, dv, ftol, printnewton);
 
@@ -115,7 +103,6 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 	AddArrayMode(ma, m);
 	
 	NewtonSolve(ma, geo, m->vpsi, f, dv, ftol, printnewton);
-
 
 	DestroyModeArray(ma);
 
@@ -128,7 +115,6 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 		if(cimag(mw) > 0) {wimag_hi = cimag(mw); D_hi = geo->D;}
 		else { wimag_lo = cimag(mw); D_lo = geo->D;}
 	}
-
 
 	if(printnewton)
 	PetscPrintf(PETSC_COMM_WORLD, 

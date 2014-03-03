@@ -13,7 +13,6 @@ int OptionsGetInt(const char* c, int* a){
 	return flg;
 }
 
-
 void OptionsXYZInt(const char* prefix, int* a){
 	int i;
 	char option[PETSC_MAX_PATH_LEN];
@@ -31,7 +30,6 @@ int OptionsGetDouble(const char* c, double* a){
 	return flg;
 }
 
-
 void OptionsXYZDouble(const char* prefix, double* a){
 	int i;
 	char option[PETSC_MAX_PATH_LEN];
@@ -43,15 +41,12 @@ void OptionsXYZDouble(const char* prefix, double* a){
 
 }
 
-
 int main(int argc, char** argv){ 
 	SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC_NULL); 
-
 
 	double Dmax;
 	OptionsGetDouble("-Dmax", &Dmax);
 	
-
 
 	// ======== copied directly from ReadGeometry ======== //
 
@@ -67,16 +62,11 @@ int main(int argc, char** argv){
 	OptionsGetInt("-Nc", &Nc);
 	OptionsGetInt("-LowerPML", &LowerPML);
 
-
-
-
 	double wa, y;
 	OptionsGetDouble("-wa", &wa);
 	OptionsGetDouble("-gamma", &y);
 
 	// ======== copied directly from ReadGeometry ======== //
-
-
 
 	double wreal = 0., wimag=0., modenorm=1., 
 		k[3] = {0}, dD = 0.0, thresholdw_tol=0., ftol = 0.0;
@@ -98,12 +88,10 @@ int main(int argc, char** argv){
 
 	}else{ // Creeper
 
-
 		OptionsGetDouble("-thresholdw_tol", &thresholdw_tol);	
 		OptionsGetDouble("-dD", &dD);
 	
 		OptionsGetDouble("-newtonf_tol", &ftol);
-
 
 		char optionin[PETSC_MAX_PATH_LEN] = "-in0",
 			 optionout[PETSC_MAX_PATH_LEN] = "-out0",
@@ -144,7 +132,6 @@ int main(int argc, char** argv){
 
 // ======== read eps and fprof from file ======= //
 
-
 	char epsfile[PETSC_MAX_PATH_LEN], fproffile[PETSC_MAX_PATH_LEN];
 
 	OptionsGetString("-epsfile", epsfile);
@@ -174,12 +161,9 @@ int main(int argc, char** argv){
 	ReadVectorC(fp, M[0]*M[1]*M[2], vfprof);
 	fclose(fp);	
 
-
-
 	double *eps, *fprof;
 	VecGetArray(veps, &eps);
 	VecGetArray(vfprof, &fprof);
-
 
 Salt(N, M, h, Npml, Nc, LowerPML, eps, fprof, wa, y,
 BCPeriod, bl, k, wreal, wimag, modenorm, nev, modeout,
@@ -191,14 +175,12 @@ dD, Dmax, thresholdw_tol, ftol, namesin, namesout, printnewton, Nm);
 	VecDestroy(&veps);
 	VecDestroy(&vfprof);
 
-
 	for(i=0; i<Nm; i++){
 		free( namesin[i]);
 		free( namesout[i]);
 	}
 	free(namesin);
 	free(namesout);
-
 
 /*
 	PetscPrintf(PETSC_COMM_WORLD, "\n");

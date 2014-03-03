@@ -6,7 +6,6 @@ void VecSetComplex(Vec vR, Vec vI, int i, int ir, dcomp val, InsertMode addv){
 		VecSetValue(vI, i, ir? creal(val) : -cimag(val), addv );
 }
 
-
 void Isolate(Vec v, Grid *gN, int ic, int ir){
 
 	int ns, ne, i;
@@ -23,7 +22,6 @@ void Isolate(Vec v, Grid *gN, int ic, int ir){
 	VecRestoreArray(v, &a);
 
 }
-
 
 void Stamp(Geometry geo, Vec vN, int ic, int ir, Vec scratchM){
 
@@ -55,7 +53,6 @@ void LinearDerivative(Mode m, Geometry geo, Vec dfR, Vec dfI, int ih){
 
 void TensorDerivative(Mode m, Mode mj, Geometry geo, int jc, int jr, Vec df, Vec vpsibra, Vec vIpsi, int ih){
 
-
 	double mjc = get_c(mj);
 	dcomp mw = get_w(m), yw = gamma_w(m, geo), yjw = gamma_w(mj, geo);
 
@@ -82,7 +79,6 @@ void TensorDerivative(Mode m, Mode mj, Geometry geo, int jc, int jr, Vec df, Vec
 	DestroyVecfun(&psibra);
 	DestroyComplexfun(&psi);
 }
-
 
 void ColumnDerivative(Mode m, Mode mj, Geometry geo, Vec dfR, Vec dfI, Vec vIpsi, Vec vpsisq, int ih){
 	// vIpsi is for m, vpsisq is for mj	
@@ -167,7 +163,6 @@ void ComputeGain(Geometry geo, ModeArray ma){
 
 double FormJf(ModeArray ma, Geometry geo, Vec v, Vec f, double ftol, int printnewton){
 
-
 	Mode m = ma->L[0];
 	int lasing = m->lasing;
 	Mat J = m->J; // for multimode, all m share same J
@@ -189,13 +184,10 @@ double FormJf(ModeArray ma, Geometry geo, Vec v, Vec f, double ftol, int printne
 		dfI = geo->vNhscratch[1];
 	}
 
-
 	// =========== linear J to compute residual ========= //
 	MatRetrieveValues(J);
 
 	int ih, jh, kh, ir, jr, jc;
-
-
 
 	for(ih=0; ih<ma->size; ih++){
 		m = ma->L[ih];
@@ -227,14 +219,10 @@ double FormJf(ModeArray ma, Geometry geo, Vec v, Vec f, double ftol, int printne
 	if( printnewton ) PetscPrintf(PETSC_COMM_WORLD, "|f| = %.0e;", fnorm);
 	// no \n here to make room for timing printf statement immediately afterwards
 
-
 	if(fnorm < ftol )
 		return fnorm;   		// TODO: deleted old integral routine. Write new one here.
 
 	// =============== column derivatives ====================
-
-
-
 
 	for(jh=0; jh<ma->size; jh++){
 		Mode mj = ma->L[jh];
@@ -255,7 +243,6 @@ double FormJf(ModeArray ma, Geometry geo, Vec v, Vec f, double ftol, int printne
 
 		SetJacobian(geo, J, dfR, -1, 0, jh);
 		SetJacobian(geo, J, dfI, -1, 1, jh);
-
 
 	}
 
@@ -289,7 +276,6 @@ double FormJf(ModeArray ma, Geometry geo, Vec v, Vec f, double ftol, int printne
 	}
   }
 	AssembleMat(J);
-
 
 	return fnorm;	
 

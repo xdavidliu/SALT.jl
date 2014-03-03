@@ -7,7 +7,6 @@ double dt(tv t1, tv t2){
 	return val/1000;
 }
 
-
 PetscErrorCode MyError(const char* message){
 
 	SETERRQ(PETSC_COMM_WORLD, 1, message);
@@ -30,8 +29,6 @@ void DestroyMat(Mat *A){
 
 void View(Vec x, PetscViewer viewer){ VecView(x, viewer); }
 
-
-
 void ScatterRange (Vec x, Vec y, int ix, int iy, int N){
 
 	int ns, ne;
@@ -53,7 +50,6 @@ void ScatterRange (Vec x, Vec y, int ix, int iy, int N){
 
 	
 }
-
 
 void CreateVec(int N, Vec *x){
 	VecCreate(PETSC_COMM_WORLD, x);
@@ -87,7 +83,6 @@ double GetValue(Vec v, int i){
 	return val;
 }
 
-
 void ReadVectorC(FILE *fp, int N, Vec v){
 
    double val;
@@ -100,7 +95,6 @@ void ReadVectorC(FILE *fp, int N, Vec v){
    }
    AssembleVec(v);
 }
-
 
 void SetLast2(Vec f, double val1, double val2){
 
@@ -167,7 +161,6 @@ void Output(Vec A, const char* name, const char* variable_name){
 	PetscViewerDestroy(&viewer);
 }
 
-
 void CreatePoint_i(Point *p, int i, Grid *H){
 
 	int j;
@@ -179,8 +172,6 @@ void CreatePoint_i(Point *p, int i, Grid *H){
 	p->ic = i % H->Nc;
 	p->ir = i / H->Nc;	
 }
-
-
 
 int xyz(Point *p) {return p->ix[0]*p->G.N[2]*p->G.N[1] + p->ix[1]*p->G.N[2] + p->ix[2];}
 int xyzc(Point *p) {return p->ic*xyzGrid(&p->G) + xyz(p);}
@@ -219,7 +210,6 @@ int projectmedium(Point *p, Grid *gm, int LowerPML){
 	p->G = *gm;
 	return medium;
 }
-
 
 void CreateGrid(Grid *g, int* M, int Mc, int Mr){
 
@@ -267,8 +257,6 @@ void setc(Complexfun *fun,int i, dcomp val){
 	fun->a[i-fun->ns] = creal(val);
 	fun->b[i-fun->ns] = -cimag(val);
 }
-
-
 
 void CreateComplexfun(Complexfun *fun, Vec w, Vec x){
 	fun->u = w;

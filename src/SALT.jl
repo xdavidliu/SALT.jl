@@ -31,7 +31,6 @@ DestroyMode(m::Mode_) = ccall((:DestroyMode, saltlib), Void, (Mode_,), m )
 
 DestroyModeArray(ma::ModeArray_) = ccall((:DestroyModeArray, saltlib), Void, (ModeArray_,), ma);
 
-
 type Geometry
     geo::Geometry_
     function Geometry(geo::Geometry_)
@@ -40,8 +39,6 @@ type Geometry
         return g
     end
 end
-
-
 
 type ModeArray
 	ma::ModeArray_
@@ -52,7 +49,6 @@ type ModeArray
 	end
 end
 
-
 type Mode
 	m::Mode_
 	function Mode(m::Mode_)
@@ -61,9 +57,7 @@ type Mode
 		return md
 	end
 
-
 end
-
 
 function Geometry(ε::Array{Cdouble}, h_, nPML_,
                   gain_prof::Array{Cdouble}, ω_gain::Real, γ_gain::Real;
@@ -85,18 +79,14 @@ function Geometry(ε::Array{Cdouble}, h_, nPML_,
         push!(nPML, nPML[end])
     end
 
-
     Geometry(ccall(("CreateGeometry",saltlib), Geometry_,
                    (Ptr{Cint}, Ptr{Cint}, Ptr{Cdouble}, Ptr{Cint},
                     Cint, Cint, Ptr{Cdouble}, Ptr{Cdouble}, Cdouble, Cdouble),
                    N, N, h, nPML, nc, lowerPML, ε, gain_prof, ω_gain, γ_gain))
 end
 
-
-
 function ModeArray(BCPeriod::Int64, bl::Array{Int64,1}, k::Array{Cdouble,1},
     wreal::Cdouble, wimag::Cdouble, modenorm::Cdouble, geo::SALT.Geometry, n::Int64)
-
 
 	ModeArray( ccall( ("Passive", saltlib), ModeArray_, (Cint, Ptr{Cint}, 
 		Ptr{Cdouble}, Cdouble, Cdouble, Cdouble, Cint, Ptr{Uint8}, SALT.Geometry), 
@@ -104,12 +94,9 @@ function ModeArray(BCPeriod::Int64, bl::Array{Int64,1}, k::Array{Cdouble,1},
 	)
 end
 
-
 function Mode(ma::ModeArray, n::Integer)
 	Mode( ccall( ("GetMode", saltlib), Mode_, (ModeArray_, Cint), ma.ma, n) );
 end
-
-
 
 function GetPsi(m::SALT.Mode)
     
@@ -118,8 +105,6 @@ function GetPsi(m::SALT.Mode)
     ccall( (:CopyPsi, saltlib), Void, (Mode_, Ptr{Cdouble}), m.m, v);
     v;
 end
-
-
 
 import Base.show
 
@@ -142,7 +127,6 @@ Cint), int32(N), int32(M), h, int32(nPML), int32(nc), int32(lowerPML),
 eps, fprof, wa, y, int32(BCPeriod), int32(bl), k, wreal, wimag, modenorm, 
 int32(nev), modeout, dD, Dmax, thresholdw_tol, ftol, namesin, namesout, 
 int32(printnewton), int32(Nm));
-
 
 #============ sub-function for Passive resonance eigensolver ========== #
 

@@ -1,9 +1,6 @@
 #include "headers.h"
 
-
-
 PetscErrorCode ReadModes(ModeArray ma, Geometry geo, char **namesin, char **namesout, int Nm){
-
 
 	int i;
 	for(i=0; i<Nm; i++){
@@ -21,17 +18,12 @@ PetscErrorCode ReadModes(ModeArray ma, Geometry geo, char **namesin, char **name
 
 		Setup(m, geo);
 
-
 	}
 	return 0;
 
 }
 
-
-
-
 void FirstStep(ModeArray mah, Mode m, Geometry geo, Vec vNh, Vec f, Vec dv, double c, double ftol, int printnewton){
-
 
 	PetscPrintf(PETSC_COMM_WORLD, "Taking first step for mode \"%s\"...\n", m->name );
 
@@ -40,7 +32,6 @@ void FirstStep(ModeArray mah, Mode m, Geometry geo, Vec vNh, Vec f, Vec dv, doub
 		if( mah->L[ih] == m) break;
 		else nh++;
   }
-
 
 	if(vNh != m->vpsi){ // update vpsi's from v
 		int ih =0;
@@ -59,12 +50,10 @@ void FirstStep(ModeArray mah, Mode m, Geometry geo, Vec vNh, Vec f, Vec dv, doub
 	AssembleVec(vNh);
 	AssembleVec(m->vpsi);
 
-
 	double fnorm = FormJf(mah, geo, vNh, f, ftol, printnewton);
 
-
 	if(  fnorm < ftol) break;
-	
+
 	KSPSolve( m->ksp, f, dv);
 	if(printnewton) PetscPrintf(PETSC_COMM_WORLD, "\n");
 
@@ -89,26 +78,18 @@ void FirstStep(ModeArray mah, Mode m, Geometry geo, Vec vNh, Vec f, Vec dv, doub
   
   	PetscPrintf(PETSC_COMM_WORLD, "First step for mode \"%s\" complete!\n", m->name );  	
 
-
 }
-
-
-
 
 void Bundle(ModeArray ma, Geometry geo){
 
-
-
-
 	int i, Nh = ma->size, Nj = 2*Nxyzc(geo)+2;
 	if(Nh < 2) MyError("Bundle function is only for multimode!");
-	
+
 	Mat J; KSP ksp;
 	CreateSquareMatrix( Nh*Nj, 0, &J);
 	AllocateJacobian(J, geo);
-	
-	AddPlaceholders(J, geo);
 
+	AddPlaceholders(J, geo);
 
 	KSPCreate(PETSC_COMM_WORLD,&ksp);
 	PC pc;
@@ -121,13 +102,11 @@ void Bundle(ModeArray ma, Geometry geo){
 	KSPSetOperators(ksp, J, J, SAME_PRECONDITIONER);
 	// TODO: will probably want to merge all of this in with a generalized
 	// multimode version of Mode::Setup
-	
 
 	for(i=0; i<SCRATCHNUM; i++){
 		DestroyVec(&geo->vNhscratch[i]);
 		MatGetVecs(J, &geo->vNhscratch[i], NULL);
 	}
-
 
 	int ih = 0;
 
@@ -142,20 +121,17 @@ void Bundle(ModeArray ma, Geometry geo){
 		MoperatorGeneralBlochFill(geo, J, m->b, m->BCPeriod, m->k, ih);
 		AddRowDerivatives(J, geo, m->ifix, ih);
 	}	
-	
+
 	AssembleMat(J);
 	MatSetOption(J,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
 	MatStoreValues(J); 	
-	
-	
+
 }
-
-
 
 int FindModeAtThreshold(ModeArray ma){
 
 	int n = -1, ih;
-	
+
 	for(ih = 0; ih<ma->size; ih++){
 		Mode m = ma->L[ih];
 		if( get_c(m) == 0.0 && m->lasing ){
@@ -164,42 +140,27 @@ int FindModeAtThreshold(ModeArray ma){
 		}
 	}
 	return n;
-	
+
 }
 
-
 // everything after Nm copied directly from ReadMode
-void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char **namesout, int printnewton, int Nm, Geometry geo){
-
-	
-  	ModeArray ma = CreateModeArray();
+void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, ModeArray ma, int printnewton, int Nm, Geometry geo){
 
 
-
-
-	// i is now number of modes read
-	ReadModes(ma, geo, namesin, namesout, Nm);
-	
-	
     Vec f, dv;
     MatGetVecs( ma->L[0]->J, &dv, &f);
 
-
-
-
 	int ih;
 	for(; geo->D <= Dmax; geo->D = (geo->D+dD < Dmax? geo->D+dD: Dmax)){
-
 
 	  	ModeArray mah =	CreateFilter(ma, 1); // lasing sub-array
 
 	  
 	  Vec vNh = ma->L[0]->vpsi, fNh = f, dvNh = dv;
 
-
 	  if( mah->size > 0){ // lasing modes
 	  
-	
+
 	  
 	  	  int nt = FindModeAtThreshold(mah);
 	  
@@ -257,17 +218,9 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, char **
 	  if(geo->D==Dmax) break;
 	}
 
-	for(ih=0; ih<ma->size; ih++){
-		Write(ma->L[ih], geo);
-		DestroyMode(ma->L[ih]);
-		free(ma->L[ih]);
-	}
-	
-  	DestroyModeArray(ma);	
+
 
 	DestroyVec(&f);
 	DestroyVec(&dv);
-
-
 
 }

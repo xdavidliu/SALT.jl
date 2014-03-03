@@ -26,8 +26,6 @@ d[j] = LowerPML*(lower>0)*(lower - 0.5*(k==0? j==p.ic : j!=p.ic))/Npml[j]
 	for(j=0; j<3; j++) 
 		sigma[j] = Npml[j] == 0 ? 0 : -3.0/4*log(1e-25)/(Npml[j]*h[j]);
 
-
-
 	for(j=0; j<3; j++) 
 		val[0] += sigma[j]* sigma[(j+1)%3]*
 			     sqr(d[j]*d[(j+1)%3]) * (j==(p.ic+1)%3?-1 : 1);
@@ -45,6 +43,5 @@ d[j] = LowerPML*(lower>0)*(lower - 0.5*(k==0? j==p.ic : j!=p.ic))/Npml[j]
 		val[l] /= 1 + sqr( sigma[(j+p.ic)%3] *sqr(d[(p.ic+j)%3])/omega);
 
 	return val[0]+ComplexI*val[1];
-
 
 }

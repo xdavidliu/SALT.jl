@@ -1,9 +1,5 @@
 #include "headers.h"
 
-
-
-
-
 void InterpolateVec(Geometry geo, Vec vM, Vec vN){
 
 	VecSet(vN, 0.0);
@@ -55,7 +51,6 @@ void CollectVec(Geometry geo, Vec vN, Vec vM){
 	AssembleVec(vM);
 }
 
-
 void TimesI(Geometry geo, Vec v, Vec Iv){
 
 	VecSet(Iv, 0.0);
@@ -75,9 +70,7 @@ void VecSqMedium(Geometry geo, Vec v, Vec vsq, Vec scratchM){
 		InterpolateVec(geo, scratchM, vsq);
 }
 
-
 Geometry CreateGeometry(int N[3], int M[3], double h[3], int Npml[3], int Nc, int LowerPML, double *eps, double *fprof, double wa, double y){
-
 
 	int i;
 
@@ -92,7 +85,6 @@ Geometry CreateGeometry(int N[3], int M[3], double h[3], int Npml[3], int Nc, in
 
 	CreateGrid(&geo->gN, N, geo->Nc, 2);
 	CreateGrid(&geo->gM, M, 1, 1);
-
 
 	CreateVec(2*Nxyzc(geo)+2, &geo->vepspml);
 
@@ -131,27 +123,19 @@ Geometry CreateGeometry(int N[3], int M[3], double h[3], int Npml[3], int Nc, in
 	for(i=0; i<SCRATCHNUM; i++) VecDuplicate(geo->vH, &geo->vscratch[i]);
 	VecSet(geo->vH, 1.0);	
 
-
 	VecShift(geo->vMscratch[0], -1.0); //hack, for background dielectric
 	InterpolateVec(geo, geo->vMscratch[0], geo->vscratch[1]);
 	VecShift(geo->vscratch[1], 1.0);
 
-
 	VecPointwiseMult(geo->veps, geo->vscratch[1], geo->vepspml);
 	TimesI(geo, geo->veps, geo->vIeps); // vIeps for convenience only, make sure to update it later if eps ever changes!
 
-
-
 	geo->D = 0.0;
-
 
 	geo->wa = wa;
 	geo->y = y;
 
-
 	VecDuplicate(geo->veps, &geo->vf);
-
-
 
 	{ double *scratch;
 	int ns, ne;
@@ -169,12 +153,8 @@ Geometry CreateGeometry(int N[3], int M[3], double h[3], int Npml[3], int Nc, in
 	
 	InterpolateVec(geo, geo->vMscratch[1], geo->vf);
 
-
-
         return geo;
 }
-
-
 
 void DestroyGeometry(Geometry geo){
     if (geo) {
@@ -195,7 +175,6 @@ void DestroyGeometry(Geometry geo){
 int Last2(Geometry geo, int i){
 	return i%(Nxyzcr(geo)+2) / Nxyzcr(geo);
 }
-
 
 void SetJacobian(Geometry geo, Mat J, Vec v, int jc, int jr, int jh){
 // use jc = -1 for last 2 columns, and jc = -2 for blocks (all jc)
@@ -229,6 +208,4 @@ void SetJacobian(Geometry geo, Mat J, Vec v, int jc, int jr, int jh){
 	VecRestoreArrayRead(v, &vals);	
 
 }
-
-
 

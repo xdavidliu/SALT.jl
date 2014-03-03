@@ -1,11 +1,8 @@
 #include "headers.h"
 
-
-
 int periodic(int ic, int BCPeriod){
 	return ic == (BCPeriod-1) || BCPeriod == 4 || (BCPeriod<0 && ic !=-(BCPeriod+1));
 }
-
 
 dcomp zval(int i, const double* f, int Nxyzc){
 	i %= Nxyzc;
@@ -18,7 +15,6 @@ int cyclic(Point *P, int ic, int* N){
 } 
 
 void MoperatorGeneralBlochFill(Geometry geo, Mat A, int b[3][2], int DimPeriod, double k[3], int ih){
-
 
 	int N[3], i, j, l, ib, w, jr, ic;
 	for(i=0; i<3; i++) N[i] = geo->gN.N[i];
@@ -82,7 +78,6 @@ for (itrue = ns; itrue < ne && itrue < 2*Nxyzc(geo); ++itrue) {
 	project(&prow, geo->Nc);
 for(ib=0; ib<2; ib++){
 
-
 	if(p.ix[p.ic] == N[p.ic]-1){
 		int per = periodic(p.ic, DimPeriod );
 		cidu = per ? (1-N[p.ic])*cid : 0;
@@ -98,7 +93,6 @@ for(ib=0; ib<2; ib++){
         mucp[1-ib] = pmlval(icp[1-ib], N, geo->Npml, geo->h, geo->LowerPML, 1);
       	mulcp[1-ib] = pmlval(icp[1-ib]-cpidl[ib], N, geo->Npml, geo->h, geo->LowerPML, 1);
 
-
 	double c[4];
         hh = geo->h[p.ic]*geo->h[cp[ib]];
 	val = mucp[1-ib] * magicnum /hh; c[1] = creal(val);
@@ -113,8 +107,6 @@ for(ib=0; ib<2; ib++){
 	dcol[2] = cidu-cpidl[ib];
 	dcol[3] = -cpidl[ib];
 
-
-
 	for(w=0;w<4;w++){
 	Point pcol;
 	CreatePoint_i(&pcol, icp[ib] + jrd+dcol[w], &gC );
@@ -122,7 +114,6 @@ for(ib=0; ib<2; ib++){
 	project(&pcol, geo->Nc);	
 	if(pcol.ic!=-1) MatSetValue(A, xyzcr(&prow)+offset, xyzcr(&pcol)+offset, c[w], ADD_VALUES);
 	}
-
 
 	if(p.ix[cp[ib]] == N[cp[ib]]-1){
 		int per = periodic(cp[ib], DimPeriod );
@@ -156,9 +147,7 @@ for(ib=0; ib<2; ib++){
 
 }
 
-
     }
   }
 }
-
 

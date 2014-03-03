@@ -1,8 +1,5 @@
 #include "headers.h"
 
-
-
-
 Mode CreateMode(Geometry geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]){
 
 	Mode m = (Mode) malloc(sizeof(struct Mode_s) );
@@ -20,8 +17,6 @@ Mode CreateMode(Geometry geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[
 	return m;
 }
 
-
-
 Mode ModeRead(const char *Name, Geometry geo, double *Dout){
 // TODO free after every ModeRead
 
@@ -31,7 +26,6 @@ Mode ModeRead(const char *Name, Geometry geo, double *Dout){
 	CreateSquareMatrix(2*Nxyzc(geo)+2, 0, &m->J);
 		
 	KSPCreate(PETSC_COMM_WORLD,&m->ksp);
-
 
 	char w[PETSC_MAX_PATH_LEN], filename[PETSC_MAX_PATH_LEN];
 	sprintf(filename, "%s%s", m->name, Output_Suffix);
@@ -46,8 +40,6 @@ Mode ModeRead(const char *Name, Geometry geo, double *Dout){
 	}
 
    if(GetRank()==0){ fgets(w, PETSC_MAX_PATH_LEN, fp); } // "mode = ["
-
-
 
 	ReadVectorC(fp, 2*Nxyzc(geo)+2, m->vpsi);
 
@@ -94,7 +86,6 @@ Mode ModeRead(const char *Name, Geometry geo, double *Dout){
 	GetLast2(m->vpsi, &val1, &val2);
 	m->lasing = val2 >= 0.0;
 
-
 	return m;
 }
 
@@ -109,7 +100,6 @@ void DestroyMode(Mode m){
 	}
 
 }
-
 
 void CopyPsi(Mode m, double *psiout){
 
@@ -131,7 +121,6 @@ int PsiSize(Mode m){
 	VecGetSize(m->vpsi, &N);
 	return N;
 }
-
 
 void Fix(Mode m, Geometry geo, double norm){
 
@@ -167,13 +156,9 @@ void Fix(Mode m, Geometry geo, double norm){
 	DestroyComplexfun(&psi);
 }
 
-
-
 void Write(Mode m, const Geometry geo){
 
-
 	Output(m->vpsi, m->name, "psi");
-
 
    if(GetRank()==0){
    
@@ -192,8 +177,6 @@ void Write(Mode m, const Geometry geo){
 	fprintf(fp, "k=[\n%1.15g\n%1.15g\n%1.15g\n];\n", m->k[0], m->k[1], m->k[2]);	
 	// "read" constructor for Mode depends on this
 
-
-
 	// additional lines for plotting only, not read in ReadMode
 	const int *N = &(geo->gN.N[0]);
 	const double *h = &(geo->h[0]);
@@ -207,7 +190,6 @@ void Write(Mode m, const Geometry geo){
 	MPI_Barrier(PETSC_COMM_WORLD);
 	
 }
-
 
 void AddPlaceholders(Mat J, Geometry geo){
 
@@ -232,7 +214,6 @@ void AddPlaceholders(Mat J, Geometry geo){
 		}		
 
 	}
-
 
 	/*    // this works, just disabling for interface reasons
 	char solver[PETSC_MAX_PATH_LEN];
@@ -272,7 +253,6 @@ void AddRowDerivatives(Mat J, Geometry geo, int ifix, int ih){
 
 void AllocateJacobian(Mat J, Geometry geo){
 
-
 	int N, ns, ne;
 	MatGetSize(J, &N, NULL);
 	MatGetOwnershipRange(J, &ns, &ne);
@@ -289,11 +269,9 @@ void AllocateJacobian(Mat J, Geometry geo){
 
 void Setup(Mode m, Geometry geo){
 
-
 	AllocateJacobian(m->J, geo);
 	
     MoperatorGeneralBlochFill(geo, m->J, m->b, m->BCPeriod, m->k, 0);
-
 
 	AddPlaceholders(m->J, geo);
 	AddRowDerivatives(m->J, geo, m->ifix, 0);
@@ -317,7 +295,6 @@ void Setup(Mode m, Geometry geo){
 
 }
 
-
 double get_c(Mode m){
 
 	if( !m->lasing) return 0.0;
@@ -336,8 +313,6 @@ dcomp gamma_w(Mode m, Geometry geo){
 	return geo->y/( get_w(m) -geo->wa + ComplexI*geo->y);
 	
 }
-
-
 
 ModeArray CreateModeArray(){
 	
@@ -379,7 +354,6 @@ void RemoveArrayMode(ModeArray ma, int n){
 }
 
 Mode GetMode(ModeArray ma, int n){ return ma->L[n] ; }
-
 
  ModeArray CreateFilter(ModeArray ma, int lasing){
 

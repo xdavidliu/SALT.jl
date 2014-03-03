@@ -26,8 +26,21 @@ double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char
 
 		Output(geo->vscratch[0], "vals", "");
 
-    }else
-        Creeper(dD, Dmax, thresholdw_tol, ftol, namesin, namesout, printnewton, Nm, geo);    
-    
+    }else{
+
+	  	ModeArray ma = CreateModeArray();
+		ReadModes(ma, geo, namesin, namesout, Nm);
+        Creeper(dD, Dmax, thresholdw_tol, ftol, ma, printnewton, Nm, geo);    
+		
+		int ih;
+		for(ih=0; ih<ma->size; ih++){
+			Write(ma->L[ih], geo);
+			DestroyMode(ma->L[ih]);
+			free(ma->L[ih]);
+		}
+
+		DestroyModeArray(ma);	
+
+	}
     DestroyGeometry(geo);
 }

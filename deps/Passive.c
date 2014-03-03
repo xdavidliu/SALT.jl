@@ -1,9 +1,6 @@
 #include "headers.h"
 
-
-
 void FillBop(Geometry geo, Mat Bop, dcomp w){
-
 
 	VecCopy(geo->veps, geo->vscratch[0]);
 	TimesI(geo, geo->vscratch[0], geo->vscratch[1]);
@@ -40,36 +37,14 @@ ModeArray Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, 
 	Mat Mop;
 	CreateSquareMatrix(2*Nxyzc(geo), 26, &Mop);
 
-
-
-
-
 	MoperatorGeneralBlochFill(geo, Mop, b, BCPeriod, k, 0);
 	AssembleMat(Mop);
 
-
-
-
-
-
-
-
-
-
 	dcomp guess = -csqr(wreal + ComplexI * wimag);
-
 
 	Mat Bop; CreateSquareMatrix(2*Nxyzc(geo), 2, &Bop);
 
-
-
 	FillBop(geo, Bop, 1.0);
-
-
-
-
-
-
 
 	EPS evps; 
         EPSCreate(PETSC_COMM_WORLD, &evps);
@@ -93,15 +68,10 @@ ModeArray Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, 
  	PCSetType(pc,PCLU);
   	PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);    
 
-
-
-
 	gettimeofday(&t2, NULL);
         EPSSolve(evps);
 
-
 	
-
 
         int nconv, j=0;
 	EPSGetConverged(evps, &nconv);
@@ -142,13 +112,10 @@ ModeArray Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, 
 		if( cimag(w) > 0.0 || fake ) continue; // could use ^ (XOR) here, but the positive frequency ones are exact duplicates.
 		else j++;
 
-
 		if(cimag(w) > 0.0) w = conj(w);
-
 
 		Mode m = CreateMode(geo, 0, b, BCPeriod, k);
 		ScatterRange(v, m->vpsi, 0, 0, xyzcrGrid(&geo->gN) );
-
 
 		Fix(m, geo, modenorm);
 		
@@ -159,8 +126,6 @@ ModeArray Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, 
 
 		PetscPrintf(PETSC_COMM_WORLD, "found mode #%i: w = %1.8g + (%1.8g) i; pumped fraction = %g\n", j, creal(w), cimag(w), psifnorm/psinorm );
 		SetLast2(m->vpsi, creal(w), cimag(w) ); // make sure to get psinorm before doing this
-
-
 
 		if(nev == 1)
 			sprintf(m->name, "%s", modeout);
@@ -177,9 +142,7 @@ ModeArray Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, 
 	DestroyMat(&Mop);	DestroyMat(&Bop);
 	DestroyVec(&v);	DestroyVec(&vi);
 
-
 	gettimeofday(&t3, NULL);	
-
 
 	return ma;
 
