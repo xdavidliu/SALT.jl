@@ -25,17 +25,7 @@ Mode *ReadModes(Geometry geo, char **namesin, char **namesout, int Nm){
 
 }
 
-int OptionsGetString(const char* c, char* a){ 
-	PetscBool flg;
-	PetscOptionsGetString(PETSC_NULL,c, a, PETSC_MAX_PATH_LEN, &flg); 
-	return flg;
-}
 
-int OptionsGetInt(const char* c, int* a){
-	PetscBool flg;
-	PetscOptionsGetInt(PETSC_NULL,c,a,&flg);
-	return flg;
-}
 
 void OptionsXYZInt(const char* prefix, int* a){
 	int i;
@@ -43,16 +33,13 @@ void OptionsXYZInt(const char* prefix, int* a){
 	const char x[3] = {'x', 'y', 'z'};
 	for(i=0; i<3; i++){
 		sprintf(option, "%s%c", prefix, x[i]);
-		OptionsGetInt(option, &a[i]);
+
+
+		PetscOptionsGetInt(PETSC_NULL,option, &a[i], NULL);
 	}
 
 }
 
-int OptionsGetDouble(const char* c, double* a){
-	PetscBool flg;
-	PetscOptionsGetReal(PETSC_NULL,c,a,&flg); 
-	return flg;
-}
 
 void OptionsXYZDouble(const char* prefix, double* a){
 	int i;
@@ -60,7 +47,8 @@ void OptionsXYZDouble(const char* prefix, double* a){
 	const char x[3] = {'x', 'y', 'z'};
 	for(i=0; i<3; i++){
 		sprintf(option, "%s%c", prefix, x[i]);
-		OptionsGetDouble(option, &a[i]);
+
+		PetscOptionsGetReal(PETSC_NULL,option, &a[i], NULL);
 	}
 
 }
@@ -69,7 +57,9 @@ int main(int argc, char** argv){
 	SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC_NULL); 
 
 	double Dmax;
-	OptionsGetDouble("-Dmax", &Dmax);
+
+	PetscOptionsGetReal(PETSC_NULL,"-Dmax", &Dmax,NULL); 
+
 	
 
 	// ======== copied directly from ReadGeometry ======== //
@@ -83,12 +73,14 @@ int main(int argc, char** argv){
 	OptionsXYZInt("-Npml", Npml);
 	OptionsXYZDouble("-h", h);
 
-	OptionsGetInt("-Nc", &Nc);
-	OptionsGetInt("-LowerPML", &LowerPML);
+	PetscOptionsGetInt(PETSC_NULL,"-Nc", &Nc,NULL);
+	PetscOptionsGetInt(PETSC_NULL,"-LowerPML", &LowerPML,NULL);
 
 	double wa, y;
-	OptionsGetDouble("-wa", &wa);
-	OptionsGetDouble("-gamma", &y);
+
+	PetscOptionsGetReal(PETSC_NULL,"-wa", &wa,NULL); 
+	PetscOptionsGetReal(PETSC_NULL,"-gamma", &y,NULL); 
+
 
 	// ======== copied directly from ReadGeometry ======== //
 
@@ -98,24 +90,28 @@ int main(int argc, char** argv){
 	char modeout[PETSC_MAX_PATH_LEN] = "", **namesin = NULL, **namesout = NULL;
 
 	if(Dmax == 0.0){ // Passive
-		OptionsGetDouble("-norm", &modenorm);
-		OptionsGetDouble("-wreal", &wreal);
-		OptionsGetDouble("-wimag", &wimag);
-	
 
-		OptionsGetInt("-nev", &nev);
-		OptionsGetInt("-BCPeriod", &BCPeriod);
+		PetscOptionsGetReal(PETSC_NULL,"-norm", &modenorm,NULL); 
+		PetscOptionsGetReal(PETSC_NULL,"-wreal", &wreal,NULL); 
+		PetscOptionsGetReal(PETSC_NULL,"-wimag", &wimag,NULL); 
+	
+		PetscOptionsGetInt(PETSC_NULL,"-nev", &nev,NULL);
+		PetscOptionsGetInt(PETSC_NULL,"-BCPeriod", &BCPeriod,NULL);
+
+
 		OptionsXYZInt("-b", bl);
 		OptionsXYZDouble("-k", k);
 	
-		OptionsGetString("-passiveout", modeout);
+		PetscOptionsGetString(PETSC_NULL,"-passiveout", modeout, PETSC_MAX_PATH_LEN, NULL); 
+
+
 
 	}else{ // Creeper
 
-		OptionsGetDouble("-thresholdw_tol", &thresholdw_tol);	
-		OptionsGetDouble("-dD", &dD);
-	
-		OptionsGetDouble("-newtonf_tol", &ftol);
+
+		PetscOptionsGetReal(PETSC_NULL,"-thresholdw_tol", &thresholdw_tol,NULL); 
+		PetscOptionsGetReal(PETSC_NULL,"-dD", &dD,NULL); 
+		PetscOptionsGetReal(PETSC_NULL,"-newtonf_tol", &ftol,NULL); 
 
 		char optionin[PETSC_MAX_PATH_LEN] = "-in0",
 			 optionout[PETSC_MAX_PATH_LEN] = "-out0",
@@ -125,8 +121,13 @@ int main(int argc, char** argv){
 		i=0;
 		while(1){
 
-			if( !OptionsGetString(optionin, name) ) break;
-			if( !OptionsGetString(optionout, name2) )
+			PetscBool flg;
+			PetscOptionsGetString(PETSC_NULL,optionin, name, PETSC_MAX_PATH_LEN, &flg); 
+
+			if( !flg ) break;
+
+			PetscOptionsGetString(PETSC_NULL,optionout, name2, PETSC_MAX_PATH_LEN, &flg); 
+			if( !flg )
 				MyError("number of -out less than number of -in!");
 		
 
@@ -151,15 +152,16 @@ int main(int argc, char** argv){
 		}
 		Nm = i;
 
-		OptionsGetInt("-printnewton", &printnewton);
+		PetscOptionsGetInt(PETSC_NULL,"-printnewton", &printnewton,NULL);
 	}
 
 // ======== read eps and fprof from file ======= //
 
 	char epsfile[PETSC_MAX_PATH_LEN], fproffile[PETSC_MAX_PATH_LEN];
 
-	OptionsGetString("-epsfile", epsfile);
-	OptionsGetString("-fproffile", fproffile);
+		PetscOptionsGetString(PETSC_NULL,"-epsfile", epsfile, PETSC_MAX_PATH_LEN, NULL); 
+		PetscOptionsGetString(PETSC_NULL,"-fproffile", fproffile, PETSC_MAX_PATH_LEN, NULL); 
+
 
 	Vec veps, vfprof;
 	CreateVec(M[0]*M[1]*M[2], &veps);
