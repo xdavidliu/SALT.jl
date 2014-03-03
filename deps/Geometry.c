@@ -214,3 +214,23 @@ void SetJacobian(Geometry geo, Mat J, Vec v, int jc, int jr, int jh){
 
 }
 
+
+// ================= accessor functions for Julia ===========
+
+int GetN(Geometry geo, int i){
+
+	return geo->gN.N[i];
+
+}
+
+int GetNpml(Geometry geo, int i){
+
+	return geo->Npml[i];
+
+}
+
+double GetCellh(Geometry geo, int i){
+
+	return geo->h[i];
+
+}

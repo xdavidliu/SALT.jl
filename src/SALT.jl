@@ -129,8 +129,41 @@ end
 
 import Base.show
 
+# TODO: clear up names of Julia type and C objects, i.e. no geo.geo
+function GetN(geo::Geometry)
+	N = [0, 0, 0];
+	for i=1:3
+		N[i] = int64( ccall( (:GetN, saltlib), Cint, (Geometry_, Cint), geo.geo, i-1) );
+	end
+	N;
+end
+
+function GetNpml(geo::Geometry)
+	N = [0, 0, 0];
+	for i=1:3
+		N[i] = int64( ccall( (:GetNpml, saltlib), Cint, (Geometry_, Cint), geo.geo, i-1) );
+	end
+	N;
+end
+
+function GetCellh(geo::Geometry)
+	h = [0.0, 0.0, 0.0];
+	for i=1:3
+		h[i] = ccall( (:GetCellh, saltlib), Cdouble, (Geometry_, Cint), geo.geo, i-1);
+	end
+	h;
+end
+
+
 function show(io::IO, g::Geometry)
-    print(io, "SALT Geometry: ", g.geo)
+    print(io, "SALT Geometry: ", g.geo, "\n")
+
+	N = GetN(g);
+	print(io, N[1], " x ", N[2], " x ", N[3], " pixels in cell\n");
+	N = GetNpml(g);
+	print(io, N[1], " x ", N[2], " x ", N[3], " pixel PML thickness\n");
+	h = GetCellh(g);
+	print(io, h[1], " x ", h[2], " x ", h[3], " cell\n");	
 end
 
 ###########################################################################
