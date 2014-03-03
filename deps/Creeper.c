@@ -144,14 +144,17 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 
 
 	ModeArray ma = CreateModeArray();
-	int ih;
+	int ih, i;
 	for(ih=0; ih<Nm; ih++){
 
 		addArrayMode(&ma->L, ma->size, ms[ih]);
 		ma->size++;
 
 		Setup( ms[ih], geo); // TODO: bundle if multiple lasing modes
+
+
 	}
+
 
 
     Vec f, dv;
@@ -159,6 +162,8 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 
 
 	for(; geo->D <= Dmax; geo->D = (geo->D+dD < Dmax? geo->D+dD: Dmax)){
+
+
 
 		Mode *msh=NULL;
 	  	int Nlasing = CreateFilter(ma->L, ma->size, 1, &msh); // lasing sub-array
@@ -206,8 +211,8 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 		double wi_old = cimag(get_w(m));
 		
 
-		
 		NewtonSolve(&m, geo,  m->vpsi, f, dv, ftol, printnewton);
+
 	  	
 		double wi_new = cimag(get_w(m));
 
@@ -229,5 +234,13 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 
 	DestroyVec(&f);
 	DestroyVec(&dv);
+
+	for(i=0; i<SCRATCHNUM; i++){ // cleanup
+		VecSet( geo->vH, 1.0);
+		VecSet( geo->vscratch[i], 0.0);
+		VecSet( geo->vMscratch[i], 0.0);
+		DestroyVec(&geo->vNhscratch[i]);
+	}
+			
 
 }

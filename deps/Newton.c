@@ -36,6 +36,8 @@ void NewtonSolve(Mode *ms, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int 
 
 	VecSet(dv, 0.0);
 	while(1){
+	
+
 
 		// removed stability hack for simplicity	
 		VecAXPY(v, -1.0, dv);	
@@ -51,8 +53,11 @@ void NewtonSolve(Mode *ms, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int 
 		
 
 		double fnorm = FormJf(ms, geo, v, f, ftol, printnewton);
+
+
 		
 		if(  fnorm < ftol)	break;
+
 		gettimeofday(&t2, NULL);
 		KSPSolve(ksp, f, dv);
 		gettimeofday(&t3, NULL);
