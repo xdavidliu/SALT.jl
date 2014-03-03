@@ -125,9 +125,12 @@ typedef struct ModeArray_s{
 ModeArray CreateModeArray();
 int GetArraySize(ModeArray ma);
 void DestroyModeArray(ModeArray ma);
-void AddArrayMode(ModeArray ma, Mode m);
 void RemoveArrayMode(ModeArray ma, int n);
 Mode GetMode(ModeArray ma, int n);
+
+
+void addArrayMode(Mode **ma, int old_size, Mode m);
+
 
 ModeArray CreateFilter(ModeArray ma, int lasing);
 

@@ -131,7 +131,10 @@ ModeArray Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, 
 
 		// TODO: free all Modes and Geometry since they are heap allocated when created
 
-		AddArrayMode(ma, m);
+
+		addArrayMode(&ma->L, ma->size, m);
+		ma->size++;
+
 
 		if(nev == 1) break;
 	}

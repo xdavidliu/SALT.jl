@@ -102,7 +102,11 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 	if(mah->size>0) NewtonSolve(mah, geo, vNh, f, dv, ftol, printnewton);
 
 	ModeArray ma = CreateModeArray();
-	AddArrayMode(ma, m);
+
+
+		addArrayMode(&ma->L, ma->size, m);
+		ma->size++;
+
 	
 	NewtonSolve(ma, geo, m->vpsi, f, dv, ftol, printnewton);
 

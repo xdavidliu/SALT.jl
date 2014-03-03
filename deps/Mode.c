@@ -333,15 +333,18 @@ void DestroyModeArray(ModeArray ma){
 	free(ma);
 }
 
-void AddArrayMode(ModeArray ma, Mode m){
 
-	ma->size++;
+void addArrayMode(Mode **ma, int old_size, Mode m){
 
-	if(ma->size ==1) ma->L = (Mode*) malloc( sizeof(Mode) );
-	else ma->L = (Mode*) realloc( ma->L, ma->size  *sizeof(Mode) );
+	if(old_size == 0){
+		*ma = (Mode *) malloc( sizeof(struct Mode_s) );
+	}else{
+		*ma = (Mode *) realloc( *ma, (old_size+1)*sizeof(struct Mode_s) );
+	}
 
-	ma->L[ ma->size-1] = m;
+	(*ma)[old_size] = m;
 }
+
 
 void RemoveArrayMode(ModeArray ma, int n){
 
@@ -359,7 +362,7 @@ void RemoveArrayMode(ModeArray ma, int n){
 
 Mode GetMode(ModeArray ma, int n){ return ma->L[n] ; }
 
- ModeArray CreateFilter(ModeArray ma, int lasing){
+ModeArray CreateFilter(ModeArray ma, int lasing){
 
 	ModeArray mf = (ModeArray) malloc(sizeof(struct ModeArray_s) );
 	mf->size =0;
@@ -370,7 +373,8 @@ Mode GetMode(ModeArray ma, int n){ return ma->L[n] ; }
 		if( ma->L[i]->lasing != lasing) continue;
 
 		// match found		
-		AddArrayMode(mf, ma->L[i]);
+		addArrayMode(&mf->L, mf->size, ma->L[i]);
+		mf->size++;
 	}
 
 	return mf;

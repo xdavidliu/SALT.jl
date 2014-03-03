@@ -14,7 +14,10 @@ PetscErrorCode ReadModes(ModeArray ma, Geometry geo, char **namesin, char **name
 
 		sprintf(m->name, "%s", namesout[i]);
 
-		AddArrayMode(ma, m);
+
+		addArrayMode(&ma->L, ma->size, m);
+		ma->size++;
+
 
 	}
 	return 0;
@@ -148,7 +151,10 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 	ModeArray ma = CreateModeArray();
 	int ih;
 	for(ih=0; ih<Nm; ih++){
-		AddArrayMode(ma, ms[ih]);
+
+		addArrayMode(&ma->L, ma->size, ms[ih]);
+		ma->size++;
+
 		Setup( ms[ih], geo); // TODO: bundle if multiple lasing modes
 	}
 
@@ -204,7 +210,11 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 		double wi_old = cimag(get_w(m));
 		
 		 ModeArray ma_single = CreateModeArray();
-		AddArrayMode(ma_single, m);
+		addArrayMode(&ma_single->L, 0, m);
+		ma_single->size = 1;
+
+	
+
 		
 		NewtonSolve(ma_single , geo,  m->vpsi, f, dv, ftol, printnewton);
 	  	DestroyModeArray(ma_single);
