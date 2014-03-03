@@ -144,13 +144,20 @@ int FindModeAtThreshold(ModeArray ma){
 }
 
 // everything after Nm copied directly from ReadMode
-void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, ModeArray ma, int printnewton, int Nm, Geometry geo){
+void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *ms, int printnewton, int Nm, Geometry geo){
+
+
+	ModeArray ma = CreateModeArray();
+	int ih;
+	for(ih=0; ih<Nm; ih++){
+		AddArrayMode(ma, ms[ih]);
+	}
 
 
     Vec f, dv;
     MatGetVecs( ma->L[0]->J, &dv, &f);
 
-	int ih;
+
 	for(; geo->D <= Dmax; geo->D = (geo->D+dD < Dmax? geo->D+dD: Dmax)){
 
 	  	ModeArray mah =	CreateFilter(ma, 1); // lasing sub-array

@@ -184,7 +184,7 @@ void AddRowDerivatives(Mat J, Geometry geo, int ifix, int ih);
 PetscErrorCode ReadModes(ModeArray ma, Geometry geo, char **namesin, char **namesout, int Nm);
 
 ModeArray Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, const char *modeout, Geometry geo);
-void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, ModeArray ma, int printnewton, int Nm, Geometry geo);
+void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *ms, int printnewton, int Nm, Geometry geo);
 
 void Salt(int *N, int *M, double *h, int *Npml, int Nc, int LowerPML, double *eps, double *fprof, double wa, double y,  // <-- Geometry parameters
 int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, char *modeout,  // <--- Passive parameters

@@ -46,7 +46,7 @@ type Mode
 end
 
 function Geometry(ε::Array{Cdouble}, h_, nPML_,
-                  gain_prof::Array{Cdouble}, ω_gain::Real, γ_gain::Real;
+                  gain_prof::Array{Cdouble}, ω_gain::Real, γ_gain::Real; # keyword arguments next
                   nc::Integer=3, lowerPML::Bool=true)
     ndims(ε) > 3 && throw(ArgumentError("ε array must be <= 3-dimensional"))
     size(ε) != size(gain_prof) && throw(ArgumentError("gain profile must be same size as ε array"))
@@ -71,8 +71,8 @@ function Geometry(ε::Array{Cdouble}, h_, nPML_,
                    N, N, h, nPML, nc, lowerPML, ε, gain_prof, ω_gain, γ_gain))
 end
 
-function Passive(BCPeriod::Int64, bl::Array{Int64,1}, k::Array{Cdouble,1},
-    wreal::Cdouble, wimag::Cdouble, modenorm::Cdouble, geo::SALT.Geometry, nev::Integer)
+function Passive(BCPeriod::Int64, bl::Array{Int64,1}, wreal::Cdouble, wimag::Cdouble, 
+	geo::SALT.Geometry; nev::Integer=1, modenorm::Cdouble=0.1, k::Array{Cdouble,1} = [0.0, 0.0, 0.0])
 
 	marray = ccall( ("Passive", saltlib), Ptr{Void}, (Cint, Ptr{Cint}, 
 		Ptr{Cdouble}, Cdouble, Cdouble, Cdouble, Cint, Ptr{Uint8}, SALT.Geometry), 
@@ -85,8 +85,15 @@ function Passive(BCPeriod::Int64, bl::Array{Int64,1}, k::Array{Cdouble,1},
 		ma[i] = Mode( ccall( ("GetMode", saltlib), Mode_, (Ptr{Void}, Cint), marray, i-1) );
 	end
 
-	ma;
+	if nev==1
+		return ma[1];
+	else
+		return ma;
+	end
 end
+
+
+
 
 function GetPsi(m::SALT.Mode)
     

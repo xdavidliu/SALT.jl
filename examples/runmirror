@@ -22,7 +22,7 @@ PASSIVE="-wreal 15.7 -wimag -1.07
 -kx 0 -ky 0 -kz 0
 -BCPeriod -1 -norm 0.01
 -passiveout pass
--nev 5";
+-nev 1";
 
 CREEPER="-in0 pass0 -in1 pass
 -out0 last14 -out1 last16
