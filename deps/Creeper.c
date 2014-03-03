@@ -81,9 +81,9 @@ void FirstStep(ModeArray mah, Mode m, Geometry geo, Vec vNh, Vec f, Vec dv, doub
 
 }
 
-void Bundle(ModeArray ma, Geometry geo){
+void Bundle(Mode *ms, int size, Geometry geo){
 
-	int i, Nh = ma->size, Nj = 2*Nxyzc(geo)+2;
+	int i, Nh = size, Nj = 2*Nxyzc(geo)+2;
 	if(Nh < 2) MyError("Bundle function is only for multimode!");
 
 	Mat J; KSP ksp;
@@ -111,8 +111,8 @@ void Bundle(ModeArray ma, Geometry geo){
 
 	int ih = 0;
 
-	for(ih=0; ih<ma->size; ih++){
-		Mode m = ma->L[ih];
+	for(ih=0; ih<size; ih++){
+		Mode m = ms[ih];
 		
 		DestroyMat( &m->J); // bundle shares J and v
 		m->J = J;
@@ -129,12 +129,12 @@ void Bundle(ModeArray ma, Geometry geo){
 
 }
 
-int FindModeAtThreshold(ModeArray ma){
+int FindModeAtThreshold(Mode *ms, int size){
 
 	int n = -1, ih;
 
-	for(ih = 0; ih<ma->size; ih++){
-		Mode m = ma->L[ih];
+	for(ih = 0; ih<size; ih++){
+		Mode m = ms[ih];
 		if( get_c(m) == 0.0 && m->lasing ){
 			n = ih;
 			break;
@@ -174,11 +174,11 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 	  
 
 	  
-	  	  int nt = FindModeAtThreshold(mah);
+	  	  int nt = FindModeAtThreshold(mah->L, mah->size);
 	  
 		  if( nt != -1 && mah->size > 1){
 
-		  	Bundle(mah, geo);
+		  	Bundle(mah->L, mah->size, geo);
 		  }
 
 		  if(mah->size > 1){	 // these vectors will have been properly created in the last block
