@@ -314,24 +314,8 @@ dcomp gamma_w(Mode m, Geometry geo){
 	
 }
 
-ModeArray CreateModeArray(){
-	
-	ModeArray ma = (ModeArray) malloc(sizeof(struct ModeArray_s) );
 
-	ma->L = (Mode*) malloc(sizeof(Mode));
-	ma->size = 0;
 
-	return ma;
-}
-
-int GetArraySize(ModeArray ma){
-	return ma->size;
-}
-
-void DestroyModeArray(ModeArray ma){
-	free(ma->L);
-	free(ma);
-}
 
 
 void addArrayMode(Mode **ma, int old_size, Mode m){

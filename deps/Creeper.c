@@ -143,22 +143,17 @@ int FindModeAtThreshold(Mode *ms, int size){
 void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *ms, int printnewton, int Nm, Geometry geo){
 
 
-	ModeArray ma = CreateModeArray();
 	int ih, i;
 	for(ih=0; ih<Nm; ih++){
 
-		addArrayMode(&ma->L, ma->size, ms[ih]);
-		ma->size++;
-
 		Setup( ms[ih], geo); // TODO: bundle if multiple lasing modes
-
 
 	}
 
 
 
     Vec f, dv;
-    MatGetVecs( ma->L[0]->J, &dv, &f);
+    MatGetVecs( ms[0]->J, &dv, &f);
 
 
 	for(; geo->D <= Dmax; geo->D = (geo->D+dD < Dmax? geo->D+dD: Dmax)){
@@ -166,10 +161,10 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 
 
 		Mode *msh=NULL;
-	  	int Nlasing = CreateFilter(ma->L, ma->size, 1, &msh); // lasing sub-array
+	  	int Nlasing = CreateFilter(ms, Nm, 1, &msh); // lasing sub-array
 
 	  
-	  Vec vNh = ma->L[0]->vpsi, fNh = f, dvNh = dv;
+	  Vec vNh = ms[0]->vpsi, fNh = f, dvNh = dv;
 
 	  if( Nlasing > 0){ // lasing modes
 	  
@@ -204,8 +199,8 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 		  
 	  }
 
-	  for(ih=0; ih<ma->size; ih++){ // now nonlasing modes
-		Mode m = ma->L[ih];
+	  for(ih=0; ih<Nm; ih++){ // now nonlasing modes
+		Mode m = ms[ih];
 		if(m->lasing) continue;
 
 		double wi_old = cimag(get_w(m));

@@ -117,14 +117,7 @@ dcomp get_w(Mode m);
 dcomp gamma_w(Mode m, Geometry geo);
 void Fix(Mode m, Geometry geo, double norm);
 
-typedef struct ModeArray_s{
-	int size;
-	Mode *L;
-} *ModeArray;
 
-ModeArray CreateModeArray();
-int GetArraySize(ModeArray ma);
-void DestroyModeArray(ModeArray ma);
 Mode GetMode(Mode *ms, int n);
 
 
