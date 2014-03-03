@@ -1,5 +1,10 @@
 #include "headers.h"
 
+void SetPump(Geometry geo, double D){
+	geo->D = D;
+
+}
+
 void InterpolateVec(Geometry geo, Vec vM, Vec vN){
 
 	VecSet(vN, 0.0);

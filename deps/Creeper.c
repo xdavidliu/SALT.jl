@@ -16,8 +16,6 @@ PetscErrorCode ReadModes(ModeArray ma, Geometry geo, char **namesin, char **name
 
 		AddArrayMode(ma, m);
 
-		Setup(m, geo);
-
 	}
 	return 0;
 
@@ -151,6 +149,7 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 	int ih;
 	for(ih=0; ih<Nm; ih++){
 		AddArrayMode(ma, ms[ih]);
+		Setup( ms[ih], geo); // TODO: bundle if multiple lasing modes
 	}
 
 

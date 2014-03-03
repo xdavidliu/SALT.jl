@@ -45,6 +45,8 @@ type Mode
 
 end
 
+##################################################################
+
 function Geometry(ε::Array{Cdouble}, h_, nPML_,
                   gain_prof::Array{Cdouble}, ω_gain::Real, γ_gain::Real; # keyword arguments next
                   nc::Integer=3, lowerPML::Bool=true)
@@ -71,8 +73,10 @@ function Geometry(ε::Array{Cdouble}, h_, nPML_,
                    N, N, h, nPML, nc, lowerPML, ε, gain_prof, ω_gain, γ_gain))
 end
 
+##################################################################
+
 function Passive(BCPeriod::Int64, bl::Array{Int64,1}, wreal::Cdouble, wimag::Cdouble, 
-	geo::SALT.Geometry; nev::Integer=1, modenorm::Cdouble=0.1, k::Array{Cdouble,1} = [0.0, 0.0, 0.0])
+	geo::Geometry; nev::Integer=1, modenorm::Cdouble=0.1, k::Array{Cdouble,1} = [0.0, 0.0, 0.0])
 
 	marray = ccall( ("Passive", saltlib), Ptr{Void}, (Cint, Ptr{Cint}, 
 		Ptr{Cdouble}, Cdouble, Cdouble, Cdouble, Cint, Ptr{Uint8}, SALT.Geometry), 
@@ -90,6 +94,27 @@ function Passive(BCPeriod::Int64, bl::Array{Int64,1}, wreal::Cdouble, wimag::Cdo
 	else
 		return ma;
 	end
+end
+
+function Creeper(dD::Cdouble, Dinit::Cdouble, Dmax::Cdouble, ms::Array{Mode, 1}, 
+	geo::Geometry; thresholdw_tol::Cdouble=1.0e-7, ftol::Cdouble=1.0e-7, 
+	printNewton::Bool=true)
+
+	
+	ccall( ("SetPump", saltlib), Void,
+		(Geometry_, Cdouble), geo.geo, Dinit); 
+
+
+	msC = Array(Mode_, size(ms) );
+	for i=1:size(ms,1)
+		msC[i] = ms[i].m;
+	end
+
+	ccall( ("Creeper", saltlib), Void, 
+		(Cdouble, Cdouble, Cdouble, Cdouble, Ptr{Mode_}, Cint, Cint, Geometry_),
+		dD, Dmax, thresholdw_tol, ftol, msC, int32(printNewton), int32(size(ms,1)), geo.geo  
+	);
+
 end
 
 
@@ -111,30 +136,8 @@ end
 
 ###########################################################################
 
-#=========== master Salt function from C code ============ #
-
-Salt(N, nc, M, nPML, lowerPML, bl, BCPeriod, printnewton, 
-h, wa, y, wreal, wimag, k, modenorm, ftol, thresholdw_tol,
-dD, Dmax, eps, fprof, modeout, namesin, namesout, Nm, nev) = 
-ccall((:Salt, saltlib), Void, (Ptr{Cint}, Ptr{Cint}, Ptr{Cdouble}, Ptr{Cint}, 
-Cint, Cint, Ptr{Cdouble}, Ptr{Cdouble}, Cdouble, Cdouble,
-Cint, Ptr{Cint}, Ptr{Cdouble}, Cdouble, Cdouble, Cdouble, Cint, Ptr{Uint8}, 
-Cdouble, Cdouble, Cdouble, Cdouble, Ptr{Ptr{Uint8}}, Ptr{Ptr{Uint8}}, Cint, 
-Cint), int32(N), int32(M), h, int32(nPML), int32(nc), int32(lowerPML), 
-eps, fprof, wa, y, int32(BCPeriod), int32(bl), k, wreal, wimag, modenorm, 
-int32(nev), modeout, dD, Dmax, thresholdw_tol, ftol, namesin, namesout, 
-int32(printnewton), int32(Nm));
 
 
-#============ sub-function for Newton solver ======= #
-
-Creeper(N, nc, M, nPML, lowerPML, printnewton, 
-h, wa, y, ftol, thresholdw_tol,
-dD, Dmax, eps, fprof, namesin, namesout, Nm) =
-
-Salt(N, nc, M, nPML, lowerPML, [0,0,0], 0, printnewton, 
-h, wa, y, 0, 0, [0, 0, 0], 1.0, ftol, thresholdw_tol,
-dD, Dmax, eps, fprof, "", namesin, namesout, Nm, 0);
 
 include("plotSalt.jl")
 
