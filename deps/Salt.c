@@ -10,9 +10,16 @@ double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char
     
     if(Dmax == 0.0){
 
-		ModeArray ma = Passive(BCPeriod, bl, k, wreal, wimag, modenorm, nev, modeout, geo);
+		ModeArray ma = Passive(BCPeriod, bl, k, wreal, wimag, modenorm, nev, geo);
 		int i;
 		for(i = 0; i<ma->size; i++){
+
+			if(ma->size == 1)
+				sprintf(ma->L[i]->name, "%s", modeout);
+			else 
+				sprintf(ma->L[i]->name, "%s%i", modeout, i);
+
+
 			Write(ma->L[i], geo);
 			DestroyMode(ma->L[i]);
 		}
@@ -35,6 +42,7 @@ double dD, double Dmax, double thresholdw_tol, double ftol, char **namesin, char
         Creeper(dD, Dmax, thresholdw_tol, ftol, ma->L, printnewton, Nm, geo);    
 
 		int ih;
+
 		for(ih=0; ih<ma->size; ih++){
 			Write(ma->L[ih], geo);
 			DestroyMode(ma->L[ih]);

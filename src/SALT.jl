@@ -79,8 +79,8 @@ function Passive(BCPeriod::Int64, bl::Array{Int64,1}, wreal::Cdouble, wimag::Cdo
 	geo::Geometry; nev::Integer=1, modenorm::Cdouble=0.1, k::Array{Cdouble,1} = [0.0, 0.0, 0.0])
 
 	marray = ccall( ("Passive", saltlib), Ptr{Void}, (Cint, Ptr{Cint}, 
-		Ptr{Cdouble}, Cdouble, Cdouble, Cdouble, Cint, Ptr{Uint8}, SALT.Geometry), 
-		int32(BCPeriod), int32(bl), k, wreal, wimag, modenorm, nev, "", geo );
+		Ptr{Cdouble}, Cdouble, Cdouble, Cdouble, Cint, SALT.Geometry), 
+		int32(BCPeriod), int32(bl), k, wreal, wimag, modenorm, nev, geo );
 
 	N = ccall( ("GetArraySize", saltlib), Cint, (Ptr{Void},), marray );
 

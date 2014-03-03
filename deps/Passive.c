@@ -21,7 +21,7 @@ void FillBop(Geometry geo, Mat Bop, dcomp w){
 }
 
 // everything after modeout is directly from ReadGeometry
-ModeArray Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, const char *modeout, Geometry geo){
+ModeArray Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, Geometry geo){
 
     	tv t1, t2, t3;	
 
@@ -127,10 +127,7 @@ ModeArray Passive(int BCPeriod, int *bl, double *k, double wreal, double wimag, 
 		PetscPrintf(PETSC_COMM_WORLD, "found mode #%i: w = %1.8g + (%1.8g) i; pumped fraction = %g\n", j, creal(w), cimag(w), psifnorm/psinorm );
 		SetLast2(m->vpsi, creal(w), cimag(w) ); // make sure to get psinorm before doing this
 
-		if(nev == 1)
-			sprintf(m->name, "%s", modeout);
-		else 
-			sprintf(m->name, "%s%i", modeout, j);
+
 
 		// TODO: free all Modes and Geometry since they are heap allocated when created
 
