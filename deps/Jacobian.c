@@ -132,15 +132,15 @@ void ColumnDerivative(Mode m, Mode mj, Geometry geo, Vec dfR, Vec dfI, Vec vIpsi
 	DestroyVecfun(&psisq);
 }
 
-void ComputeGain(Geometry geo, ModeArray ma){
+void ComputeGain(Geometry geo, Mode *ms, int Nh){
 
 	VecSet(geo->vH, 0.0);
 
 	Vecfun H;
 	CreateVecfun(&H, geo->vH);
 	int i, ih;
-	for(ih=0; ih<ma->size; ih++){
-		Mode m = ma->L[ih];
+	for(ih=0; ih<Nh; ih++){
+		Mode m = ms[ih];
 		dcomp yw = gamma_w(m, geo);
 		double mc = get_c(m);
 
@@ -161,14 +161,15 @@ void ComputeGain(Geometry geo, ModeArray ma){
 	DestroyVecfun(&H);
 }
 
-double FormJf(ModeArray ma, Geometry geo, Vec v, Vec f, double ftol, int printnewton){
+double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton){
 
-	Mode m = ma->L[0];
-	int lasing = m->lasing;
+	Mode m = ms[0];
+	int lasing = m->lasing, Nm;
+	VecGetSize(v, &Nm); Nm /= NJ(geo);
 	Mat J = m->J; // for multimode, all m share same J
 
 	if(lasing)
-		ComputeGain(geo, ma); // do this before naming scratch vectors!
+		ComputeGain(geo, ms, Nm); // do this before naming scratch vectors!
 
 	// ================== name scratch vectors ================== //
 
@@ -176,7 +177,7 @@ double FormJf(ModeArray ma, Geometry geo, Vec v, Vec f, double ftol, int printne
 		vIpsi = geo->vscratch[2];
 
 	Vec dfR, dfI;
-	if(ma->size == 1){
+	if(Nm == 1){
 		dfR = geo->vscratch[0];
 		dfI = geo->vscratch[1];
 	}else{
@@ -189,8 +190,8 @@ double FormJf(ModeArray ma, Geometry geo, Vec v, Vec f, double ftol, int printne
 
 	int ih, jh, kh, ir, jr, jc;
 
-	for(ih=0; ih<ma->size; ih++){
-		m = ma->L[ih];
+	for(ih=0; ih<Nm; ih++){
+		m = ms[ih];
 		VecSet(dfR, 0.0);		
 		VecSet(dfI, 0.0);
 	
@@ -207,7 +208,7 @@ double FormJf(ModeArray ma, Geometry geo, Vec v, Vec f, double ftol, int printne
 
 	MatMult(J, v, f);
 
-	for(kh = 0; kh<ma->size; kh++) for(ir=0; ir<2; ir++)
+	for(kh = 0; kh<Nm; kh++) for(ir=0; ir<2; ir++)
 		VecSetValue(f, kh*NJ(geo) + Nxyzcr(geo)+ir, 0.0, INSERT_VALUES);
 
 	AssembleVec(f);
@@ -224,17 +225,17 @@ double FormJf(ModeArray ma, Geometry geo, Vec v, Vec f, double ftol, int printne
 
 	// =============== column derivatives ====================
 
-	for(jh=0; jh<ma->size; jh++){
-		Mode mj = ma->L[jh];
+	for(jh=0; jh<Nm; jh++){
+		Mode mj = ms[jh];
 
 		VecSet(dfR, 0.0);
 		VecSet(dfI, 0.0);
 
-		if(ma->size > 1)  // hack: only recompute vpsisq if ComputeGain didn't already do it, i.e. for multimode
+		if(Nm > 1)  // hack: only recompute vpsisq if ComputeGain didn't already do it, i.e. for multimode
 			VecSqMedium(geo, mj->vpsi, vpsisq, geo->vMscratch[0]);
 
-		for(ih=0; ih<ma->size; ih++){
-			Mode mi = ma->L[ih];
+		for(ih=0; ih<Nm; ih++){
+			Mode mi = ms[ih];
 
 			TimesI(geo, mi->vpsi, vIpsi);
 			ColumnDerivative(mi, mj, geo, dfR, dfI, vIpsi, vpsisq, ih);
@@ -253,8 +254,8 @@ double FormJf(ModeArray ma, Geometry geo, Vec v, Vec f, double ftol, int printne
   if(lasing){
 	Vec vpsibra = vpsisq; vpsisq = 0;
 
-	for(jh=0; jh<ma->size; jh++){
-		Mode mj = ma->L[jh];
+	for(jh=0; jh<Nm; jh++){
+		Mode mj = ms[jh];
 
 		for(jr=0; jr<2; jr++) for(jc=0; jc< geo->gN.Nc; jc++){
 
@@ -263,8 +264,8 @@ double FormJf(ModeArray ma, Geometry geo, Vec v, Vec f, double ftol, int printne
 
 			VecSet(dfR, 0.0);
 			ih = 0;
-			for(ih=0; ih<ma->size; ih++){
-				Mode mi = ma->L[ih];
+			for(ih=0; ih<Nm; ih++){
+				Mode mi = ms[ih];
 				TimesI(geo, mi->vpsi, vIpsi);
 	
 				TensorDerivative(mi, mj, geo, jc, jr, dfR, vpsibra, vIpsi, ih);

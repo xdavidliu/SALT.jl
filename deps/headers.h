@@ -125,7 +125,6 @@ typedef struct ModeArray_s{
 ModeArray CreateModeArray();
 int GetArraySize(ModeArray ma);
 void DestroyModeArray(ModeArray ma);
-void RemoveArrayMode(ModeArray ma, int n);
 Mode GetMode(ModeArray ma, int n);
 
 
@@ -145,9 +144,9 @@ void View(Vec x, PetscViewer viewer);
 
 void Output(Vec A, const char* name, const char* variable_name);
 
-void NewtonSolve(ModeArray ma, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int printnewton);
+void NewtonSolve(Mode *ms, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int printnewton);
 void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, ModeArray mah, Vec vNh, Mode m, Geometry geo, Vec f, Vec dv, double thresholdw_tol, double ftol, int printnewton);
-double FormJf(ModeArray ma, Geometry geo, Vec v, Vec f, double ftol, int printnewton);
+double FormJf(Mode *ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton);
 
 typedef struct Vecfun_s{
 // always Nxyzcr()+2!	

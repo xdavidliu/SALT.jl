@@ -16,22 +16,23 @@ double EdgeIntensity(Mode m, Geometry geo){
 
 }
 
-void NewtonSolve(ModeArray ma, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int printnewton){
+void NewtonSolve(Mode *ms, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int printnewton){
 // f and dv are essentially scratch vectors.
 // for L.size > 1, v is also essentially a scratch vector
 
-	int ih =0;
-	if( ma->L[0]->vpsi != v){  // update v from L's vpsi
+	int ih =0, Nm;
+	VecGetSize(v, &Nm); Nm /= NJ(geo);
+	if( ms[0]->vpsi != v){  // update v from L's vpsi
 
 		
-		for(ih=0; ih<ma->size; ih++){
-			ScatterRange(ma->L[ih]->vpsi, v, 0, ih*NJ(geo), NJ(geo) );
+		for(ih=0; ih<Nm; ih++){
+			ScatterRange(ms[ih]->vpsi, v, 0, ih*NJ(geo), NJ(geo) );
 		}
 	}
 
 	int its =0;
 	tv t1, t2, t3;
-	KSP ksp = ma->L[0]->ksp;
+	KSP ksp = ms[0]->ksp;
 
 	VecSet(dv, 0.0);
 	while(1){
@@ -39,9 +40,9 @@ void NewtonSolve(ModeArray ma, Geometry geo, Vec v, Vec f, Vec dv, double ftol, 
 		// removed stability hack for simplicity	
 		VecAXPY(v, -1.0, dv);	
 
-		if( ma->L[0]->vpsi != v && its !=0){ // update vpsi's from v
-			for(ih=0; ih<ma->size; ih++){
-				ScatterRange(v, ma->L[ih]->vpsi, ih*NJ(geo), 0, NJ(geo) );
+		if( ms[0]->vpsi != v && its !=0){ // update vpsi's from v
+			for(ih=0; ih<Nm; ih++){
+				ScatterRange(v, ms[ih]->vpsi, ih*NJ(geo), 0, NJ(geo) );
 			}
 		}
 		
@@ -49,7 +50,7 @@ void NewtonSolve(ModeArray ma, Geometry geo, Vec v, Vec f, Vec dv, double ftol, 
 		gettimeofday(&t1, NULL);
 		
 
-		double fnorm = FormJf(ma, geo, v, f, ftol, printnewton);
+		double fnorm = FormJf(ms, geo, v, f, ftol, printnewton);
 		
 		if(  fnorm < ftol)	break;
 		gettimeofday(&t2, NULL);
@@ -71,14 +72,14 @@ void NewtonSolve(ModeArray ma, Geometry geo, Vec v, Vec f, Vec dv, double ftol, 
 	// removed print statement; redo these for multimode.
 	if(printnewton){ 
 		PetscPrintf(PETSC_COMM_WORLD, "\nconverged!\n" );
-		for(ih=0; ih<ma->size; ih++){
-			dcomp w = get_w(ma->L[ih]);
+		for(ih=0; ih<Nm; ih++){
+			dcomp w = get_w(ms[ih]);
 			PetscPrintf(PETSC_COMM_WORLD, "%s at D = %g: w = %g + i(%g)", 
-				ma->L[ih]->name,  geo->D, creal(w), cimag(w));
+				ms[ih]->name,  geo->D, creal(w), cimag(w));
 				
-			if( ma->L[ih]->lasing && geo->LowerPML==0 
+			if( ms[ih]->lasing && geo->LowerPML==0 
 			&& geo->gN.N[1] == 1 && geo->gN.N[2] == 1 && geo->Nc == 1)  
-				PetscPrintf(PETSC_COMM_WORLD, ", |psi|^2_edge = %g", EdgeIntensity(ma->L[ih], geo));
+				PetscPrintf(PETSC_COMM_WORLD, ", |psi|^2_edge = %g", EdgeIntensity(ms[ih], geo));
 			
 
 			PetscPrintf(PETSC_COMM_WORLD, "\n");	
@@ -99,7 +100,7 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 	}
 
 	geo->D = D_lo - (D_hi - D_lo)/(wimag_hi - wimag_lo) * wimag_lo;
-	if(mah->size>0) NewtonSolve(mah, geo, vNh, f, dv, ftol, printnewton);
+	if(mah->size>0) NewtonSolve(mah->L, geo, vNh, f, dv, ftol, printnewton);
 
 	ModeArray ma = CreateModeArray();
 
@@ -108,7 +109,7 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 		ma->size++;
 
 	
-	NewtonSolve(ma, geo, m->vpsi, f, dv, ftol, printnewton);
+	NewtonSolve(ma->L, geo, m->vpsi, f, dv, ftol, printnewton);
 
 	DestroyModeArray(ma);
 

@@ -51,7 +51,7 @@ void FirstStep(ModeArray mah, Mode m, Geometry geo, Vec vNh, Vec f, Vec dv, doub
 	AssembleVec(vNh);
 	AssembleVec(m->vpsi);
 
-	double fnorm = FormJf(mah, geo, vNh, f, ftol, printnewton);
+	double fnorm = FormJf(mah->L, geo, vNh, f, ftol, printnewton);
 
 	if(  fnorm < ftol) break;
 
@@ -198,7 +198,7 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 		  }
 		  
 		  
-		  NewtonSolve(mah, geo,  vNh, fNh, dvNh, ftol, printnewton);  
+		  NewtonSolve(mah->L, geo,  vNh, fNh, dvNh, ftol, printnewton);  
 
 		  
 	  }
@@ -216,7 +216,7 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 	
 
 		
-		NewtonSolve(ma_single , geo,  m->vpsi, f, dv, ftol, printnewton);
+		NewtonSolve(ma_single->L, geo,  m->vpsi, f, dv, ftol, printnewton);
 	  	DestroyModeArray(ma_single);
 	  	
 		double wi_new = cimag(get_w(m));

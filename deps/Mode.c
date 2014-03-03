@@ -346,20 +346,6 @@ void addArrayMode(Mode **ma, int old_size, Mode m){
 }
 
 
-void RemoveArrayMode(ModeArray ma, int n){
-
-	if( n >= ma->size) MyError("out of range in RemoveArrayMode");
-
-	int i;
-	for(i = n+1; i<ma->size; i++){
-		ma->L[i-1] = ma->L[i];
-	}
-
-	ma->size--;
-	ma->L = (Mode*) realloc( ma->L, ma->size  *sizeof(Mode) );
-
-}
-
 Mode GetMode(ModeArray ma, int n){ return ma->L[n] ; }
 
 ModeArray CreateFilter(ModeArray ma, int lasing){
