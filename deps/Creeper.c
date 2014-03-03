@@ -1,6 +1,21 @@
 #include "headers.h"
 
 
+int CreateFilter(Mode *ms, int size, int lasing, Mode **msp){
+	
+	int i, added =0;
+	for(i=0; i<size; i++){
+	
+		if( ms[i]->lasing == lasing){
+
+			addArrayMode(msp, added, ms[i]);
+			added++;
+		}
+	}
+
+	return added;
+}
+
 
 void FirstStep(Mode *ms, Mode m, Geometry geo, Vec vNh, Vec f, Vec dv, double c, double ftol, int printnewton){
 
@@ -145,40 +160,41 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 
 	for(; geo->D <= Dmax; geo->D = (geo->D+dD < Dmax? geo->D+dD: Dmax)){
 
-	  	ModeArray mah =	CreateFilter(ma, 1); // lasing sub-array
+		Mode *msh=NULL;
+	  	int Nlasing = CreateFilter(ma->L, ma->size, 1, &msh); // lasing sub-array
 
 	  
 	  Vec vNh = ma->L[0]->vpsi, fNh = f, dvNh = dv;
 
-	  if( mah->size > 0){ // lasing modes
+	  if( Nlasing > 0){ // lasing modes
 	  
 
 	  
-	  	  int nt = FindModeAtThreshold(mah->L, mah->size);
+	  	  int nt = FindModeAtThreshold(msh, Nlasing);
 	  
-		  if( nt != -1 && mah->size > 1){
+		  if( nt != -1 && Nlasing > 1){
 
-		  	Bundle(mah->L, mah->size, geo);
+		  	Bundle(msh, Nlasing, geo);
 		  }
 
-		  if(mah->size > 1){	 // these vectors will have been properly created in the last block
+		  if(Nlasing > 1){	 // these vectors will have been properly created in the last block
 			vNh = geo->vNhscratch[2];
 			fNh = geo->vNhscratch[3];
 			dvNh = geo->vNhscratch[4];
 		  }
 
-		  if(mah->size == 1)
-		  	vNh = mah->L[0]->vpsi;
+		  if(Nlasing == 1)
+		  	vNh = msh[0]->vpsi;
 
 		  if( nt != -1 ){
 		  		geo->D += 0.5*dD;
 				if(geo->D > Dmax) geo->D = Dmax;
 				
-		  		FirstStep(mah->L, mah->L[nt], geo, vNh, fNh, dvNh, 1.0, ftol, printnewton);
+		  		FirstStep(msh, msh[nt], geo, vNh, fNh, dvNh, 1.0, ftol, printnewton);
 		  }
 		  
 		  
-		  NewtonSolve(mah->L, geo,  vNh, fNh, dvNh, ftol, printnewton);  
+		  NewtonSolve(msh, geo,  vNh, fNh, dvNh, ftol, printnewton);  
 
 		  
 	  }
@@ -197,8 +213,7 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 
 		if(wi_new > -thresholdw_tol && !m->lasing){
 		
-			// set msh to NULL if no lasing modes
-			Mode *msh = ( mah->size > 0? mah->L : NULL);
+
 
 			ThresholdSearch(  wi_old, wi_new, geo->D-dD, geo->D, 
 			msh, vNh, m, geo, f, dv, thresholdw_tol, ftol, printnewton);
@@ -206,7 +221,7 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 		}
 	  }
 
-	  if(mah->size>0) DestroyModeArray(mah);	  
+	  if(Nlasing>0) free(msh);	  
 	  if(geo->D==Dmax) break;
 	}
 

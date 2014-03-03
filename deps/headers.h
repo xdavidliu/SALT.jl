@@ -131,7 +131,6 @@ Mode GetMode(Mode *ms, int n);
 void addArrayMode(Mode **ma, int old_size, Mode m);
 
 
-ModeArray CreateFilter(ModeArray ma, int lasing);
 
 void CreateSquareMatrix(int N, int nz, Mat *A);
 double GetValue(Vec v, int i);

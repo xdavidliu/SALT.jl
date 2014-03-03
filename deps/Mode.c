@@ -348,21 +348,5 @@ void addArrayMode(Mode **ma, int old_size, Mode m){
 
 Mode GetMode(Mode *ms, int n){ return ms[n] ; }
 
-ModeArray CreateFilter(ModeArray ma, int lasing){
 
-	ModeArray mf = (ModeArray) malloc(sizeof(struct ModeArray_s) );
-	mf->size =0;
-	
-	int i;
-	for(i=0; i<ma->size; i++){
-	
-		if( ma->L[i]->lasing != lasing) continue;
-
-		// match found		
-		addArrayMode(&mf->L, mf->size, ma->L[i]);
-		mf->size++;
-	}
-
-	return mf;
-}
 
