@@ -24,25 +24,27 @@ PetscErrorCode ReadModes(ModeArray ma, Geometry geo, char **namesin, char **name
 
 }
 
-void FirstStep(ModeArray mah, Mode m, Geometry geo, Vec vNh, Vec f, Vec dv, double c, double ftol, int printnewton){
+void FirstStep(Mode *ms, Mode m, Geometry geo, Vec vNh, Vec f, Vec dv, double c, double ftol, int printnewton){
 
 	PetscPrintf(PETSC_COMM_WORLD, "Taking first step for mode \"%s\"...\n", m->name );
 
-  int nh=0, ih;
-  for(ih=0; ih<mah->size; ih++){ // find nh of m
-		if( mah->L[ih] == m) break;
+	int nh=0, ih, Nm;
+	VecGetSize(vNh, &Nm); Nm /= NJ(geo);
+
+	for(ih=0; ih<Nm; ih++){ // find nh of m
+		if( ms[ih] == m) break;
 		else nh++;
-  }
+	}
 
 	if(vNh != m->vpsi){ // update vpsi's from v
 		int ih =0;
-		for(ih=0; ih<mah->size; ih++){
-			ScatterRange((mah->L[ih])->vpsi, vNh, 0, ih*NJ(geo), NJ(geo) );
-			
+		for(ih=0; ih<Nm; ih++){
+			ScatterRange((ms[ih])->vpsi, vNh, 0, ih*NJ(geo), NJ(geo) );
+		
 		}
 	}
 
-  while(1){
+	while(1){
 
 	if( LastProcess() ){ // try new c
 		VecSetValue(vNh, offset(geo, nh)+Nxyzcr(geo)+1, c, INSERT_VALUES);	
@@ -51,7 +53,7 @@ void FirstStep(ModeArray mah, Mode m, Geometry geo, Vec vNh, Vec f, Vec dv, doub
 	AssembleVec(vNh);
 	AssembleVec(m->vpsi);
 
-	double fnorm = FormJf(mah->L, geo, vNh, f, ftol, printnewton);
+	double fnorm = FormJf(ms, geo, vNh, f, ftol, printnewton);
 
 	if(  fnorm < ftol) break;
 
@@ -65,9 +67,9 @@ void FirstStep(ModeArray mah, Mode m, Geometry geo, Vec vNh, Vec f, Vec dv, doub
 
 		if(vNh != m->vpsi){ // update vpsi's from v
 			int ih =0;
-			for(ih=0; ih<mah->size; ih++){
-				ScatterRange(vNh, (mah->L[ih])->vpsi, ih*NJ(geo), 0, NJ(geo) );
-				
+			for(ih=0; ih<Nm; ih++){
+				ScatterRange(vNh, (ms[ih])->vpsi, ih*NJ(geo), 0, NJ(geo) );
+			
 			}
 		}
 		// don't NewtonSolve here, that will be done immediately after
@@ -75,9 +77,9 @@ void FirstStep(ModeArray mah, Mode m, Geometry geo, Vec vNh, Vec f, Vec dv, doub
 	}else if(c + dc < 0) c *= 0.5;
 	else c = 0.5*(c + c+dc);
 
-  }
-  
-  	PetscPrintf(PETSC_COMM_WORLD, "First step for mode \"%s\" complete!\n", m->name );  	
+	}
+
+	PetscPrintf(PETSC_COMM_WORLD, "First step for mode \"%s\" complete!\n", m->name );  	
 
 }
 
@@ -194,7 +196,7 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 		  		geo->D += 0.5*dD;
 				if(geo->D > Dmax) geo->D = Dmax;
 				
-		  		FirstStep(mah, mah->L[nt], geo, vNh, fNh, dvNh, 1.0, ftol, printnewton);
+		  		FirstStep(mah->L, mah->L[nt], geo, vNh, fNh, dvNh, 1.0, ftol, printnewton);
 		  }
 		  
 		  
