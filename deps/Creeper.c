@@ -1,24 +1,17 @@
 #include "headers.h"
 
-
 int CreateFilter(Mode *ms, int size, int lasing, Mode **msp){
-	
 	int i, added =0;
-	for(i=0; i<size; i++){
-	
+	for(i=0; i<size; i++)
 		if( ms[i]->lasing == lasing){
-
 			addArrayMode(msp, added, ms[i]);
 			added++;
 		}
-	}
 
 	return added;
 }
 
-
 void FirstStep(Mode *ms, Mode m, Geometry geo, Vec vNh, Vec f, Vec dv, double c, double ftol, int printnewton){
-
 	PetscPrintf(PETSC_COMM_WORLD, "Taking first step for mode \"%s\"...\n", m->name );
 
 	int nh=0, ih, Nm;
@@ -33,14 +26,12 @@ void FirstStep(Mode *ms, Mode m, Geometry geo, Vec vNh, Vec f, Vec dv, double c,
 		int ih =0;
 		for(ih=0; ih<Nm; ih++){
 			ScatterRange((ms[ih])->vpsi, vNh, 0, ih*NJ(geo), NJ(geo) );
-		
 		}
 	}
 
 	while(1){
-
 	if( LastProcess() ){ // try new c
-		VecSetValue(vNh, offset(geo, nh)+Nxyzcr(geo)+1, c, INSERT_VALUES);	
+		VecSetValue(vNh, offset(geo, nh)+Nxyzcr(geo)+1, c, INSERT_VALUES);
 		if( vNh != m->vpsi) VecSetValue(m->vpsi, Nxyzcr(geo)+1, c, INSERT_VALUES);
 	}
 	AssembleVec(vNh);
@@ -62,23 +53,20 @@ void FirstStep(Mode *ms, Mode m, Geometry geo, Vec vNh, Vec f, Vec dv, double c,
 			int ih =0;
 			for(ih=0; ih<Nm; ih++){
 				ScatterRange(vNh, (ms[ih])->vpsi, ih*NJ(geo), 0, NJ(geo) );
-			
+	
 			}
 		}
 		// don't NewtonSolve here, that will be done immediately after
 		break;
 	}else if(c + dc < 0) c *= 0.5;
 	else c = 0.5*(c + c+dc);
-
 	}
 
-	PetscPrintf(PETSC_COMM_WORLD, "First step for mode \"%s\" complete!\n", m->name );  	
-
+	PetscPrintf(PETSC_COMM_WORLD, "First step for mode \"%s\" complete!\n", m->name );  
 }
 
 void Bundle(Mode *ms, int size, Geometry geo){
-
-	int i, Nh = size, Nj = 2*Nxyzc(geo)+2;
+	int i, ih, Nh = size, Nj = 2*Nxyzc(geo)+2;
 	if(Nh < 2) MyError("Bundle function is only for multimode!");
 
 	Mat J; KSP ksp;
@@ -102,28 +90,24 @@ void Bundle(Mode *ms, int size, Geometry geo){
 		MatGetVecs(J, &geo->vNhscratch[i], NULL);
 	}
 
-	int ih = 0;
-
 	for(ih=0; ih<size; ih++){
 		Mode m = ms[ih];
-		
+
 		DestroyMat( &m->J); // bundle shares J and v
 		m->J = J;
 		KSPDestroy(&m->ksp);
 		m->ksp = ksp;
-		
+
 		MoperatorGeneralBlochFill(geo, J, m->b, m->BCPeriod, m->k, ih);
 		AddRowDerivatives(J, geo, m->ifix, ih);
-	}	
+	}
 
 	AssembleMat(J);
 	MatSetOption(J,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
-	MatStoreValues(J); 	
-
+	MatStoreValues(J); 
 }
 
 int FindModeAtThreshold(Mode *ms, int size){
-
 	int n = -1, ih;
 
 	for(ih = 0; ih<size; ih++){
@@ -134,30 +118,19 @@ int FindModeAtThreshold(Mode *ms, int size){
 		}
 	}
 	return n;
-
 }
 
 // everything after Nm copied directly from ReadMode
 void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *ms, int printnewton, int Nm, Geometry geo){
-
-
 	int ih, i;
 	for(ih=0; ih<Nm; ih++){
-
 		Setup( ms[ih], geo); // TODO: bundle if multiple lasing modes
-
 	}
-
-
 
     Vec f, dv;
     MatGetVecs( ms[0]->J, &dv, &f);
 
-
 	for(; geo->D <= Dmax; geo->D = (geo->D+dD < Dmax? geo->D+dD: Dmax)){
-
-
-
 		Mode *msh=NULL;
 	  	int Nlasing = CreateFilter(ms, Nm, 1, &msh); // lasing sub-array
 
@@ -171,7 +144,6 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 	  	  int nt = FindModeAtThreshold(msh, Nlasing);
 	  
 		  if( nt != -1 && Nlasing > 1){
-
 		  	Bundle(msh, Nlasing, geo);
 		  }
 
@@ -187,7 +159,7 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 		  if( nt != -1 ){
 		  		geo->D += 0.5*dD;
 				if(geo->D > Dmax) geo->D = Dmax;
-				
+		
 		  		FirstStep(msh, msh[nt], geo, vNh, fNh, dvNh, 1.0, ftol, printnewton);
 		  }
 		  
@@ -202,28 +174,23 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 		if(m->lasing) continue;
 
 		double wi_old = cimag(get_w(m));
-		
 
 		NewtonSolve(&m, geo,  m->vpsi, f, dv, ftol, printnewton);
 
-	  	
+	  
 		double wi_new = cimag(get_w(m));
 
 		if(wi_new > -thresholdw_tol && !m->lasing){
-		
-
 
 			ThresholdSearch(  wi_old, wi_new, geo->D-dD, geo->D, 
 			msh, vNh, m, geo, f, dv, thresholdw_tol, ftol, printnewton);
-			
+	
 		}
 	  }
 
 	  if(Nlasing>0) free(msh);	  
 	  if(geo->D==Dmax) break;
 	}
-
-
 
 	DestroyVec(&f);
 	DestroyVec(&dv);
@@ -234,6 +201,5 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 		VecSet( geo->vMscratch[i], 0.0);
 		DestroyVec(&geo->vNhscratch[i]);
 	}
-			
-
+	
 }

@@ -10,12 +10,10 @@ dcomp zval(int i, const double* f, int Nxyzc){
 }
 
 int cyclic(Point *P, int ic, int* N){
-
 	return (P->ic==ic)*N[1]*N[2] + (P->ic==(ic+1)%3 )*N[2] + (P->ic==(ic+2)%3 );
 } 
 
 void MoperatorGeneralBlochFill(Geometry geo, Mat A, int b[3][2], int DimPeriod, double k[3], int ih){
-
 	int N[3], i, j, l, ib, w, jr, ic;
 	for(i=0; i<3; i++) N[i] = geo->gN.N[i];
 
@@ -41,19 +39,16 @@ void MoperatorGeneralBlochFill(Geometry geo, Mat A, int b[3][2], int DimPeriod, 
 	for(ic=0; ic<3; ic++) for(j=0; j<2; j++) for(l=0; l<3; l++)
 		bc[ic][j][l] =  b[ic][j]*( l==ic ? -1 :1);
 
-	
 	MatGetOwnershipRange(A, &ns, &ne);
 
 	int itrue;
 for (itrue = ns; itrue < ne && itrue < 2*Nxyzc(geo); ++itrue) {
-
 	Point p;
 	CreatePoint_i(&p, itrue, &gc); 
 
 	project(&p, 3); int i = xyzcr(&p);
 	int cp[2], icp[2], cidu, cpidu[2],cpidl[2], cid, cpid[2];
 	for(j=0; j<2;j++){
-
 		cp[j] = (p.ic+1+j) % NC;
 		icp[j] = i + (cp[j]-p.ic ) *Nxyz(geo);
 		cpidu[j] = cyclic(&p, 2-j, N);
@@ -77,7 +72,6 @@ for (itrue = ns; itrue < ne && itrue < 2*Nxyzc(geo); ++itrue) {
 	CreatePoint_i(&prow, i, &gC); 
 	project(&prow, geo->Nc);
 for(ib=0; ib<2; ib++){
-
 	if(p.ix[p.ic] == N[p.ic]-1){
 		int per = periodic(p.ic, DimPeriod );
 		cidu = per ? (1-N[p.ic])*cid : 0;
@@ -111,7 +105,7 @@ for(ib=0; ib<2; ib++){
 	Point pcol;
 	CreatePoint_i(&pcol, icp[ib] + jrd+dcol[w], &gC );
 
-	project(&pcol, geo->Nc);	
+	project(&pcol, geo->Nc);
 	if(pcol.ic!=-1) MatSetValue(A, xyzcr(&prow)+offset, xyzcr(&pcol)+offset, c[w], ADD_VALUES);
 	}
 
@@ -144,7 +138,6 @@ for(ib=0; ib<2; ib++){
 	project(&pcol, geo->Nc);
 	if(pcol.ic!=-1) MatSetValue(A, xyzcr(&prow)+offset, xyzcr(&pcol)+offset, c[w], ADD_VALUES);
 	}
-
 }
 
     }

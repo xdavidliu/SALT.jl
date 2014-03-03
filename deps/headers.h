@@ -27,8 +27,8 @@ void AssembleMat(Mat M);
 void DestroyVec(Vec *x);
 void DestroyMat(Mat *A);
 
-typedef struct Grid_s{	
-	
+typedef struct Grid_s{
+
 	int N[3], Nc, Nr;
 } Grid;
 
@@ -39,7 +39,6 @@ int xyzcGrid(Grid *g);
 int xyzcrGrid(Grid *g);
 
 typedef struct Point_s{
-
 	int ix[3], ir, ic;
 	Grid G;
 } Point;
@@ -56,8 +55,6 @@ int xyzcr(Point *p);
 #define SCRATCHNUM 5
 typedef struct Geometry_s{
 
-	
-
 	int Npml[3], Nc, LowerPML;
 	double h[3];
 	Vec vepspml;
@@ -66,13 +63,12 @@ typedef struct Geometry_s{
 
 	Vec vscratch[SCRATCHNUM], vMscratch[SCRATCHNUM], vNhscratch[SCRATCHNUM], vH, veps, vIeps, vf;
 	double D, wa, y;
-
 } *Geometry;
 
 Geometry CreateGeometry(int N[3], double h[3], int Npml[3], int Nc, int LowerPML, double *eps, double *fprof, double wa, double y);
 
 void SetPump(Geometry geo, double D);
-void DestroyGeometry(Geometry geo);	
+void DestroyGeometry(Geometry geo);
 void InterpolateVec(Geometry geo, Vec vM, Vec vN);
 void CollectVec(Geometry geo, Vec vN, Vec vM);
 void Stamp(Geometry geo, Vec vN, int ic, int ir, Vec scratchM);
@@ -81,7 +77,7 @@ void VecSqMedium(Geometry geo, Vec v, Vec vsq, Vec scratchM);
 int Last2(Geometry geo, int i);
 void SetJacobian(Geometry geo, Mat J, Vec v, int jc, int jr, int jh);
 
-void MoperatorGeneralBlochFill(Geometry geo, Mat A,  int b[3][2], int DimPeriod, double k[3], int ih);	
+void MoperatorGeneralBlochFill(Geometry geo, Mat A,  int b[3][2], int DimPeriod, double k[3], int ih);
 
 int Nxyz(Geometry geo);
 int Nxyzc(Geometry geo);
@@ -93,14 +89,12 @@ int offset(Geometry geo, int ih);
 int ir(Geometry geo, int i);
 
 typedef struct Mode_s{
-
 	Vec vpsi;
 	char name[PETSC_MAX_PATH_LEN];
 	double k[3];
 	int ifix, BCPeriod, b[3][2], lasing;
 	Mat J;
 	KSP ksp; // one ksp per J seems faster
-
 } *Mode;
 
 Mode CreateMode(Geometry geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]);
@@ -117,13 +111,8 @@ dcomp get_w(Mode m);
 dcomp gamma_w(Mode m, Geometry geo);
 void Fix(Mode m, Geometry geo, double norm);
 
-
 Mode GetMode(Mode *ms, int n);
-
-
 void addArrayMode(Mode **ma, int old_size, Mode m);
-
-
 
 void CreateSquareMatrix(int N, int nz, Mat *A);
 double GetValue(Vec v, int i);
@@ -141,15 +130,12 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 double FormJf(Mode *ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton);
 
 typedef struct Vecfun_s{
-// always Nxyzcr()+2!	
-	
+// always Nxyzcr()+2!
+
 	Vec u;
 	int ns, ne; // should keep these, since they are used by the val() function
-				// every single time.
-
-	 
+				// every single time.	 
 	double* a;
-
 } Vecfun;
 
 void CreateVecfun(Vecfun *fun, Vec w);
@@ -159,11 +145,9 @@ void setr(Vecfun *fun, int i, double val);
 void DestroyVecfun(Vecfun *fun);
 
 typedef struct Complexfun_s{
-
 	Vec u, v;
 	double *a, *b;
 	int Nxyzc, ns, ne;
-
 }Complexfun;
 
 dcomp valc(Complexfun *fun, int i);
@@ -175,7 +159,6 @@ void DestroyComplexfun(Complexfun *fun);
 dcomp pmlval(int i, int* N, int* Npml, double* h, int LowerPML, int k);
 void AllocateJacobian(Mat J, Geometry geo);
 void AddRowDerivatives(Mat J, Geometry geo, int ifix, int ih);
-
 
 Mode *Passive(int *added, int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev,  Geometry geo);
 void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *ms, int printnewton, int Nm, Geometry geo);

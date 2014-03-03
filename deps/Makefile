@@ -17,7 +17,7 @@ SALTLIB = ${PWD}/saltlib${EXTENSION}
 SALTOUT = SaltOut
 CLEANFILES = *.dylib *.so *Out
 
-		
+	
 Shared: ${BASIC_OFILES} ${NEWTON_OFILES}
 	${CLINKER} $^ -shared -o ${SALTLIB} ${SLEPC_LIB}
 

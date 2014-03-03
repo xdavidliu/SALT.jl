@@ -30,7 +30,6 @@ CREEPER="-in0 pass16 -in1 pass14
 
 SOLVER="-printnewton 1";
 
-
 if [[ $COMMAND = "passive" ]]; then
 $RUN $GEO $PASSIVE -Dmax 0.0;
 elif [[ $COMMAND = "salt" ]]; then
