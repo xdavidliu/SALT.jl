@@ -27,32 +27,6 @@ Mode *ReadModes(Geometry geo, char **namesin, char **namesout, int Nm){
 
 
 
-void OptionsXYZInt(const char* prefix, int* a){
-	int i;
-	char option[PETSC_MAX_PATH_LEN];
-	const char x[3] = {'x', 'y', 'z'};
-	for(i=0; i<3; i++){
-		sprintf(option, "%s%c", prefix, x[i]);
-
-
-		PetscOptionsGetInt(PETSC_NULL,option, &a[i], NULL);
-	}
-
-}
-
-
-void OptionsXYZDouble(const char* prefix, double* a){
-	int i;
-	char option[PETSC_MAX_PATH_LEN];
-	const char x[3] = {'x', 'y', 'z'};
-	for(i=0; i<3; i++){
-		sprintf(option, "%s%c", prefix, x[i]);
-
-		PetscOptionsGetReal(PETSC_NULL,option, &a[i], NULL);
-	}
-
-}
-
 int main(int argc, char** argv){ 
 	SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC_NULL); 
 
@@ -64,29 +38,44 @@ int main(int argc, char** argv){
 
 	// ======== copied directly from ReadGeometry ======== //
 
-	int N[3], M[3], Npml[3], Nc, LowerPML, i;
-	double h[3];
+	int N[3], M[3], Npml[3], Nc, LowerPML, i, bl[3] = {0}, 
+		BCPeriod=0, nev=0, Nm = 0, printnewton = 0;
+	double h[3], wreal = 0., wimag=0., modenorm=1., wa, y,
+		k[3] = {0}, dD = 0.0, thresholdw_tol=0., ftol = 0.0;
 
-	OptionsXYZInt("-N", N);
-	OptionsXYZInt("-M", M);
+	char option[PETSC_MAX_PATH_LEN];
+	const char x[3] = {'x', 'y', 'z'};
+	for(i=0; i<3; i++){
 
-	OptionsXYZInt("-Npml", Npml);
-	OptionsXYZDouble("-h", h);
+		sprintf(option, "%s%c", "-N", x[i]);
+		PetscOptionsGetInt(PETSC_NULL,option, &N[i], NULL);
+		sprintf(option, "%s%c", "-M", x[i]);
+		PetscOptionsGetInt(PETSC_NULL,option, &M[i], NULL);
+		sprintf(option, "%s%c", "-Npml", x[i]);
+		PetscOptionsGetInt(PETSC_NULL,option, &Npml[i], NULL);
+
+		sprintf(option, "%s%c", "-h", x[i]);
+		PetscOptionsGetReal(PETSC_NULL,option, &h[i], NULL);
+
+		if(Dmax == 0.0){
+			sprintf(option, "%s%c", "-b", x[i]);
+			PetscOptionsGetInt(PETSC_NULL,option, &bl[i], NULL);
+
+			sprintf(option, "%s%c", "-k", x[i]);
+			PetscOptionsGetReal(PETSC_NULL,option, &k[i], NULL);
+		}
+	}
+
+
 
 	PetscOptionsGetInt(PETSC_NULL,"-Nc", &Nc,NULL);
 	PetscOptionsGetInt(PETSC_NULL,"-LowerPML", &LowerPML,NULL);
-
-	double wa, y;
-
 	PetscOptionsGetReal(PETSC_NULL,"-wa", &wa,NULL); 
 	PetscOptionsGetReal(PETSC_NULL,"-gamma", &y,NULL); 
 
 
 	// ======== copied directly from ReadGeometry ======== //
 
-	double wreal = 0., wimag=0., modenorm=1., 
-		k[3] = {0}, dD = 0.0, thresholdw_tol=0., ftol = 0.0;
-	int bl[3] = {0}, BCPeriod=0, nev=0, Nm = 0, printnewton = 0;
 	char modeout[PETSC_MAX_PATH_LEN] = "", **namesin = NULL, **namesout = NULL;
 
 	if(Dmax == 0.0){ // Passive
@@ -97,10 +86,6 @@ int main(int argc, char** argv){
 	
 		PetscOptionsGetInt(PETSC_NULL,"-nev", &nev,NULL);
 		PetscOptionsGetInt(PETSC_NULL,"-BCPeriod", &BCPeriod,NULL);
-
-
-		OptionsXYZInt("-b", bl);
-		OptionsXYZDouble("-k", k);
 	
 		PetscOptionsGetString(PETSC_NULL,"-passiveout", modeout, PETSC_MAX_PATH_LEN, NULL); 
 
