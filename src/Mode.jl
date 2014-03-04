@@ -24,13 +24,15 @@ type Mode
 	N::Array{Int64,1}
 	Nc::Int64
 	h::Array{Cdouble,1}
+	pump::Cdouble
 	function Mode(m::Mode_, g::Geometry)
 		md = new(
 			m,
 			ccall( (:GetVpsi, saltlib), PetscVec_, (Mode_,), m),
 			GetN(g),
 			GetNc(g),
-			GetCellh(g)
+			GetCellh(g),
+			GetPump(g)
 		);
 		finalizer(md, DestroyMode)
 		return md

@@ -134,7 +134,7 @@ Mode *Passive(int *added, int BCPeriod, int *bl, double *k, double wreal, double
 	DestroyVec(&v);	DestroyVec(&vi);
 
 	gettimeofday(&t3, NULL);
-
+	geo->D = 0.0; // to make sure pump strength for passive modes correct in Julia
 	return msp;
 
 //	PetscPrintf(PETSC_COMM_WORLD, "Formation and setup: %g s\nEPSSolve and Output: %g s\n", dt(t1, t2), dt(t2, t3) );

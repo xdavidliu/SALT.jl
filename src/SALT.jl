@@ -49,16 +49,30 @@ function Passive(boundary_condition, ωguess, geo::Geometry;
 	end
 end
 
-function Creeper(dD::Cdouble, Dinit::Cdouble, Dmax::Cdouble, ms::Array{Mode, 1}, 
+function Creeper(Dmax::Cdouble, ms::Array{Mode, 1}, 
 	geo::Geometry; thresholdw_tol::Cdouble=1.0e-7, ftol::Cdouble=1.0e-7, 
-	printNewton::Bool=true)
+	printNewton::Bool=true, dD::Cdouble=0.0, steps::Int64=20)
+
+	for i=1:length(ms)
+		if ms[i].pump != ms[1].pump
+			throw(ArgumentError("all modes must be at same pump strength"));
+			return 0;
+		end
+	end
+
+	if( Dmax <= ms[1].pump)
+		throw(ArgumentError("Dmax must be higher than the Dinitial!"));
+	end
+
+	ccall( ("SetPump", saltlib), Void,
+		(Geometry_, Cdouble), geo.geo, ms[1].pump); 
+
+	if dD == 0.0
+		dD = (Dmax - ms[1].pump) / steps;
+	end
+
 
 	Nm = size(ms, 1);
-	
-	ccall( ("SetPump", saltlib), Void,
-		(Geometry_, Cdouble), geo.geo, Dinit); 
-
-
 	msC = Array(Mode_, Nm );
 	for i=1:Nm
 		msC[i] = ccall( ("CopyMode", saltlib), Mode_, (Mode_,), ms[i].m ); 

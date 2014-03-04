@@ -73,6 +73,10 @@ function GetCellh(geo::Geometry)
 	h;
 end
 
+function GetPump(geo::Geometry)
+	ccall( (:GetD, saltlib), Cdouble, (Geometry_,), geo.geo)
+end
+
 function show(io::IO, g::Geometry)
     print(io, "SALT Geometry: ", g.geo, "\n")
 	
