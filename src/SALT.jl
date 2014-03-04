@@ -19,13 +19,19 @@ include("plotSalt.jl");
 
 ##################################################################
 
-function Passive(BCPeriod::Int64, bl::Array{Int64,1}, wreal::Cdouble, wimag::Cdouble, 
-	geo::Geometry; nev::Integer=1, modenorm::Cdouble=0.1, k::Array{Cdouble,1} = [0.0, 0.0, 0.0])
+function Passive(boundary_condition, ωguess, geo::Geometry; 
+	nev::Integer=1, modenorm::Cdouble=0.1, k::Array{Cdouble,1} = [0.0, 0.0, 0.0])
 
+    bl = Cint[boundary_condition...]
+    while length(bl) < 3
+        push!(bl, bl[end])
+    end
+
+	N = GetN(geo);
 	Nadded = [0];
 	ms = ccall( ("Passive", saltlib), Ptr{Void}, (Ptr{Cint}, Cint, Ptr{Cint}, 
 		Ptr{Cdouble}, Cdouble, Cdouble, Cdouble, Cint, Geometry), 
-		Nadded, int32(BCPeriod), int32(bl), k, wreal, wimag, modenorm, nev, geo );
+		Nadded, int32( BCPeriod(N, k) ), int32(bl), k, real(ωguess), imag(ωguess), modenorm, nev, geo );
 	Nadded = Nadded[1];
 
 	ma = Array(Mode, Nadded);
@@ -36,7 +42,7 @@ function Passive(BCPeriod::Int64, bl::Array{Int64,1}, wreal::Cdouble, wimag::Cdo
 		);
 	end
 
-	if nev==1
+	if Nadded==1
 		return ma[1];
 	else
 		return ma;

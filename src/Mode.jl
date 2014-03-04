@@ -2,6 +2,22 @@ immutable Mode_s; end
 typealias Mode_ Ptr{Mode_s}
 DestroyMode(m::Mode_) = ccall((:DestroyMode, saltlib), Void, (Mode_,), m )
 
+function BCPeriod(N::Array{Int64,1}, k::Array{Cdouble,1})
+
+	if( maximum( abs( k)) == 0.0)
+		if( N[2] == 1 && N[3] == 1)
+			return -1
+		elseif( N[3] == 1)
+			return 3
+		else
+			return 0
+		end
+	else
+		throw(ArgumentError("automatic BCPeriod for nonzero k not implemented yet"));
+		return 0;
+	end
+end
+
 type Mode
 	m::Mode_
 	psi::PetscVec_

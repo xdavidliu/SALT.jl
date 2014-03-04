@@ -5,7 +5,6 @@ eps = [2.25*onevec, onevec];
 fprof = [onevec, 0*onevec];
 Npml = [20, 0, 0];
 LowerPML = false;
-BCPeriod = -1; nev = 1;
 printnewton = 1;
 h = 0.5/Nhalf;
 wa = 15.0;
@@ -16,5 +15,5 @@ ftol = 1.0e-7;
 thresholdw_tol = 1.0e-7;
 modeout = "pass14";  
 bl = [1, -1, 1];
-wreal = 14.7
-wimag = -1.07; 
+wreal = 14.7;
+wimag = -1.07;

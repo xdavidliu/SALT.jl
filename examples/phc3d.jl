@@ -1,13 +1,12 @@
 N = [25, 20, 7];
 Nc = 3;
-eps = readdlm("eps3d.txt") # todo: add air pixels
+eps = readdlm( Pkg.dir("SALT", "examples", "eps3d.txt") ) # todo: add air pixels
 eps = reshape(eps, N[1], N[2], N[3]);
-fprof = readdlm("fprof3d.txt")
+fprof = readdlm( Pkg.dir("SALT", "examples", "fprof3d.txt") )
 fprof = reshape(fprof, N[1], N[2], N[3]);
 
 Npml = [0, 0, 2];
-LowerPML = 0;
-BCPeriod = 0; nev = 1;
+LowerPML = false;
 bl = [1, -1, 1];
 wreal = 1.725; wimag = 0.0;
 printnewton = 1;
