@@ -126,7 +126,6 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 	for(ih=0; ih<Nm; ih++){
 		Setup( ms[ih], geo); // TODO: bundle if multiple lasing modes
 	}
-
     Vec f, dv;
     MatGetVecs( ms[0]->J, &dv, &f);
 
@@ -134,7 +133,6 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 		Mode *msh=NULL;
 	  	int Nlasing = CreateFilter(ms, Nm, 1, &msh); // lasing sub-array
 
-	  
 	  Vec vNh = ms[0]->vpsi, fNh = f, dvNh = dv;
 
 	  if( Nlasing > 0){ // lasing modes

@@ -287,6 +287,7 @@ Mode CopyMode(Mode mold){
 	MatDuplicate(mold->J, MAT_COPY_VALUES, &m->J);
 	KSPCreate(PETSC_COMM_WORLD,&m->ksp);
 
+	sprintf(m->name, "%s", mold->name);
 	m->lasing = mold->lasing;
 	m->ifix = mold->ifix;
 	m->BCPeriod = mold->BCPeriod;
@@ -295,5 +296,8 @@ Mode CopyMode(Mode mold){
 	for(i=0; i<3; i++) m->k[i] = mold->k[i];
 
 	return m;	
+}
 
+void SetName(Mode m, char *name){
+	sprintf(m->name, "%s", name);
 }
