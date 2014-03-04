@@ -156,7 +156,15 @@ function setindex!(x::PetscVec_, vals, ind)
 	);  # 1 is INSERT_VALUES
 end
 
+import Base.endof  # for some reason you don't have to do this for getindex and setindex
 
+function endof(x::PetscVec_)
+
+	N = [0];
+	ccall( (:VecGetSize, saltlib), Cint,
+		(PetscVec_, Ptr{Cint} ), x, N );
+	N[1]
+end
 
 import Base.show
 
@@ -200,8 +208,6 @@ end
 ###########################################################################
 
 
-
-
-include("plotSalt.jl")
+include( "plotSalt.jl"  )
 
 end
