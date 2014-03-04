@@ -14,7 +14,7 @@ Mode CreateMode(Geometry geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[
 	for(i=0; i<3; i++) m->k[i] = k_[i];
 
 	return m;
-}
+} // make sure to change CopyMode too if this gets changed
 
 Mode ModeRead(const char *Name, Geometry geo, double *Dout){
 // TODO free after every ModeRead
@@ -272,7 +272,28 @@ void addArrayMode(Mode **ma, int old_size, Mode m){
 	(*ma)[old_size] = m;
 }
 
-// =============== Julia accessor functions ===========
+// =============== Julia functions ===========
 
 Mode GetMode(Mode *ms, int n){ return ms[n] ; }
 Vec GetVpsi(Mode m){ return m->vpsi;}
+
+Mode CopyMode(Mode mold){
+
+	Mode m = (Mode) malloc(sizeof(struct Mode_s) );
+	VecDuplicate(mold->vpsi, &m->vpsi);
+	VecCopy(mold->vpsi, m->vpsi);
+	
+	AssembleMat(mold->J);
+	MatDuplicate(mold->J, MAT_COPY_VALUES, &m->J);
+	KSPCreate(PETSC_COMM_WORLD,&m->ksp);
+
+	m->lasing = mold->lasing;
+	m->ifix = mold->ifix;
+	m->BCPeriod = mold->BCPeriod;
+	int i, j;
+	for(i=0; i<3; i++) for(j=0; j<2; j++) m->b[i][j] = mold->b[i][j];
+	for(i=0; i<3; i++) m->k[i] = mold->k[i];
+
+	return m;	
+
+}

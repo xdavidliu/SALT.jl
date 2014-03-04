@@ -40,7 +40,10 @@ type Mode
 	m::Mode_
 	psi::PetscVec_
 	function Mode(m::Mode_)
-		md = new(m)
+		md = new(
+			m,
+			ccall( (:GetVpsi, saltlib), PetscVec_, (Mode_,), m)
+		);
 		finalizer(md, DestroyMode)
 		return md
 	end
@@ -91,8 +94,7 @@ function Passive(BCPeriod::Int64, bl::Array{Int64,1}, wreal::Cdouble, wimag::Cdo
 
 	ma = Array(Mode, Nadded);
 	for i=1:Nadded
-		ma[i] = Mode( ccall( ("GetMode", saltlib), Mode_, (Ptr{Void}, Cint), ms, i-1) );
-		ma[i].psi = ccall( (:GetVpsi, saltlib), PetscVec_, (Mode_,), ma[i].m);
+		ma[i] = Mode( ccall( ("GetMode", saltlib), Mode_, (Ptr{Void}, Cint), ms, i-1), );
 	end
 
 	if nev==1
@@ -106,20 +108,28 @@ function Creeper(dD::Cdouble, Dinit::Cdouble, Dmax::Cdouble, ms::Array{Mode, 1},
 	geo::Geometry; thresholdw_tol::Cdouble=1.0e-7, ftol::Cdouble=1.0e-7, 
 	printNewton::Bool=true)
 
+	Nm = size(ms, 1);
 	
 	ccall( ("SetPump", saltlib), Void,
 		(Geometry_, Cdouble), geo.geo, Dinit); 
 
 
-	msC = Array(Mode_, size(ms) );
-	for i=1:size(ms,1)
-		msC[i] = ms[i].m;
+	msC = Array(Mode_, Nm );
+	for i=1:Nm
+		msC[i] = ccall( ("CopyMode", saltlib), Mode_, (Mode_,), ms[i].m ); 
 	end
 
 	ccall( ("Creeper", saltlib), Void, 
 		(Cdouble, Cdouble, Cdouble, Cdouble, Ptr{Mode_}, Cint, Cint, Geometry_),
 		dD, Dmax, thresholdw_tol, ftol, msC, int32(printNewton), int32(size(ms,1)), geo.geo  
 	);
+
+	msout = Array(Mode, Nm);
+	for i=1:Nm
+		msout[i] = Mode( msC[i] );
+	end
+		
+	msout;
 end
 
 
