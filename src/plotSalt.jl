@@ -1,17 +1,5 @@
 using PyPlot
 
-function meshgrid{T}(vx::AbstractVector{T}, vy::AbstractVector{T},
-                     vz::AbstractVector{T})
-    m, n, o = length(vy), length(vx), length(vz)
-    vx = reshape(vx, 1, n, 1)
-    vy = reshape(vy, m, 1, 1)
-    vz = reshape(vz, 1, 1, o)
-    om = ones(Int, m)
-    on = ones(Int, n)
-    oo = ones(Int, o)
-    (vx[om, :, oo], vy[:, on, oo], vz[om, on, :])
-end  # from Julia/examples
-
 
 function quadrants( A, bx, by, centerstrip, hx, hy )
 
@@ -27,17 +15,11 @@ function quadrants( A, bx, by, centerstrip, hx, hy )
     Lx = (Nx-1)*hx;
     Ly = (Ny-1)*hy;
     x = linspace(-Lx/2, Lx/2, Nx);
-    y = linspace(-Ly/2, Ly/2, Ny);
-    X, Y, nothing = meshgrid(x, y, [0.0]); 
-		# julia  base has no meshgrid, so I needed to copy the above implementation from examples
-		# also, meshgrid here is 3d while matlab's is 2d, so I have to 
-		# provide a 3rd dummy argument and return value
+    y = linspace(-Ly/2, Ly/2, Ny)';
 
-	X = X[:, :, 1];
-	Y = Y[:, :, 1]; # change back into two-dimensional array
-
-
-
+	X = ( ones(length(y))' .* x )'; # meshgrid using broadcasting
+	Y = ( y .* ones(length(x)) )';
+	
 	return A, X, Y;
 end
 
