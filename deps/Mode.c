@@ -290,5 +290,17 @@ void addArrayMode(Mode **ma, int old_size, Mode m){
 	(*ma)[old_size] = m;
 }
 
+// =============== Julia accessor functions ===========
+
 Mode GetMode(Mode *ms, int n){ return ms[n] ; }
+double GetPsiVal(Mode m, int i){
+	return GetValue(m->vpsi,i);
+}
+
+void SetPsiVal(Mode m, int i, double val){
+	Vecfun psi;
+	CreateVecfun(&psi, m->vpsi);
+	setr(&psi, i, val);
+	DestroyVecfun(&psi);
+}
 

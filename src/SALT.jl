@@ -15,15 +15,8 @@ ccall((:SlepcInitialize, slepc), Cint,
 
 immutable Geometry_s; end
 typealias Geometry_ Ptr{Geometry_s}
-
-immutable Mode_s; end
-typealias Mode_ Ptr{Mode_s}
-
-
 DestroyGeometry(geo::Geometry_) = ccall((:DestroyGeometry, saltlib), Void,
                                         (Geometry_,), geo)
-
-DestroyMode(m::Mode_) = ccall((:DestroyMode, saltlib), Void, (Mode_,), m )
 
 type Geometry
     geo::Geometry_
@@ -34,6 +27,9 @@ type Geometry
     end
 end
 
+immutable Mode_s; end
+typealias Mode_ Ptr{Mode_s}
+DestroyMode(m::Mode_) = ccall((:DestroyMode, saltlib), Void, (Mode_,), m )
 
 type Mode
 	m::Mode_
@@ -80,7 +76,7 @@ function Passive(BCPeriod::Int64, bl::Array{Int64,1}, wreal::Cdouble, wimag::Cdo
 
 	Nadded = [0];
 	ms = ccall( ("Passive", saltlib), Ptr{Void}, (Ptr{Cint}, Cint, Ptr{Cint}, 
-		Ptr{Cdouble}, Cdouble, Cdouble, Cdouble, Cint, SALT.Geometry), 
+		Ptr{Cdouble}, Cdouble, Cdouble, Cdouble, Cint, Geometry), 
 		Nadded, int32(BCPeriod), int32(bl), k, wreal, wimag, modenorm, nev, geo );
 	Nadded = Nadded[1];
 
@@ -116,16 +112,24 @@ function Creeper(dD::Cdouble, Dinit::Cdouble, Dmax::Cdouble, ms::Array{Mode, 1},
 	);
 end
 
-
-
-
-function GetPsi(m::SALT.Mode)
+function GetPsi(m::Mode)
     
     N = ccall( (:PsiSize, saltlib), Cint, (Mode_,), m.m );
     v = zeros(N);
     ccall( (:CopyPsi, saltlib), Void, (Mode_, Ptr{Cdouble}), m.m, v);
     v;
 end
+
+function getindex(m::Mode, i::Integer)
+	ccall( (:GetPsiVal, saltlib), Cdouble, (Mode_, Cint), m.m, i-1);
+end
+
+function setindex!(m::Mode, val::Cdouble, i::Integer)
+	ccall( (:SetPsiVal, saltlib), Void, (Mode_, Cint, Cdouble), m.m, i-1, val);
+
+end
+
+
 
 import Base.show
 
