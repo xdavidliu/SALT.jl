@@ -70,11 +70,27 @@ end
 
 function show(io::IO, g::Geometry)
     print(io, "SALT Geometry: ", g.geo, "\n")
+	
+	Nc = ccall( (:GetNc, saltlib), Cint, (Geometry_,), g.geo);
+	print(io, Nc, " electric field components\n");
 
 	N = GetN(g);
 	print(io, N[1], " x ", N[2], " x ", N[3], " pixels in cell\n");
-	N = GetNpml(g);
-	print(io, N[1], " x ", N[2], " x ", N[3], " pixel PML thickness\n");
+	Npml = GetNpml(g);
+	print(io, Npml[1], " x ", Npml[2], " x ", Npml[3], " pixel PML thickness\n");
 	h = GetCellh(g);
-	print(io, h[1], " x ", h[2], " x ", h[3], " cell\n");	
+	print(io, h[1], " x ", h[2], " x ", h[3], " cell\n");
+	
+	if( N[2]==1 && N[3] == 1 && Nc == 1)
+		subplot(211)
+		plot(linspace(0, N[1]*h[1], N[1]), g.eps[1:N[1]]);
+		title("Dielectric of passive medium");
+		ylabel("\$\\epsilon(x)\$"); # cannot get L"$\epsilon" to work here
+
+		subplot(212)
+		plot(linspace(0, N[1]*h[1], N[1]), g.fprof[1:N[1]]);
+		title("gain profile");
+		xlabel("x");
+		ylabel("\$f(x)\$");
+	end 
 end
