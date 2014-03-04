@@ -120,8 +120,18 @@ function GetPsi(m::Mode)
     v;
 end
 
-function getindex(m::Mode, i::Integer)
-	ccall( (:GetPsiVal, saltlib), Cdouble, (Mode_, Cint), m.m, i-1);
+function getindex(m::Mode, ind)
+
+	if typeof(ind) <: Integer || typeof(ind) <: Range1
+		ind = [ind]
+	end
+
+	vals = zeros( length(ind) );
+	ccall( (:GetPsiVal, saltlib), Void, 
+		(Mode_, Cint, Ptr{Cint}, Ptr{Cdouble}), 
+		m.m, length(ind), int32(ind-1), vals
+	);
+	vals;
 end
 
 function setindex!(m::Mode, val::Cdouble, i::Integer)
