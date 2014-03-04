@@ -15,7 +15,7 @@ import Base.show
 include("PetscVec.jl");
 include("Geometry.jl");
 include("Mode.jl");
-include( "plotSalt.jl");
+include("plotSalt.jl");
 
 ##################################################################
 
@@ -30,7 +30,10 @@ function Passive(BCPeriod::Int64, bl::Array{Int64,1}, wreal::Cdouble, wimag::Cdo
 
 	ma = Array(Mode, Nadded);
 	for i=1:Nadded
-		ma[i] = Mode( ccall( ("GetMode", saltlib), Mode_, (Ptr{Void}, Cint), ms, i-1), );
+		ma[i] = Mode( 
+			ccall( ("GetMode", saltlib), Mode_, (Ptr{Void}, Cint), ms, i-1), 
+			geo
+		);
 	end
 
 	if nev==1
@@ -62,7 +65,7 @@ function Creeper(dD::Cdouble, Dinit::Cdouble, Dmax::Cdouble, ms::Array{Mode, 1},
 
 	msout = Array(Mode, Nm);
 	for i=1:Nm
-		msout[i] = Mode( msC[i] );
+		msout[i] = Mode( msC[i], geo );
 	end
 		
 	msout;

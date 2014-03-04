@@ -52,6 +52,11 @@ function GetN(geo::Geometry)
 	N;
 end
 
+function GetNc(geo::Geometry)
+	ccall( (:GetNc, saltlib), Cint, (Geometry_,), geo.geo);
+end
+
+
 function GetNpml(geo::Geometry)
 	N = [0, 0, 0];
 	for i=1:3
@@ -71,8 +76,7 @@ end
 function show(io::IO, g::Geometry)
     print(io, "SALT Geometry: ", g.geo, "\n")
 	
-	Nc = ccall( (:GetNc, saltlib), Cint, (Geometry_,), g.geo);
-	print(io, Nc, " electric field components\n");
+	Nc = GetNc(g);
 
 	N = GetN(g);
 	print(io, N[1], " x ", N[2], " x ", N[3], " pixels in cell\n");

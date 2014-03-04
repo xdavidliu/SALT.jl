@@ -12,7 +12,12 @@ function getindex(x::PetscVec_, ind)
 		(PetscVec_, Cint, Ptr{Cint}, Ptr{Cdouble}), 
 		x, length(ind), int32(ind-1), vals
 	);
-	vals;
+	
+	if( length(vals) == 1)
+		return vals[1];
+	else
+		return vals;
+	end
 end
 
 function setindex!(x::PetscVec_, vals, ind)
