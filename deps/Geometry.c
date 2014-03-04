@@ -204,3 +204,6 @@ void SetJacobian(Geometry geo, Mat J, Vec v, int jc, int jr, int jh){
 int GetN(Geometry geo, int i){ return geo->gN.N[i]; }
 int GetNpml(Geometry geo, int i){ return geo->Npml[i]; }
 double GetCellh(Geometry geo, int i){ return geo->h[i]; }
+
+Vec GetVeps(Geometry geo){ return geo->veps;}
+Vec GetVfprof(Geometry geo){ return geo->vf;}

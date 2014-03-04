@@ -94,24 +94,6 @@ void DestroyMode(Mode m){
 	}
 }
 
-void CopyPsi(Mode m, double *psiout){
-	int ns, ne;
-	VecGetOwnershipRange(m->vpsi, &ns, &ne);
-
-	double *psi;
-	VecGetArray(m->vpsi, &psi);
-	int i;
-	for(i=ns; i<ne; i++)
-		psiout[i-ns] = psi[i-ns];
-
-	VecRestoreArray(m->vpsi, &psi);
-}
-
-int PsiSize(Mode m){
-	int N;
-	VecGetSize(m->vpsi, &N);
-	return N;
-}
 
 void Fix(Mode m, Geometry geo, double norm){
 	int N;
@@ -293,16 +275,4 @@ void addArrayMode(Mode **ma, int old_size, Mode m){
 // =============== Julia accessor functions ===========
 
 Mode GetMode(Mode *ms, int n){ return ms[n] ; }
-
-void GetPsiVal(Mode m, int N, int *ind, double *vals){
-
-	VecGetValues(m->vpsi, N, ind, vals);
-
-}
-
-void SetPsiVal(Mode m, int N, int *ind, double *vals){
-
-	VecSetValues(m->vpsi, N, ind, vals, INSERT_VALUES);
-	AssembleVec(m->vpsi);
-}
-
+Vec GetVpsi(Mode m){ return m->vpsi;}

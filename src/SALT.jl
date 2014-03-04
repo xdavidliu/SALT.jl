@@ -18,8 +18,13 @@ typealias Geometry_ Ptr{Geometry_s}
 DestroyGeometry(geo::Geometry_) = ccall((:DestroyGeometry, saltlib), Void,
                                         (Geometry_,), geo)
 
+immutable PetscVec_s; end
+typealias PetscVec_ Ptr{PetscVec_s}
+
 type Geometry
     geo::Geometry_
+	eps::PetscVec_
+	fprof::PetscVec_
     function Geometry(geo::Geometry_)
         g = new(geo)
         finalizer(g, DestroyGeometry)
@@ -33,6 +38,7 @@ DestroyMode(m::Mode_) = ccall((:DestroyMode, saltlib), Void, (Mode_,), m )
 
 type Mode
 	m::Mode_
+	psi::PetscVec_
 	function Mode(m::Mode_)
 		md = new(m)
 		finalizer(md, DestroyMode)
@@ -63,10 +69,13 @@ function Geometry(ε::Array{Cdouble}, h_, nPML_,
         push!(nPML, nPML[end])
     end
 
-    Geometry(ccall(("CreateGeometry",saltlib), Geometry_,
-                   (Ptr{Cint}, Ptr{Cdouble}, Ptr{Cint},
-                    Cint, Cint, Ptr{Cdouble}, Ptr{Cdouble}, Cdouble, Cdouble),
-                   N, h, nPML, nc, lowerPML, ε, gain_prof, ω_gain, γ_gain))
+    g = Geometry(ccall( ("CreateGeometry",saltlib), Geometry_,
+            (Ptr{Cint}, Ptr{Cdouble}, Ptr{Cint},
+            Cint, Cint, Ptr{Cdouble}, Ptr{Cdouble}, Cdouble, Cdouble),
+            N, h, nPML, nc, lowerPML, ε, gain_prof, ω_gain, γ_gain))
+	g.eps = ccall( (:GetVeps, saltlib), PetscVec_, (Geometry_,), g.geo);
+	g.fprof = ccall( (:GetVfprof, saltlib), PetscVec_, (Geometry_,), g.geo);
+	return g
 end
 
 ##################################################################
@@ -83,6 +92,7 @@ function Passive(BCPeriod::Int64, bl::Array{Int64,1}, wreal::Cdouble, wimag::Cdo
 	ma = Array(Mode, Nadded);
 	for i=1:Nadded
 		ma[i] = Mode( ccall( ("GetMode", saltlib), Mode_, (Ptr{Void}, Cint), ms, i-1) );
+		ma[i].psi = ccall( (:GetVpsi, saltlib), PetscVec_, (Mode_,), ma[i].m);
 	end
 
 	if nev==1
@@ -112,29 +122,22 @@ function Creeper(dD::Cdouble, Dinit::Cdouble, Dmax::Cdouble, ms::Array{Mode, 1},
 	);
 end
 
-function GetPsi(m::Mode)
-    
-    N = ccall( (:PsiSize, saltlib), Cint, (Mode_,), m.m );
-    v = zeros(N);
-    ccall( (:CopyPsi, saltlib), Void, (Mode_, Ptr{Cdouble}), m.m, v);
-    v;
-end
 
-function getindex(m::Mode, ind)
+function getindex(x::PetscVec_, ind)
 
 	if typeof(ind) <: Integer || typeof(ind) <: Range1
 		ind = [ind]
 	end
 
 	vals = zeros( length(ind) );
-	ccall( (:GetPsiVal, saltlib), Void, 
-		(Mode_, Cint, Ptr{Cint}, Ptr{Cdouble}), 
-		m.m, length(ind), int32(ind-1), vals
+	ccall( (:VecGetValues, saltlib), Cint, 
+		(PetscVec_, Cint, Ptr{Cint}, Ptr{Cdouble}), 
+		x, length(ind), int32(ind-1), vals
 	);
 	vals;
 end
 
-function setindex!(m::Mode, vals, ind)
+function setindex!(x::PetscVec_, vals, ind)
 
 	length(vals) != length(ind) && throw(ArgumentError("vals and ind must have same length"))
 
@@ -145,13 +148,12 @@ function setindex!(m::Mode, vals, ind)
 	if typeof(vals) <: Cdouble
 		vals = [vals]
 	end
-	
 
-	ccall( (:SetPsiVal, saltlib), Void, 
-		(Mode_, Cint, Ptr{Cint}, Ptr{Cdouble} ), 
-		m.m, length(ind), int32(ind-1), vals
-	);
 
+	ccall( (:VecSetValues, saltlib), Cint, 
+		(PetscVec_, Cint, Ptr{Cint}, Ptr{Cdouble}, Cint),
+		x, length(ind), int32(ind-1), vals, 1
+	);  # 1 is INSERT_VALUES
 end
 
 
