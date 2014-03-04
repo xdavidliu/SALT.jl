@@ -1,6 +1,6 @@
 module SALT
 
-export Salt, Passive, Creeper
+export Passive, Creeper
 
 #=========== libraries ============ #
 const saltlib = Pkg.dir("SALT", "deps", "saltlib");

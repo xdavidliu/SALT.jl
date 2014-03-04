@@ -14,16 +14,16 @@ type Geometry
     end
 end
 
-function Geometry(ε::Array{Cdouble}, h_, nPML_,
-                  gain_prof::Array{Cdouble}, ω_gain::Real, γ_gain::Real; # keyword arguments next
-                  nc::Integer=3, lowerPML::Bool=true)
+function Geometry(ε::Array{Cdouble}, grid_spacing, nPML_,
+                  gain_prof::Array{Cdouble}, ω_gain::Real, γ_gain::Real;
+                  n_vectorcomp::Integer=3, lowerPML::Bool=true)
     ndims(ε) > 3 && throw(ArgumentError("ε array must be <= 3-dimensional"))
     size(ε) != size(gain_prof) && throw(ArgumentError("gain profile must be same size as ε array"))
     N = Cint[size(ε)...]
     while length(N) < 3
         push!(N, 1)
     end
-    h = Cdouble[h_...]
+    h = Cdouble[grid_spacing...]
     length(h) > 3 && throw(ArgumentError("h must have length <= 3"))
     while length(h) < 3
         push!(h, h[end])
@@ -37,7 +37,7 @@ function Geometry(ε::Array{Cdouble}, h_, nPML_,
     g = Geometry(ccall( ("CreateGeometry",saltlib), Geometry_,
             (Ptr{Cint}, Ptr{Cdouble}, Ptr{Cint},
             Cint, Cint, Ptr{Cdouble}, Ptr{Cdouble}, Cdouble, Cdouble),
-            N, h, nPML, nc, lowerPML, ε, gain_prof, ω_gain, γ_gain))
+            N, h, nPML, n_vectorcomp, lowerPML, ε, gain_prof, ω_gain, γ_gain))
 	g.eps = ccall( (:GetVeps, saltlib), PetscVec_, (Geometry_,), g.geo);
 	g.fprof = ccall( (:GetVfprof, saltlib), PetscVec_, (Geometry_,), g.geo);
 	return g
