@@ -134,8 +134,23 @@ function getindex(m::Mode, ind)
 	vals;
 end
 
-function setindex!(m::Mode, val::Cdouble, i::Integer)
-	ccall( (:SetPsiVal, saltlib), Void, (Mode_, Cint, Cdouble), m.m, i-1, val);
+function setindex!(m::Mode, vals, ind)
+
+	length(vals) != length(ind) && throw(ArgumentError("vals and ind must have same length"))
+
+	if typeof(ind) <: Integer || typeof(ind) <: Range1{Int64}
+		ind = [ind]
+	end
+
+	if typeof(vals) <: Cdouble
+		vals = [vals]
+	end
+	
+
+	ccall( (:SetPsiVal, saltlib), Void, 
+		(Mode_, Cint, Ptr{Cint}, Ptr{Cdouble} ), 
+		m.m, length(ind), int32(ind-1), vals
+	);
 
 end
 

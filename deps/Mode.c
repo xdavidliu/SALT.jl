@@ -300,10 +300,9 @@ void GetPsiVal(Mode m, int N, int *ind, double *vals){
 
 }
 
-void SetPsiVal(Mode m, int i, double val){
-	Vecfun psi;
-	CreateVecfun(&psi, m->vpsi);
-	setr(&psi, i, val);
-	DestroyVecfun(&psi);
+void SetPsiVal(Mode m, int N, int *ind, double *vals){
+
+	VecSetValues(m->vpsi, N, ind, vals, INSERT_VALUES);
+	AssembleVec(m->vpsi);
 }
 
