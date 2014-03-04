@@ -5,6 +5,8 @@ fprof = readdlm("fprof3d.txt")
 Npml = [0, 0, 2];
 LowerPML = 0;
 BCPeriod = 0; nev = 1;
+bl = [1, -1, 1];
+wreal = 1.725; wimag = 0.0;
 printnewton = 1;
 h = [0.166666666666667, 0.173205080756888, .2];
 wa = 1.7;
