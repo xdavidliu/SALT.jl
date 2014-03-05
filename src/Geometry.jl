@@ -97,34 +97,42 @@ function show(io::IO, g::Geometry)
 	eps = g.eps[1:N[1]*N[2]*N[3]]; # real part only
 	fprof = g.fprof[1:N[1]*N[2]*N[3]];
 
+	LowerPML = false; ## todo: getLowerPML
 	subplot(221)
 
-	# cannot get L"$\epsilon" to work here
+	# cannot get L"$\varepsilon" to work here
 	if( N[2]==1 && N[3] == 1)
-		plot(x, eps);
+		xp = LowerPML? x : [-flipud(x), x[2:end] ];
+		eps = LowerPML? eps : [flipud(eps), eps[2:end] ];
+
+		plot(xp, eps);
 		xlabel("x");
 		ylabel("\$\\epsilon\$");
-	elseif( N[2]>1 && N[3]>1 )
-		X = ( ones(length(y))' .* x )'; # meshgrid using broadcasting
-		Y = ( y .* ones(length(x)) )';
+	elseif( N[2]>1 && N[3]>1 && !LowerPML )
 		eps = reshape(eps, N[3], N[2], N[1]);
+		eps = squeeze( eps[1,:,:], 1);
+		eps, X, Y = quadrants(eps, 1, 1, 0, x[2]-x[1], y[2]-y[1]);
 
-		pcolor(X, Y, squeeze( eps[1, :, :],1 ), cmap="Blues" );
+		pcolor(X, Y, eps, cmap="Blues" );
 		axis("equal"); axis("off");
 		colorbar();
 	end
 	title("Dielectric of passive medium");
 
 	subplot(222)
-	if( N[2]==1 && N[3] == 1)
-		plot(linspace(0, N[1]*h[1], N[1]), fprof);
+	if( N[2]==1 && N[3] == 1 && !LowerPML)
+		xp = LowerPML? x : [-flipud(x), x[2:end] ];
+		fprof = LowerPML? fprof : [flipud(fprof), fprof[2:end] ];
+
+		plot(xp, fprof);
 		xlabel("x");
 		ylabel("\$f(x)\$");	
-	elseif( N[2]>1 && N[3]>1 )
+	elseif( N[2]>1 && N[3]>1 && !LowerPML )
 		fprof = reshape(fprof, N[3], N[2], N[1]);
-		X = ( ones(length(y))' .* x )'; # meshgrid using broadcasting
-		Y = ( y .* ones(length(x)) )';
-		pcolor(X, Y, squeeze( fprof[1, :, :],1 ), cmap="Greens" );
+		fprof = squeeze( fprof[1, :, :],1 );
+		fprof, X, Y = quadrants(fprof, 1, 1, 0, x[2]-x[1], y[2]-y[1]);		
+
+		pcolor(X, Y, fprof, cmap="Greens" );
 		axis("equal"); axis("off");		
 	end
 	title("gain profile");

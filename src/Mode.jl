@@ -55,6 +55,7 @@ function show(io::IO, mode::Mode)
 	h = mode.h;
 	N = mode.N;
 	Nc = mode.Nc;
+	b = Getbc(mode);
 
 	last_element = mode.psi[end];
 	omega = mode.psi[end-1] + im * (last_element > 0? 0 : last_element); 
@@ -63,23 +64,28 @@ function show(io::IO, mode::Mode)
 	x = linspace(0, N[1]*h[1], N[1]);
 	y = linspace(0, N[2]*h[2], N[2])';
 
+	LowerPML = false; ## TODO
 	if( N[2]==1 && N[3] == 1 && Nc == 1)
-		psireal = mode.psi[1:N[1]];
-		psiimag = mode.psi[N[1]+1:end-2];
-		plot(x, psireal, x, psiimag);
+		psi = mode.psi[1:N[1]] + im*mode.psi[N[1]+1:end-2];
+		if !LowerPML
+			x = [-flipud(x), x[2:end]];
+			psi = [b[1]*flipud(psi), psi[2:end]]; 
+		end	
+
+		plot(x, real(psi), x, imag(psi));
 		legend(["real", "imag"]);
 		ylabel("\$\\Psi(x)\$");
 		xlabel("\$x\$");
 	elseif( N[2]>1 && Nc == 3)
 		X = ( ones(length(y))' .* x )'; # meshgrid using broadcasting
 		Y = ( y .* ones(length(x)) )';
-		b = Getbc(mode);
+
 		plotTEslice(mode.psi[1:end-2], N, h, b);
 	end 
 
 	title(
-		string("Mode: \$\\omega\$ = ", real(omega), " + i(", 
-		imag(omega), "), |\$\\Psi\$| = ", magnitude)
+		string("Mode: \$\\omega\$ = ", string(real(omega))[1:7], " + i(", 
+		string(imag(omega))[1:7], "), |\$\\Psi\$| = ", magnitude)
 	);
 
 end
