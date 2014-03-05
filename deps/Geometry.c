@@ -97,9 +97,9 @@ Geometry CreateGeometry(int N[3], double h[3], int Npml[3], int Nc, int LowerPML
 
 	CreateVec(Mxyz(geo), &geo->vMscratch[0]);
 
-	for(i=1; i<SCRATCHNUM; i++){
-		VecDuplicate(geo->vMscratch[0], &geo->vMscratch[i]);
+	for(i=0; i<SCRATCHNUM; i++){
 		geo->vNhscratch[i] = 0; // allows checking whether vN created or not
+		if(i>0)VecDuplicate(geo->vMscratch[0], &geo->vMscratch[i]);
 	}
 
 	{ 	double *scratch;

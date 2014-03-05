@@ -23,9 +23,9 @@ PASSIVE="-wreal 15.7 -wimag -1.07
 -passiveout pass
 -nev 3";
 
-CREEPER="-in0 last16 -in1 last14
--out0 again16 -out1 again14
--dD 0.05 -Dmax 0.7
+CREEPER="-in0 pass16 -in1 pass14
+-out0 last16 -out1 last14
+-dD 0.05 -Dmax 0.5
 -newtonf_tol 1e-7 -thresholdw_tol 1e-7";
 
 SOLVER="-printnewton 1";

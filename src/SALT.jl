@@ -80,10 +80,11 @@ function Creeper(Dmax::Cdouble, ms::Array{Mode, 1},
 		msC[i] = ccall( ("CopyMode", saltlib), Mode_, (Mode_,), ms[i].m ); 
 	end
 
-	ccall( ("Creeper", saltlib), Void, 
+	Nlasing = ccall( ("Creeper", saltlib), Cint, 
 		(Cdouble, Cdouble, Cdouble, Cdouble, Ptr{Mode_}, Cint, Cint, Geometry_),
 		dD, Dmax, thresholdw_tol, ftol, msC, int32(printNewton), int32(size(ms,1)), geo.geo  
 	);
+	print(Nlasing, " new modes lasing after Creeper\n");
 
 	msout = Array(Mode, Nm);
 	for i=1:Nm
