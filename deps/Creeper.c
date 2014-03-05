@@ -8,6 +8,7 @@ int CreateFilter(Mode *ms, int size, int lasing, Mode **msp){
 			added++;
 		}
 
+	if(!added) *msp = NULL; // so thresholdsearch receives correct argument
 	return added;
 }
 
@@ -130,16 +131,11 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
     Vec f, dv;
     MatGetVecs( ms[0]->J, &dv, &f);
 
+	Mode *msh; // lasing mode subarray
 	for(; geo->D <= Dmax; geo->D = (geo->D+dD < Dmax? geo->D+dD: Dmax)){
-		Mode *msh=NULL;
 	  	int Nlasing = CreateFilter(ms, Nm, 1, &msh); // lasing sub-array
-
-	  Vec vNh = ms[0]->vpsi, fNh = f, dvNh = dv;
-
-	  if( Nlasing > 0){ // lasing modes
-	  
-
-	  
+	  	Vec vNh = ms[0]->vpsi, fNh = f, dvNh = dv;
+	 	if( Nlasing > 0){ // lasing modes  
 	  	  int nt = FindModeAtThreshold(msh, Nlasing);
 	  
 		  if( nt != -1 && Nlasing > 1){
@@ -161,45 +157,42 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 		
 		  		FirstStep(msh, msh[nt], geo, vNh, fNh, dvNh, 1.0, ftol, printnewton);
 		  }
-		  
-		  
 		  NewtonSolve(msh, geo,  vNh, fNh, dvNh, ftol, printnewton);  
-
-		  
 	  }
 
 	  for(ih=0; ih<Nm; ih++){ // now nonlasing modes
 		Mode m = ms[ih];
 		if(m->lasing) continue;
-
 		double wi_old = cimag(get_w(m));
-
 		NewtonSolve(&m, geo,  m->vpsi, f, dv, ftol, printnewton);
 
-	  
 		double wi_new = cimag(get_w(m));
 
 		if(wi_new > -thresholdw_tol && !m->lasing){
-
 			ThresholdSearch(  wi_old, wi_new, geo->D-dD, geo->D, 
 			msh, vNh, m, geo, f, dv, thresholdw_tol, ftol, printnewton);
-	
 		}
 	  }
 
 	  if(Nlasing>0) free(msh);	  
 	  if(geo->D==Dmax) break;
 	}
-
 	VecDestroy(&f);
 	VecDestroy(&dv);
+
+	int Nlasing = CreateFilter(ms, Nm, 1, &msh);
+	if(Nlasing > 0) ClearMode(msh[0]); // these share the same J and ksp, so only one need to be destroyed
+	for(i=0; i<Nm; i++){
+		if(!ms[i]->lasing) ClearMode(ms[i]);
+	}
 
 	for(i=0; i<SCRATCHNUM; i++){ // cleanup
 		VecSet( geo->vH, 1.0);
 		VecSet( geo->vscratch[i], 0.0);
 		VecSet( geo->vMscratch[i], 0.0);
-		if(geo->vNhscratch[i])
+		if(geo->vNhscratch[i]){
 			VecDestroy(&geo->vNhscratch[i]);
+			geo->vNhscratch[i] = 0;
+		}
 	}
-	
 }

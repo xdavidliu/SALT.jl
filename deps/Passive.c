@@ -1,5 +1,19 @@
 #include "headers.h"
 
+Mode CreateMode(Geometry geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]){
+	Mode m = (Mode) malloc(sizeof(struct Mode_s) );
+	CreateVec(2*Nxyzc(geo)+2, &m->vpsi);
+
+	m->lasing = 0;
+	m->ifix = ifix_;
+	m->BCPeriod = BCPeriod_;
+	int i, j;
+	for(i=0; i<3; i++) for(j=0; j<2; j++) m->b[i][j] = b_[i][j];
+	for(i=0; i<3; i++) m->k[i] = k_[i];
+
+	return m;
+} // make sure to change CopyMode too if this gets changed
+
 void FillBop(Geometry geo, Mat Bop, dcomp w){
 	VecCopy(geo->veps, geo->vscratch[0]);
 	TimesI(geo, geo->vscratch[0], geo->vscratch[1]);

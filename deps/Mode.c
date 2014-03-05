@@ -1,20 +1,6 @@
 #include "headers.h"
 
-Mode CreateMode(Geometry geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]){
-	Mode m = (Mode) malloc(sizeof(struct Mode_s) );
-	CreateVec(2*Nxyzc(geo)+2, &m->vpsi);
-	CreateSquareMatrix(2*Nxyzc(geo)+2, 0, &m->J);
-	KSPCreate(PETSC_COMM_WORLD,&m->ksp);
 
-	m->lasing = 0;
-	m->ifix = ifix_;
-	m->BCPeriod = BCPeriod_;
-	int i, j;
-	for(i=0; i<3; i++) for(j=0; j<2; j++) m->b[i][j] = b_[i][j];
-	for(i=0; i<3; i++) m->k[i] = k_[i];
-
-	return m;
-} // make sure to change CopyMode too if this gets changed
 
 Mode ModeRead(const char *Name, Geometry geo, double *Dout){
 // TODO free after every ModeRead
@@ -84,14 +70,9 @@ Mode ModeRead(const char *Name, Geometry geo, double *Dout){
 	return m;
 }
 
-void DestroyMode(Mode m){
-	VecDestroy(&m->vpsi);
+void ClearMode(Mode m){ // destroys all except vpsi
 	MatDestroy(&m->J);
-
-	if(!m->ksp){
-		KSPDestroy(&m->ksp);
-		m->ksp = 0;
-	}
+	KSPDestroy(&m->ksp);
 }
 
 
@@ -225,6 +206,9 @@ void AllocateJacobian(Mat J, Geometry geo){
 }
 
 void Setup(Mode m, Geometry geo){
+
+	CreateSquareMatrix(2*Nxyzc(geo)+2, 0, &m->J);
+	KSPCreate(PETSC_COMM_WORLD,&m->ksp);
 	AllocateJacobian(m->J, geo);
 
     MoperatorGeneralBlochFill(geo, m->J, m->b, m->BCPeriod, m->k, 0);

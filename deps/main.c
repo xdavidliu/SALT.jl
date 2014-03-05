@@ -161,7 +161,8 @@ int main(int argc, char** argv){
 				sprintf(ms[i]->name, "%s%i", modeout, i);
 
 			Write(ms[i], geo);
-			DestroyMode(ms[i]);
+			VecDestroy(&ms[i]->vpsi);
+			// no need to DestroyMode here because J and ksp not created
 		}
 		free(ms);
 
@@ -173,7 +174,7 @@ int main(int argc, char** argv){
 
 		for(ih=0; ih<Nm; ih++){
 			Write(ms[ih], geo);
-			DestroyMode(ms[ih]);
+			VecDestroy(&(ms[ih]->vpsi) ); // J and ksp destroyed in Creeper
 			free(ms[ih]);
 		}
 	}
