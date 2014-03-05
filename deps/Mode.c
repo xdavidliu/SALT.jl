@@ -266,10 +266,6 @@ Mode CopyMode(Mode mold){
 	Mode m = (Mode) malloc(sizeof(struct Mode_s) );
 	VecDuplicate(mold->vpsi, &m->vpsi);
 	VecCopy(mold->vpsi, m->vpsi);
-	
-	AssembleMat(mold->J);
-	MatDuplicate(mold->J, MAT_COPY_VALUES, &m->J);
-	KSPCreate(PETSC_COMM_WORLD,&m->ksp);
 
 	sprintf(m->name, "%s", mold->name);
 	m->lasing = mold->lasing;
