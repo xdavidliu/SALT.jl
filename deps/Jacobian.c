@@ -1,4 +1,4 @@
-#include "headers.h"
+#include "salt.h"
 
 void VecSetComplex(Vec vR, Vec vI, int i, int ir, dcomp val, InsertMode addv){
 		VecSetValue(vR, i, ir? cimag(val) : creal(val), addv );

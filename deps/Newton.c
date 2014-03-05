@@ -1,4 +1,4 @@
-#include "headers.h"
+#include "salt.h"
 
 double EdgeIntensity(Mode m, Geometry geo){
 // only works for sequential

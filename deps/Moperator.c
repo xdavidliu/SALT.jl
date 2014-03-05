@@ -1,4 +1,4 @@
-#include "headers.h"
+#include "salt.h"
 
 int periodic(int ic, int BCPeriod){
 	return ic == (BCPeriod-1) || BCPeriod == 4 || (BCPeriod<0 && ic !=-(BCPeriod+1));

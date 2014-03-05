@@ -1,4 +1,4 @@
-#include "headers.h"
+#include "salt.h"
 
 int CreateFilter(Mode *ms, int size, int lasing, Mode **msp){
 	int i, added =0;

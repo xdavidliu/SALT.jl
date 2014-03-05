@@ -1,4 +1,4 @@
-#include "headers.h"
+#include "salt.h"
 
 Mode CreateMode(Geometry geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]){
 	Mode m = (Mode) malloc(sizeof(struct Mode_s) );
