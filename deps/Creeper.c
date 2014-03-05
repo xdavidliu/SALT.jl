@@ -87,21 +87,21 @@ void Bundle(Mode *ms, int size, Geometry geo){
 	// multimode version of Mode::Setup
 
 	for(i=0; i<SCRATCHNUM; i++){
-		if(geo->vNhscratch[i]){
+		if(geo->vNhscratch[i])
 			VecDestroy(&geo->vNhscratch[i]);
-			geo->vNhscratch[i] = 0;
-		}
 		MatGetVecs(J, &geo->vNhscratch[i], NULL);
 	}
 
 	for(ih=0; ih<size; ih++){
 		Mode m = ms[ih];
-
-		MatDestroy( &m->J);
+		if( m->J){ // in case Bundle called initially
+			MatDestroy( &m->J);
+		}
+		if( m->ksp){
+			KSPDestroy(&m->ksp);
+		}
 		m->J = J;// bundle shares J and v
-		KSPDestroy(&m->ksp);
 		m->ksp = ksp;
-
 		MoperatorGeneralBlochFill(geo, J, m->b, m->BCPeriod, m->k, ih);
 		AddRowDerivatives(J, geo, m->ifix, ih);
 	}
@@ -193,11 +193,19 @@ int Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *ms
 
 	Nlasing = CreateFilter(ms, Nm, 1, &msh);
 	if(Nlasing > 0){
-		ClearMode(msh[0]);
+		MatDestroy(&msh[0]->J);
+		KSPDestroy(&msh[0]->ksp);
 		// these share the same J and ksp, so only one need to be destroyed
 	}
+
 	for(i=0; i<Nm; i++){
-		if(!ms[i]->lasing) ClearMode(ms[i]);
+		if(!ms[i]->lasing || Nlasing == 1){
+			MatDestroy(&ms[i]->J);
+			KSPDestroy(&ms[i]->ksp);		
+		}
+
+		ms[i]->J = 0;
+		ms[i]->ksp = 0;
 	}
 
 	for(i=0; i<SCRATCHNUM; i++){ // cleanup

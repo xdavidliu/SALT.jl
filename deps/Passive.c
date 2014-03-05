@@ -3,6 +3,9 @@
 Mode CreateMode(Geometry geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]){
 	Mode m = (Mode) malloc(sizeof(struct Mode_s) );
 	CreateVec(2*Nxyzc(geo)+2, &m->vpsi);
+	
+	m->J = 0;
+	m->ksp = 0;
 
 	m->lasing = 0;
 	m->ifix = ifix_;

@@ -72,7 +72,9 @@ Mode ModeRead(const char *Name, Geometry geo, double *Dout){
 
 void ClearMode(Mode m){ // destroys all except vpsi
 	MatDestroy(&m->J);
+	m->J = 0;
 	KSPDestroy(&m->ksp);
+	m->ksp = 0;
 }
 
 
@@ -271,6 +273,10 @@ Mode CopyMode(Mode mold){
 	m->lasing = mold->lasing;
 	m->ifix = mold->ifix;
 	m->BCPeriod = mold->BCPeriod;
+
+	m->ksp = mold->ksp;
+	m->J = mold->J; // just for consistency; in all cases, these will have been destroyed
+
 	int i, j;
 	for(i=0; i<3; i++) for(j=0; j<2; j++) m->b[i][j] = mold->b[i][j];
 	for(i=0; i<3; i++) m->k[i] = mold->k[i];
