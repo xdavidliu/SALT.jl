@@ -51,9 +51,10 @@ function Passive(boundary_condition, ωguess, geo::Geometry;
 	end
 end
 
-function Creeper(Dmax::Cdouble, ms::Array{Mode, 1}, 
-	geo::Geometry; ftol::Cdouble=1.0e-7, 
+function Creeper(ms::Array{Mode, 1}, 
+	geo::Geometry; Dmax::Cdouble=-5.0, ftol::Cdouble=1.0e-7, 
 	printNewton::Bool=true, dD::Cdouble=0.0, steps::Int64=20)
+# Dmax < 0 means stop at first threshold found.
 
 	for i=1:length(ms)
 		if ms[i].pump != ms[1].pump
@@ -62,7 +63,7 @@ function Creeper(Dmax::Cdouble, ms::Array{Mode, 1},
 		end
 	end
 
-	if( Dmax <= ms[1].pump)
+	if( Dmax <= ms[1].pump && Dmax >=0)
 		throw(ArgumentError("Dmax must be higher than the Dinitial!"));
 	end
 
@@ -71,8 +72,10 @@ function Creeper(Dmax::Cdouble, ms::Array{Mode, 1},
 
 	if dD == 0.0
 		dD = (Dmax - ms[1].pump) / steps;
+		if(dD < 0) 
+			dD = 0.05; # default value for step size
+		end
 	end
-
 
 	Nm = size(ms, 1);
 	msC = Array(Mode_, Nm );

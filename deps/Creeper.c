@@ -66,7 +66,7 @@ void FirstStep(Mode *ms, Mode m, Geometry geo, Vec vNh, Vec f, Vec dv, double c,
 	PetscPrintf(PETSC_COMM_WORLD, "First step for mode \"%s\" complete!\n", m->name );  
 }
 
-void Bundle(Mode *ms, int size, Geometry geo){
+PetscErrorCode Bundle(Mode *ms, int size, Geometry geo){
 	int i, ih, Nh = size, Nj = 2*Nxyzc(geo)+2;
 	if(Nh < 2) MyError("Bundle function is only for multimode!");
 
@@ -92,14 +92,30 @@ void Bundle(Mode *ms, int size, Geometry geo){
 		MatGetVecs(J, &geo->vNhscratch[i], NULL);
 	}
 
+	// when Bundle is called in the middle of Creeper, the modes
+	// will have separate J's and ksps, so need to destroy each of them
+	if(size == 2){ 
+		for(ih=0; ih<size;ih++){
+			Mode m = ms[ih];
+			if(m->J){
+				PetscErrorCode ierr = MatDestroy( &m->J); CHKERRQ(ierr);
+			}
+			if(m->ksp){
+				KSPDestroy( &m->ksp);	
+			}	
+		}
+	}else{ // size > 2; they will all have shared J and ksp
+		   // except the one that just hit threshold
+		   // but I'm destroying that one's J and ksp after
+		   // thresholdSearch
+		if( ms[0]->J ){
+			PetscErrorCode ierr = MatDestroy( &ms[0]->J); CHKERRQ(ierr);
+		}
+		if( ms[0]->ksp) KSPDestroy( &ms[0]->ksp);
+	}
+
 	for(ih=0; ih<size; ih++){
 		Mode m = ms[ih];
-		if( m->J){ // in case Bundle called initially
-			MatDestroy( &m->J);
-		}
-		if( m->ksp){
-			KSPDestroy(&m->ksp);
-		}
 		m->J = J;// bundle shares J and v
 		m->ksp = ksp;
 		MoperatorGeneralBlochFill(geo, J, m->b, m->BCPeriod, m->k, ih);
@@ -109,6 +125,7 @@ void Bundle(Mode *ms, int size, Geometry geo){
 	AssembleMat(J);
 	MatSetOption(J,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
 	MatStoreValues(J); 
+	return 0;
 }
 
 int FindModeAtThreshold(Mode *ms, int size){
@@ -126,13 +143,14 @@ int FindModeAtThreshold(Mode *ms, int size){
 
 // everything after Nm copied directly from ReadMode
 int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int Nm, Geometry geo){
-
+	
+	double hugeval = 1.0e20;
+	if(Dmax < 0.0) Dmax = hugeval; // hack, to instruct Creeper to stop upon threshold
 	Mode *msh; // lasing mode subarray
 	int ih, i, Nlasing, NlasingOld;
 
 	Nlasing = CreateFilter(ms, Nm, 1, &msh);
 	NlasingOld = Nlasing;
-
 	if(Nlasing > 1) Bundle(msh, Nlasing, geo);
 
 	for(ih=0; ih<Nm; ih++){
@@ -147,7 +165,8 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 	 	if( Nlasing > 0){ // lasing modes  
 	  	  int nt = FindModeAtThreshold(msh, Nlasing);
 	  
-		  if( nt != -1 && Nlasing > 1){
+		  // this is not called if we start from a threshold
+		  if( nt != -1 && Nlasing > 1 && !msh[nt]->J ){
 		  	Bundle(msh, Nlasing, geo);
 		  }
 
@@ -163,15 +182,17 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 		  if( nt != -1 ){
 		  		geo->D += 0.5*dD;
 				if(geo->D > Dmax) geo->D = Dmax;
-		
 		  		FirstStep(msh, msh[nt], geo, vNh, fNh, dvNh, 1.0, ftol, printnewton);
 		  }
 		  NewtonSolve(msh, geo,  vNh, fNh, dvNh, ftol, printnewton);  
 	  }
 
+	
+	  Mode mthreshold_nonlasing = 0;
 	  for(ih=0; ih<Nm; ih++){ // now nonlasing modes
+
 		Mode m = ms[ih];
-		if(m->lasing) continue;
+		if(m->lasing || m == mthreshold_nonlasing) continue;
 		double wi_old = cimag(get_w(m));
 		NewtonSolve(&m, geo,  m->vpsi, f, dv, ftol, printnewton);
 
@@ -180,11 +201,21 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 		if(wi_new > 0.0 && !m->lasing){
 			ThresholdSearch(  wi_old, wi_new, geo->D-dD, geo->D, 
 			msh, vNh, m, geo, f, dv, ftol, printnewton);
+			ih = -1; // reset to recalculate the rest of the lasing modes
+			mthreshold_nonlasing = m;
+
+			// now there will 2 or more lasing modes, so this threshold mode will join a multimode bundle
+			if(Nlasing > 0){ 
+				MatDestroy( &m->J);
+				m->J = 0;
+				KSPDestroy( &m->ksp);
+				m->ksp = 0;
+			}
 		}
 	  }
 
 	  if(Nlasing>0) free(msh);	  
-	  if(geo->D==Dmax) break;
+	  if(geo->D==Dmax || (Dmax == hugeval && mthreshold_nonlasing != 0) ) break;
 	}
 
 

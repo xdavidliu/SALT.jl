@@ -2,73 +2,7 @@
 
 
 
-Mode ModeRead(const char *Name, Geometry geo, double *Dout){
-// TODO free after every ModeRead
 
-	Mode m = (Mode) malloc(sizeof(struct Mode_s) );
-	sprintf(m->name, "%s", Name );
-	CreateVec(2*Nxyzc(geo)+2, &m->vpsi);
-	CreateSquareMatrix(2*Nxyzc(geo)+2, 0, &m->J);
-
-	KSPCreate(PETSC_COMM_WORLD,&m->ksp);
-
-	char w[PETSC_MAX_PATH_LEN], filename[PETSC_MAX_PATH_LEN];
-	sprintf(filename, "%s%s", m->name, Output_Suffix);
-		int i;
-	FILE *fp = fopen(filename, "r");
-
-	if(fp==NULL){
-		sprintf(w, "failed to read %s", filename);
-		MyError(w );
-	}
-
-   if(GetRank()==0){ fgets(w, PETSC_MAX_PATH_LEN, fp); } // "mode = ["
-
-	ReadVectorC(fp, 2*Nxyzc(geo)+2, m->vpsi);
-
-   if(GetRank()==0){
-	fgets(w, PETSC_MAX_PATH_LEN, fp);
-	fgets(w, PETSC_MAX_PATH_LEN, fp);
-
-	// Make sure this part is consistent with Mode::Write()
-	// make sure to Bcast these at the end
-
-	fgets(w, PETSC_MAX_PATH_LEN, fp);
-	sscanf(w, "ifix=%i\n", &m->ifix); 
-
-	fgets(w, PETSC_MAX_PATH_LEN, fp);
-	sscanf(w, "b=[%i %i %i];", &m->b[0][0], &m->b[1][0], &m->b[2][0]);
-
-	for(i=0; i<3; i++) m->b[i][1] = 0;
-
-	fgets(w, PETSC_MAX_PATH_LEN, fp);
-	sscanf(w, "BCPeriod=%i;", &m->BCPeriod); 	 
-
-	fgets(w, PETSC_MAX_PATH_LEN, fp);
-	sscanf(w, "D=%lf;", Dout); 	 
-
-	fgets(w, PETSC_MAX_PATH_LEN, fp); // k=[ line
-	for(i=0; i<3; i++){ 
-		fgets(w, PETSC_MAX_PATH_LEN, fp);
-		sscanf(w, "%lf", &m->k[i]);
-	}
-   }
-   
-	fclose(fp);
-
-	MPI_Bcast(m->k, 3, MPI_DOUBLE, 0, PETSC_COMM_WORLD);
-	MPI_Bcast(&m->ifix, 1, MPI_INT, 0, PETSC_COMM_WORLD);
-	for(i=0; i<3; i++) 
-	   MPI_Bcast(m->b[i], 2, MPI_INT, 0, PETSC_COMM_WORLD);
-	MPI_Bcast(&m->BCPeriod, 1, MPI_INT, 0, PETSC_COMM_WORLD);
-	MPI_Bcast(Dout, 1, MPI_DOUBLE, 0, PETSC_COMM_WORLD);
-
-	double val1, val2;
-	GetLast2(m->vpsi, &val1, &val2);
-	m->lasing = val2 >= 0.0;
-
-	return m;
-}
 
 void ClearMode(Mode m){ // destroys all except vpsi
 	MatDestroy(&m->J);

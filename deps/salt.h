@@ -95,7 +95,6 @@ typedef struct Mode_s{
 	KSP ksp; // one ksp per J seems faster
 } *Mode;
 
-Mode ModeRead(const char *Name, Geometry geo, double *Dout);
 void ClearMode(Mode m);
 void Setup(Mode m, Geometry geo);
 
