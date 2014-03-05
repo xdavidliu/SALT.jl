@@ -8,7 +8,11 @@ type Geometry
 	eps::PetscVec_
 	fprof::PetscVec_
     function Geometry(geo::Geometry_)
-        g = new(geo)
+        g = new(
+			geo,
+			ccall( (:GetVeps, saltlib), PetscVec_, (Geometry_,), geo),
+			ccall( (:GetVfprof, saltlib), PetscVec_, (Geometry_,), geo)		
+		)
         finalizer(g, DestroyGeometry)
         return g
     end
@@ -34,13 +38,10 @@ function Geometry(ε::Array{Cdouble}, grid_spacing, nPML_,
         push!(nPML, nPML[end])
     end
 
-    g = Geometry(ccall( ("CreateGeometry",saltlib), Geometry_,
+    Geometry( ccall( ("CreateGeometry",saltlib), Geometry_,
             (Ptr{Cint}, Ptr{Cdouble}, Ptr{Cint},
             Cint, Cint, Ptr{Cdouble}, Ptr{Cdouble}, Cdouble, Cdouble),
             N, h, nPML, n_vectorcomp, lowerPML, ε, gain_prof, ω_gain, γ_gain))
-	g.eps = ccall( (:GetVeps, saltlib), PetscVec_, (Geometry_,), g.geo);
-	g.fprof = ccall( (:GetVfprof, saltlib), PetscVec_, (Geometry_,), g.geo);
-	return g
 end
 
 # TODO: clear up names of Julia type and C objects, i.e. no geo.geo
