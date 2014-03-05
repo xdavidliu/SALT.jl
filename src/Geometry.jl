@@ -24,9 +24,12 @@ function Geometry(ε::Array{Cdouble}, grid_spacing, nPML_,
     ndims(ε) > 3 && throw(ArgumentError("ε array must be <= 3-dimensional"))
     size(ε) != size(gain_prof) && throw(ArgumentError("gain profile must be same size as ε array"))
     N = Cint[size(ε)...]
+	N = flipud(N); #ε column major, want N = Nx, Ny, Nz 
+
     while length(N) < 3
         push!(N, 1)
     end
+
     h = Cdouble[grid_spacing...]
     length(h) > 3 && throw(ArgumentError("h must have length <= 3"))
     while length(h) < 3
@@ -89,17 +92,42 @@ function show(io::IO, g::Geometry)
 	print(io, Npml[1], " x ", Npml[2], " x ", Npml[3], " pixel PML thickness\n");
 	h = GetCellh(g);
 	print(io, h[1], " x ", h[2], " x ", h[3], " cell\n");
-	
-	if( N[2]==1 && N[3] == 1 && Nc == 1)
-		subplot(211)
-		plot(linspace(0, N[1]*h[1], N[1]), g.eps[1:N[1]]);
-		title("Dielectric of passive medium");
-		ylabel("\$\\epsilon(x)\$"); # cannot get L"$\epsilon" to work here
+	x = linspace(0, N[1]*h[1], N[1]);	
+	y = linspace(0, N[2]*h[2], N[2])';
+	eps = g.eps[1:N[1]*N[2]*N[3]]; # real part only
+	fprof = g.fprof[1:N[1]*N[2]*N[3]];
 
-		subplot(212)
-		plot(linspace(0, N[1]*h[1], N[1]), g.fprof[1:N[1]]);
-		title("gain profile");
+	subplot(221)
+
+	# cannot get L"$\epsilon" to work here
+	if( N[2]==1 && N[3] == 1)
+		plot(x, eps);
 		xlabel("x");
-		ylabel("\$f(x)\$");
-	end 
+		ylabel("\$\\epsilon\$");
+	elseif( N[2]>1 && N[3]>1 )
+		X = ( ones(length(y))' .* x )'; # meshgrid using broadcasting
+		Y = ( y .* ones(length(x)) )';
+		eps = reshape(eps, N[3], N[2], N[1]);
+
+		pcolor(X, Y, squeeze( eps[1, :, :],1 ), cmap="Blues" );
+		xlabel("x");
+		ylabel("y");	
+	end
+	title("Dielectric of passive medium");
+
+	subplot(222)
+	if( N[2]==1 && N[3] == 1)
+		plot(linspace(0, N[1]*h[1], N[1]), fprof);
+		xlabel("x");
+		ylabel("\$f(x)\$");	
+	elseif( N[2]>1 && N[3]>1 )
+		fprof = reshape(fprof, N[3], N[2], N[1]);
+		X = ( ones(length(y))' .* x )'; # meshgrid using broadcasting
+		Y = ( y .* ones(length(x)) )';
+		pcolor(X, Y, squeeze( fprof[1, :, :],1 ), cmap="Greens" );
+		xlabel("x");
+		ylabel("y");		
+	end
+	title("gain profile");
+
 end
