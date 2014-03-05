@@ -124,16 +124,21 @@ int FindModeAtThreshold(Mode *ms, int size){
 
 // everything after Nm copied directly from ReadMode
 void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *ms, int printnewton, int Nm, Geometry geo){
-	int ih, i;
+
+	Mode *msh; // lasing mode subarray
+	int ih, i, Nlasing;
+
+	Nlasing = CreateFilter(ms, Nm, 1, &msh);
+	if(Nlasing > 1) Bundle(msh, Nlasing, geo);
+
 	for(ih=0; ih<Nm; ih++){
-		Setup( ms[ih], geo); // TODO: bundle if multiple lasing modes
+		if( !ms[ih]->lasing || Nlasing == 1)
+			Setup( ms[ih], geo);
 	}
     Vec f, dv;
     MatGetVecs( ms[0]->J, &dv, &f);
-
-	Mode *msh; // lasing mode subarray
 	for(; geo->D <= Dmax; geo->D = (geo->D+dD < Dmax? geo->D+dD: Dmax)){
-	  	int Nlasing = CreateFilter(ms, Nm, 1, &msh); // lasing sub-array
+	  	Nlasing = CreateFilter(ms, Nm, 1, &msh); // lasing sub-array
 	  	Vec vNh = ms[0]->vpsi, fNh = f, dvNh = dv;
 	 	if( Nlasing > 0){ // lasing modes  
 	  	  int nt = FindModeAtThreshold(msh, Nlasing);
@@ -180,7 +185,7 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 	VecDestroy(&f);
 	VecDestroy(&dv);
 
-	int Nlasing = CreateFilter(ms, Nm, 1, &msh);
+	Nlasing = CreateFilter(ms, Nm, 1, &msh);
 	if(Nlasing > 0) ClearMode(msh[0]); // these share the same J and ksp, so only one need to be destroyed
 	for(i=0; i<Nm; i++){
 		if(!ms[i]->lasing) ClearMode(ms[i]);
