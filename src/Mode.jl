@@ -39,6 +39,14 @@ type Mode
 	end
 end
 
+function Getbc(m::Mode)
+	b = [0, 0, 0];
+	for i=1:3
+		b[i] = int64( ccall( (:Getbc, saltlib), Cint, (Mode_, Cint), m.m, i-1) );
+	end
+	b;
+end
+
 function show(io::IO, mode::Mode)
     print(io, "SALT Mode: ", mode.m, "\n")
 	
@@ -52,18 +60,26 @@ function show(io::IO, mode::Mode)
 	omega = mode.psi[end-1] + im * (last_element > 0? 0 : last_element); 
 	magnitude = last_element > 0? last_element : 0;
 
-	if( N[2]==1 && N[3] == 1 && Nc == 1)
+	x = linspace(0, N[1]*h[1], N[1]);
+	y = linspace(0, N[2]*h[2], N[2])';
 
-		x = linspace(0, N[1]*h[1], N[1]);
+	if( N[2]==1 && N[3] == 1 && Nc == 1)
 		psireal = mode.psi[1:N[1]];
 		psiimag = mode.psi[N[1]+1:end-2];
 		plot(x, psireal, x, psiimag);
 		legend(["real", "imag"]);
-		title(
-			string("Mode: \$\\omega\$ = ", real(omega), " + i(", 
-			imag(omega), "), |\$\\Psi\$| = ", magnitude)
-		);
 		ylabel("\$\\Psi(x)\$");
 		xlabel("\$x\$");
+	elseif( N[2]>1 && Nc == 3)
+		X = ( ones(length(y))' .* x )'; # meshgrid using broadcasting
+		Y = ( y .* ones(length(x)) )';
+		b = Getbc(mode);
+		plotTEslice(mode.psi[1:end-2], N, h, b);
 	end 
+
+	title(
+		string("Mode: \$\\omega\$ = ", real(omega), " + i(", 
+		imag(omega), "), |\$\\Psi\$| = ", magnitude)
+	);
+
 end

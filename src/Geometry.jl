@@ -110,8 +110,8 @@ function show(io::IO, g::Geometry)
 		eps = reshape(eps, N[3], N[2], N[1]);
 
 		pcolor(X, Y, squeeze( eps[1, :, :],1 ), cmap="Blues" );
-		xlabel("x");
-		ylabel("y");	
+		axis("equal"); axis("off");
+		colorbar();
 	end
 	title("Dielectric of passive medium");
 
@@ -125,8 +125,7 @@ function show(io::IO, g::Geometry)
 		X = ( ones(length(y))' .* x )'; # meshgrid using broadcasting
 		Y = ( y .* ones(length(x)) )';
 		pcolor(X, Y, squeeze( fprof[1, :, :],1 ), cmap="Greens" );
-		xlabel("x");
-		ylabel("y");		
+		axis("equal"); axis("off");		
 	end
 	title("gain profile");
 

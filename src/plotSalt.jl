@@ -57,16 +57,3 @@ function plotTEslice(v, N, h, b, nz=1)
 
     pcolor(X, Y, -real(psi), cmap="RdBu"); axis("equal"); axis("off");
 end
-
-function plotSalt(v, N, h, b, Nc)
-
-	if(N[1] > 1 && N[2] > 1 && N[3] > 1 && Nc == 3)
-		plotTEslice(v, N, h, b);
-	elseif(N[1] > 1 && N[2] == 1 && N[3] == 1 && Nc == 1)
-		v = v[1:end/2];
-		v = [ b[1]*flipud(v);  v[2:end] ];
-		plot(v); 
-	else
-		error("only 1d TM and 3d TE-like modes supported");
-	end
-end

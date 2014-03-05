@@ -263,6 +263,10 @@ void addArrayMode(Mode **ma, int old_size, Mode m){
 Mode GetMode(Mode *ms, int n){ return ms[n] ; }
 Vec GetVpsi(Mode m){ return m->vpsi;}
 
+int Getbc(Mode m, int i){
+	return m->b[i][0];
+}
+
 Mode CopyMode(Mode mold){
 
 	Mode m = (Mode) malloc(sizeof(struct Mode_s) );
