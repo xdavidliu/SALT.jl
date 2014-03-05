@@ -52,7 +52,7 @@ function Passive(boundary_condition, ωguess, geo::Geometry;
 end
 
 function Creeper(Dmax::Cdouble, ms::Array{Mode, 1}, 
-	geo::Geometry; thresholdw_tol::Cdouble=1.0e-7, ftol::Cdouble=1.0e-7, 
+	geo::Geometry; ftol::Cdouble=1.0e-7, 
 	printNewton::Bool=true, dD::Cdouble=0.0, steps::Int64=20)
 
 	for i=1:length(ms)
@@ -81,8 +81,8 @@ function Creeper(Dmax::Cdouble, ms::Array{Mode, 1},
 	end
 
 	Nlasing = ccall( ("Creeper", saltlib), Cint, 
-		(Cdouble, Cdouble, Cdouble, Cdouble, Ptr{Mode_}, Cint, Cint, Geometry_),
-		dD, Dmax, thresholdw_tol, ftol, msC, int32(printNewton), int32(size(ms,1)), geo.geo  
+		(Cdouble, Cdouble, Cdouble, Ptr{Mode_}, Cint, Cint, Geometry_),
+		dD, Dmax, ftol, msC, int32(printNewton), int32(size(ms,1)), geo.geo  
 	);
 	print(Nlasing, " new modes lasing after Creeper\n");
 

@@ -117,10 +117,9 @@ void mainPassive(){
 
 void mainCreeper(double Dmax){
 	int i, ih, Nm = 0, printnewton = 0;
-	double dD = 0.0, thresholdw_tol=0., ftol = 0.0;
+	double dD = 0.0, ftol = 0.0;
 
 	Geometry geo;
-	PetscOptionsGetReal(PETSC_NULL,"-thresholdw_tol", &thresholdw_tol,NULL); 
 	PetscOptionsGetReal(PETSC_NULL,"-dD", &dD,NULL); 
 	PetscOptionsGetReal(PETSC_NULL,"-newtonf_tol", &ftol,NULL); 
 
@@ -162,7 +161,7 @@ void mainCreeper(double Dmax){
 	Mode *ms = ReadModes(geo, namesin, namesout, Nm);
 
 	// hack, so that SALT.jl can access Creeper using just a pointer to modes.
-	Creeper(dD, Dmax, thresholdw_tol, ftol, ms, printnewton, Nm, geo);    
+	Creeper(dD, Dmax, ftol, ms, printnewton, Nm, geo);    
 	for(ih=0; ih<Nm; ih++){
 		Write(ms[ih], geo);
 		VecDestroy(&(ms[ih]->vpsi) ); // J and ksp destroyed in Creeper

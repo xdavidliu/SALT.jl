@@ -125,7 +125,7 @@ int FindModeAtThreshold(Mode *ms, int size){
 }
 
 // everything after Nm copied directly from ReadMode
-int Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *ms, int printnewton, int Nm, Geometry geo){
+int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int Nm, Geometry geo){
 
 	Mode *msh; // lasing mode subarray
 	int ih, i, Nlasing, NlasingOld;
@@ -177,9 +177,9 @@ int Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *ms
 
 		double wi_new = cimag(get_w(m));
 
-		if(wi_new > -thresholdw_tol && !m->lasing){
+		if(wi_new > 0.0 && !m->lasing){
 			ThresholdSearch(  wi_old, wi_new, geo->D-dD, geo->D, 
-			msh, vNh, m, geo, f, dv, thresholdw_tol, ftol, printnewton);
+			msh, vNh, m, geo, f, dv, ftol, printnewton);
 		}
 	  }
 

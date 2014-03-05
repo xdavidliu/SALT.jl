@@ -91,7 +91,7 @@ void NewtonSolve(Mode *ms, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int 
 	}
 }
 
-void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, Mode *msh, Vec vNh, Mode m, Geometry geo, Vec f, Vec dv, double thresholdw_tol, double ftol, int printnewton){
+void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, Mode *msh, Vec vNh, Mode m, Geometry geo, Vec f, Vec dv, double ftol, int printnewton){
 
 	dcomp mw = get_w(m);
 	SetLast2(m->vpsi, creal(mw), 0.0);
@@ -131,5 +131,5 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 	if(printnewton)
 	PetscPrintf(PETSC_COMM_WORLD, 
 		"Searching... D=%g --> Im[w] = %g\n", geo->D, cimag(mw));
-	ThresholdSearch(wimag_lo, wimag_hi, D_lo, D_hi, msh, vNh, m, geo, f, dv, thresholdw_tol, ftol, printnewton); 
+	ThresholdSearch(wimag_lo, wimag_hi, D_lo, D_hi, msh, vNh, m, geo, f, dv, ftol, printnewton); 
 }
