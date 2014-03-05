@@ -94,11 +94,21 @@ void NewtonSolve(Mode *ms, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int 
 void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, Mode *msh, Vec vNh, Mode m, Geometry geo, Vec f, Vec dv, double thresholdw_tol, double ftol, int printnewton){
 
 	dcomp mw = get_w(m);
-	if( cabs(cimag(mw)) < thresholdw_tol ){
-		SetLast2(m->vpsi, creal(mw), 0.0);
-		PetscPrintf(PETSC_COMM_WORLD, "Threshold found for mode \"%s\" at D = %1.10g\n", m->name, geo->D);
+	SetLast2(m->vpsi, creal(mw), 0.0);
+	int Nlasing = 0;
+	if(msh){ // lasing mode array passed in
+		int N;
+		VecGetSize(vNh, &N); 
+		Nlasing = N / NJ(geo);
+	}
+
+	// Threshold found if nonlasing residual with omega real is < ftol
+	if( FormJf(&m, geo, Nlasing > 1?vNh : m->vpsi, f, ftol, printnewton) < ftol ){
+		PetscPrintf(PETSC_COMM_WORLD, "\nThreshold found for mode \"%s\" at D = %1.10g\n", m->name, geo->D);
 		m->lasing = 1;
 		return;
+	}else{
+		SetLast2(m->vpsi, creal(mw), cimag(mw));
 	}
 
 	geo->D = D_lo - (D_hi - D_lo)/(wimag_hi - wimag_lo) * wimag_lo;
