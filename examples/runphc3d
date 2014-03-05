@@ -32,7 +32,7 @@ SOLVER="-printnewton 1";
 
 if [[ $COMMAND = "passive" ]]; then
 $RUN $GEO $PASSIVE -Dmax 0.0;
-elif [[ $COMMAND = "salt" ]]; then
+elif [[ $COMMAND = "creeper" ]]; then
 $RUN $GEO $CREEPER $SOLVER;
 elif [[ $COMMAND = "test" ]]; then
 mpirun -n 1 ./TestOut;

@@ -91,7 +91,7 @@ int main(int argc, char** argv){
 		BCPeriod=0, nev=0, Nm = 0, printnewton = 0;
 	double Dmax, wreal = 0., wimag=0., modenorm=1.,
 		k[3] = {0}, dD = 0.0, thresholdw_tol=0., ftol = 0.0;
-
+	
 	PetscOptionsGetReal(PETSC_NULL,"-Dmax", &Dmax,NULL); 
 
 	char option[PETSC_MAX_PATH_LEN];
@@ -108,10 +108,11 @@ int main(int argc, char** argv){
 		}
 	}
 
-	char modeout[PETSC_MAX_PATH_LEN] = "", **namesin = NULL, **namesout = NULL;
 
 	if(Dmax == 0.0){ // Passive
 
+		Geometry geo;
+		char modeout[PETSC_MAX_PATH_LEN] = "";
 		PetscOptionsGetReal(PETSC_NULL,"-norm", &modenorm,NULL); 
 		PetscOptionsGetReal(PETSC_NULL,"-wreal", &wreal,NULL); 
 		PetscOptionsGetReal(PETSC_NULL,"-wimag", &wimag,NULL); 
@@ -120,15 +121,33 @@ int main(int argc, char** argv){
 		PetscOptionsGetInt(PETSC_NULL,"-BCPeriod", &BCPeriod,NULL);
 
 		PetscOptionsGetString(PETSC_NULL,"-passiveout", modeout, PETSC_MAX_PATH_LEN, NULL); 
-	}else{ // Creeper
 
+	    geo = ReadCreateGeometry();
+		int added;
+		Mode *ms = Passive(&added, BCPeriod, bl, k, wreal, wimag, modenorm, nev, geo);
+		for(i = 0; i<added; i++){
+			if(added == 1)
+				sprintf(ms[i]->name, "%s", modeout);
+			else 
+				sprintf(ms[i]->name, "%s%i", modeout, i);
+
+			Write(ms[i], geo);
+			VecDestroy(&ms[i]->vpsi);
+			// no need to DestroyMode here because J and ksp not created
+		}
+		free(ms);
+	    DestroyGeometry(geo);
+
+	}else{ // Creeper
+		Geometry geo;
 		PetscOptionsGetReal(PETSC_NULL,"-thresholdw_tol", &thresholdw_tol,NULL); 
 		PetscOptionsGetReal(PETSC_NULL,"-dD", &dD,NULL); 
 		PetscOptionsGetReal(PETSC_NULL,"-newtonf_tol", &ftol,NULL); 
 
 		char optionin[PETSC_MAX_PATH_LEN] = "-in0",
 			 optionout[PETSC_MAX_PATH_LEN] = "-out0",
-			 name[PETSC_MAX_PATH_LEN], name2[PETSC_MAX_PATH_LEN];
+			 name[PETSC_MAX_PATH_LEN], name2[PETSC_MAX_PATH_LEN],
+			**namesin = NULL, **namesout = NULL;
 
 		i=0;
 		while(1){
@@ -163,25 +182,9 @@ int main(int argc, char** argv){
 		Nm = i;
 
 		PetscOptionsGetInt(PETSC_NULL,"-printnewton", &printnewton,NULL);
-	}
 
-    Geometry geo = ReadCreateGeometry();
-    
-    if(Dmax == 0.0){
-		int added;
-		Mode *ms = Passive(&added, BCPeriod, bl, k, wreal, wimag, modenorm, nev, geo);
-		for(i = 0; i<added; i++){
-			if(added == 1)
-				sprintf(ms[i]->name, "%s", modeout);
-			else 
-				sprintf(ms[i]->name, "%s%i", modeout, i);
+	    geo = ReadCreateGeometry();
 
-			Write(ms[i], geo);
-			VecDestroy(&ms[i]->vpsi);
-			// no need to DestroyMode here because J and ksp not created
-		}
-		free(ms);
-    }else{
 		Mode *ms = ReadModes(geo, namesin, namesout, Nm);
 
 		// hack, so that SALT.jl can access Creeper using just a pointer to modes.
@@ -192,16 +195,22 @@ int main(int argc, char** argv){
 			VecDestroy(&(ms[ih]->vpsi) ); // J and ksp destroyed in Creeper
 			free(ms[ih]);
 		}
+	    DestroyGeometry(geo);
+
+
+		for(i=0; i<Nm; i++){
+			free( namesin[i]);
+			free( namesout[i]);
+		}
+		free(namesin);
+		free(namesout);
+
 	}
-    DestroyGeometry(geo);
+
+
 //============================================================
 
-	for(i=0; i<Nm; i++){
-		free( namesin[i]);
-		free( namesout[i]);
-	}
-	free(namesin);
-	free(namesout);
+
 
 /*
 	PetscPrintf(PETSC_COMM_WORLD, "\n");
