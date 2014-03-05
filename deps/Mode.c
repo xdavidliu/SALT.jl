@@ -85,8 +85,8 @@ Mode ModeRead(const char *Name, Geometry geo, double *Dout){
 }
 
 void DestroyMode(Mode m){
-	DestroyVec(&m->vpsi);
-	DestroyMat(&m->J);
+	VecDestroy(&m->vpsi);
+	MatDestroy(&m->J);
 
 	if(!m->ksp){
 		KSPDestroy(&m->ksp);

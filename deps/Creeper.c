@@ -86,15 +86,16 @@ void Bundle(Mode *ms, int size, Geometry geo){
 	// multimode version of Mode::Setup
 
 	for(i=0; i<SCRATCHNUM; i++){
-		DestroyVec(&geo->vNhscratch[i]);
+		if(geo->vNhscratch[i]) 
+			VecDestroy(&geo->vNhscratch[i]);
 		MatGetVecs(J, &geo->vNhscratch[i], NULL);
 	}
 
 	for(ih=0; ih<size; ih++){
 		Mode m = ms[ih];
 
-		DestroyMat( &m->J); // bundle shares J and v
-		m->J = J;
+		MatDestroy( &m->J);
+		m->J = J;// bundle shares J and v
 		KSPDestroy(&m->ksp);
 		m->ksp = ksp;
 
@@ -190,14 +191,15 @@ void Creeper(double dD, double Dmax, double thresholdw_tol, double ftol, Mode *m
 	  if(geo->D==Dmax) break;
 	}
 
-	DestroyVec(&f);
-	DestroyVec(&dv);
+	VecDestroy(&f);
+	VecDestroy(&dv);
 
 	for(i=0; i<SCRATCHNUM; i++){ // cleanup
 		VecSet( geo->vH, 1.0);
 		VecSet( geo->vscratch[i], 0.0);
 		VecSet( geo->vMscratch[i], 0.0);
-		DestroyVec(&geo->vNhscratch[i]);
+		if(geo->vNhscratch[i])
+			VecDestroy(&geo->vNhscratch[i]);
 	}
 	
 }

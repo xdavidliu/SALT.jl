@@ -130,8 +130,9 @@ Mode *Passive(int *added, int BCPeriod, int *bl, double *k, double wreal, double
 	if(*added == 0) msp = NULL;
 
 	EPSDestroy(&evps);
-	DestroyMat(&Mop);	DestroyMat(&Bop);
-	DestroyVec(&v);	DestroyVec(&vi);
+	MatDestroy(&Mop);
+	MatDestroy(&Bop);
+	VecDestroy(&v);	VecDestroy(&vi);
 
 	gettimeofday(&t3, NULL);
 	geo->D = 0.0; // to make sure pump strength for passive modes correct in Julia

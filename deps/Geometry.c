@@ -97,7 +97,10 @@ Geometry CreateGeometry(int N[3], double h[3], int Npml[3], int Nc, int LowerPML
 
 	CreateVec(Mxyz(geo), &geo->vMscratch[0]);
 
-	for(i=1; i<SCRATCHNUM; i++) VecDuplicate(geo->vMscratch[0], &geo->vMscratch[i]);
+	for(i=1; i<SCRATCHNUM; i++){
+		VecDuplicate(geo->vMscratch[0], &geo->vMscratch[i]);
+		geo->vNhscratch[i] = 0; // allows checking whether vN created or not
+	}
 
 	{ 	double *scratch;
 		int ns, ne;
@@ -119,12 +122,10 @@ Geometry CreateGeometry(int N[3], double h[3], int Npml[3], int Nc, int LowerPML
 	VecShift(geo->vMscratch[0], -1.0); //hack, for background dielectric
 	InterpolateVec(geo, geo->vMscratch[0], geo->vscratch[1]);
 	VecShift(geo->vscratch[1], 1.0);
-
 	VecPointwiseMult(geo->veps, geo->vscratch[1], geo->vepspml);
 	TimesI(geo, geo->veps, geo->vIeps); // vIeps for convenience only, make sure to update it later if eps ever changes!
 
 	geo->D = 0.0;
-
 	geo->wa = wa;
 	geo->y = y;
 
@@ -150,15 +151,16 @@ void DestroyGeometry(Geometry geo){
     if (geo) {
 		int i; 
 		for(i=0; i<SCRATCHNUM; i++){
-			DestroyVec(&geo->vscratch[i]);
-			DestroyVec(&geo->vNhscratch[i]);	
-			DestroyVec(&geo->vMscratch[i]);
+			VecDestroy(&geo->vscratch[i]);
+			if(geo->vNhscratch[i]) 
+				VecDestroy(&geo->vNhscratch[i]);	
+			VecDestroy(&geo->vMscratch[i]);
 		}
-		DestroyVec(&geo->vH);
-		DestroyVec(&geo->veps);
-		DestroyVec(&geo->vIeps);
-		DestroyVec(&geo->vepspml);
-		DestroyVec(&geo->vf);
+		VecDestroy(&geo->vH);
+		VecDestroy(&geo->veps);
+		VecDestroy(&geo->vIeps);
+		VecDestroy(&geo->vepspml);
+		VecDestroy(&geo->vf);
 		free(geo);
     }
 }

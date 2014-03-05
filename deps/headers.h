@@ -24,8 +24,6 @@ void GetLast2(Vec f, double *val1, double *val2);
 void CreateVec(int N, Vec *x);
 void AssembleVec(Vec x);
 void AssembleMat(Mat M);
-void DestroyVec(Vec *x);
-void DestroyMat(Mat *A);
 
 typedef struct Grid_s{
 

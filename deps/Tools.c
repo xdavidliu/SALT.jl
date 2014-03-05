@@ -15,15 +15,6 @@ dcomp csqr(dcomp a){ return a*a;}
 
 void AssembleVec(Vec x){ VecAssemblyBegin(x); VecAssemblyEnd(x); }
 void AssembleMat(Mat M){ MatAssemblyBegin(M, MAT_FINAL_ASSEMBLY); MatAssemblyEnd(M, MAT_FINAL_ASSEMBLY);}
-void DestroyVec(Vec *x){
-	if(!x) VecDestroy(x);
-	x = 0;
-}
-
-void DestroyMat(Mat *A){
-	if(!A) MatDestroy(A); 
-	A = 0;
-}
 
 void View(Vec x, PetscViewer viewer){ VecView(x, viewer); }
 
