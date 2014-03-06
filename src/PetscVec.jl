@@ -29,7 +29,7 @@ function setindex!(x::PetscVec_, vals::Array{Cdouble}, ind::Array{Int})
 	  x, length(ind), int32(ind-1), vals, 1
 	  )  # 1 is INSERT_VALUES
     
-    jul
+	vals
 end
 
 setindex!(x::PetscVec_, v::Array{Cdouble}, i::AbstractArray) =
@@ -39,7 +39,7 @@ setindex!(x::PetscVec_, v::AbstractArray, i::AbstractArray) =
   setindex!(x, copy!(Array(Cdouble, length(v)), v), i)
 
 setindex!(x::PetscVec_, v::Real, i::Integer) = 
-   setindex!(x, Cdouble[val], Int[i])
+   setindex!(x, Cdouble[v], Int[i])
 
 function endof(x::PetscVec_)
 
