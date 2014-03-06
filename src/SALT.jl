@@ -51,16 +51,10 @@ function Passive(boundary_condition, ωguess, geo::Geometry;
 	end
 end
 
-function Creeper(ms, 
+function Creeper(ms::Array{Mode, 1}, 
 	geo::Geometry; Dmax::Cdouble=-5.0, ftol::Cdouble=1.0e-7, 
 	printNewton::Bool=true, dD::Cdouble=0.0, steps::Int64=20)
 # Dmax < 0 means stop at first threshold found.
-
-	if typeof(ms) == Mode
-		ms = [ms]
-	elseif typeof(ms) != Array{Mode, 1}
-		throw(ArgumentError("first argument must be mode"));
-	end
 
 	for i=1:length(ms)
 		if ms[i].pump != ms[1].pump
@@ -103,5 +97,9 @@ function Creeper(ms,
 	msout;
 end
 
+Creeper(ms::Mode, 
+	geo::Geometry; _Dmax::Cdouble=-5.0, _ftol::Cdouble=1.0e-7, 
+	_printNewton::Bool=true, _dD::Cdouble=0.0, _steps::Int64=20) = 
+Creeper([ms], geo, Dmax=_Dmax, ftol=_ftol, printNewton=_printNewton, dD=_dD, steps=_steps);
 
 end

@@ -3,11 +3,7 @@ import Base: endof, setindex!, getindex
 immutable PetscVec_s; end
 typealias PetscVec_ Ptr{PetscVec_s}
 
-function getindex(x::PetscVec_, ind)
-
-	if typeof(ind) <: Integer || typeof(ind) <: Range1
-		ind = [ind]
-	end
+function getindex(x::PetscVec_, ind::Array{Int64})
 
 	vals = zeros( length(ind) );
 	ccall( (:VecGetValues, saltlib), Cint, 
@@ -21,6 +17,9 @@ function getindex(x::PetscVec_, ind)
 		return vals;
 	end
 end
+
+getindex(x::PetscVec_, ind::Integer) = getindex(x, [ind]);
+getindex(x::PetscVec_, ind::Range1) = getindex(x, [ind]);
 
 function setindex!(x::PetscVec_, vals::Array{Cdouble}, ind::Array{Int})
     length(vals) != length(ind) && throw(ArgumentError("vals and ind must have same length"))
