@@ -4,17 +4,17 @@ DestroyGeometry(geo::Geometry_) = ccall((:DestroyGeometry, saltlib), Void,
                                         (Geometry_,), geo)
 
 type Geometry
-    geo::Geometry_
+    g::Geometry_
 	eps::PetscVec_
 	fprof::PetscVec_
-    function Geometry(geo::Geometry_)
-        g = new(
-			geo,
-			ccall( (:GetVeps, saltlib), PetscVec_, (Geometry_,), geo),
-			ccall( (:GetVfprof, saltlib), PetscVec_, (Geometry_,), geo)		
+    function Geometry(g::Geometry_)
+        geo = new(
+			g,
+			ccall( (:GetVeps, saltlib), PetscVec_, (Geometry_,), g),
+			ccall( (:GetVfprof, saltlib), PetscVec_, (Geometry_,), g)		
 		)
-        finalizer(g, DestroyGeometry)
-        return g
+        finalizer(geo, DestroyGeometry)
+        return geo
     end
 end
 
@@ -47,24 +47,23 @@ function Geometry(ε::Array{Cdouble}, grid_spacing, nPML_,
             N, h, nPML, n_vectorcomp, lowerPML, ε, gain_prof, ω_gain, γ_gain))
 end
 
-# TODO: clear up names of Julia type and C objects, i.e. no geo.geo
 function GetN(geo::Geometry)
 	N = [0, 0, 0];
 	for i=1:3
-		N[i] = int64( ccall( (:GetN, saltlib), Cint, (Geometry_, Cint), geo.geo, i-1) );
+		N[i] = int64( ccall( (:GetN, saltlib), Cint, (Geometry_, Cint), geo.g, i-1) );
 	end
 	N;
 end
 
 function GetNc(geo::Geometry)
-	ccall( (:GetNc, saltlib), Cint, (Geometry_,), geo.geo);
+	ccall( (:GetNc, saltlib), Cint, (Geometry_,), geo.g);
 end
 
 
 function GetNpml(geo::Geometry)
 	N = [0, 0, 0];
 	for i=1:3
-		N[i] = int64( ccall( (:GetNpml, saltlib), Cint, (Geometry_, Cint), geo.geo, i-1) );
+		N[i] = int64( ccall( (:GetNpml, saltlib), Cint, (Geometry_, Cint), geo.g, i-1) );
 	end
 	N;
 end
@@ -72,32 +71,33 @@ end
 function GetCellh(geo::Geometry)
 	h = [0.0, 0.0, 0.0];
 	for i=1:3
-		h[i] = ccall( (:GetCellh, saltlib), Cdouble, (Geometry_, Cint), geo.geo, i-1);
+		h[i] = ccall( (:GetCellh, saltlib), Cdouble, (Geometry_, Cint), geo.g, i-1);
 	end
 	h;
 end
 
 function GetPump(geo::Geometry)
-	ccall( (:GetD, saltlib), Cdouble, (Geometry_,), geo.geo)
+	ccall( (:GetD, saltlib), Cdouble, (Geometry_,), geo.g)
 end
 
-function show(io::IO, g::Geometry)
-    print(io, "SALT Geometry: ", g.geo, "\n")
+function show(io::IO, geo::Geometry)
+    print(io, "SALT Geometry: ", geo.g, "\n")
 	
-	Nc = GetNc(g);
+	Nc = GetNc(geo);
 
-	N = GetN(g);
+	N = GetN(geo);
 	print(io, N[1], " x ", N[2], " x ", N[3], " pixels in cell\n");
-	Npml = GetNpml(g);
+	Npml = GetNpml(geo);
 	print(io, Npml[1], " x ", Npml[2], " x ", Npml[3], " pixel PML thickness\n");
-	h = GetCellh(g);
+	h = GetCellh(geo);
 	print(io, h[1], " x ", h[2], " x ", h[3], " cell\n");
 	x = linspace(0, N[1]*h[1], N[1]);	
 	y = linspace(0, N[2]*h[2], N[2])';
-	eps = g.eps[1:N[1]*N[2]*N[3]]; # real part only
-	fprof = g.fprof[1:N[1]*N[2]*N[3]];
+	eps = geo.eps[1:N[1]*N[2]*N[3]]; # real part only
+	fprof = geo.fprof[1:N[1]*N[2]*N[3]];
 
-	LowerPML = false; ## todo: getLowerPML
+	LowerPML = 	bool( ccall( (:GetLowerPML, saltlib), Cint,
+		(Geometry_,), geo.g) );
 	figure();
 	subplot(221)
 

@@ -207,6 +207,7 @@ int GetN(Geometry geo, int i){ return geo->gN.N[i]; }
 int GetNpml(Geometry geo, int i){ return geo->Npml[i]; }
 double GetCellh(Geometry geo, int i){ return geo->h[i]; }
 int GetNc(Geometry geo){ return geo->Nc;}
+int GetLowerPML(Geometry geo){ return geo->LowerPML; }
 double GetD(Geometry geo){ return geo->D;}
 
 Vec GetVeps(Geometry geo){ return geo->veps;}

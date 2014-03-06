@@ -51,10 +51,16 @@ function Passive(boundary_condition, ωguess, geo::Geometry;
 	end
 end
 
-function Creeper(ms::Array{Mode, 1}, 
+function Creeper(ms, 
 	geo::Geometry; Dmax::Cdouble=-5.0, ftol::Cdouble=1.0e-7, 
 	printNewton::Bool=true, dD::Cdouble=0.0, steps::Int64=20)
 # Dmax < 0 means stop at first threshold found.
+
+	if typeof(ms) == Mode
+		ms = [ms]
+	elseif typeof(ms) != Array{Mode, 1}
+		throw(ArgumentError("first argument must be mode"));
+	end
 
 	for i=1:length(ms)
 		if ms[i].pump != ms[1].pump
@@ -64,11 +70,11 @@ function Creeper(ms::Array{Mode, 1},
 	end
 
 	if( Dmax <= ms[1].pump && Dmax >=0)
-		throw(ArgumentError("Dmax must be higher than the Dinitial!"));
+		throw(ArgumentError("Dmax must be higher than the Dinitial"));
 	end
 
 	ccall( ("SetPump", saltlib), Void,
-		(Geometry_, Cdouble), geo.geo, ms[1].pump); 
+		(Geometry_, Cdouble), geo.g, ms[1].pump); 
 
 	if dD == 0.0
 		dD = (Dmax - ms[1].pump) / steps;
@@ -85,7 +91,7 @@ function Creeper(ms::Array{Mode, 1},
 
 	Nlasing = ccall( ("Creeper", saltlib), Cint, 
 		(Cdouble, Cdouble, Cdouble, Ptr{Mode_}, Cint, Cint, Geometry_),
-		dD, Dmax, ftol, msC, int32(printNewton), int32(size(ms,1)), geo.geo  
+		dD, Dmax, ftol, msC, int32(printNewton), int32(size(ms,1)), geo.g  
 	);
 	print(Nlasing, " new modes lasing after Creeper\n");
 
