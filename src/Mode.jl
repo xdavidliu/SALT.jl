@@ -65,6 +65,7 @@ function show(io::IO, mode::Mode)
 	y = linspace(0, N[2]*h[2], N[2])';
 
 	LowerPML = false; ## TODO
+	figure();
 	if( N[2]==1 && N[3] == 1 && Nc == 1)
 		psi = mode.psi[1:N[1]] + im*mode.psi[N[1]+1:end-2];
 		if !LowerPML
@@ -84,8 +85,8 @@ function show(io::IO, mode::Mode)
 	end 
 
 	title(
-		string("Mode: \$\\omega\$ = ", string(real(omega))[1:7], " + i(", 
-		string(imag(omega))[1:7], "), |\$\\Psi\$| = ", magnitude)
+		string("Mode: \$\\omega\$ = ", string(real(omega))[1:min(7, end)], " + i(", 
+		string(imag(omega))[1:min(7, end)], "), |\$\\Psi\$| = ", string(magnitude)[1:min(5, end)] )
 	);
 
 end

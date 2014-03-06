@@ -39,7 +39,7 @@ function Passive(boundary_condition, ωguess, geo::Geometry;
 		m_ = ccall( ("GetMode", saltlib), Mode_, (Ptr{Void}, Cint), ms, i-1)
 		ma[i] = Mode( m_, geo);
 
-		name = string("mode", string( ma[i].psi[end-1] )[1:4] ); # first few characters of real part of omega
+		name = string("mode", string( ma[i].psi[end-1] )[1:min(4,end)] ); # first few characters of real part of omega
 		ccall( (:SetName, saltlib), Void, (Mode_, Ptr{Uint8}), m_, name);
 		# just for the Newton solver print statements.
 	end

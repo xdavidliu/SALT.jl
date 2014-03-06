@@ -98,6 +98,7 @@ function show(io::IO, g::Geometry)
 	fprof = g.fprof[1:N[1]*N[2]*N[3]];
 
 	LowerPML = false; ## todo: getLowerPML
+	figure();
 	subplot(221)
 
 	# cannot get L"$\varepsilon" to work here
