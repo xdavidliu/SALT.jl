@@ -1,3 +1,5 @@
+import Base: endof, setindex!, getindex
+
 immutable PetscVec_s; end
 typealias PetscVec_ Ptr{PetscVec_s}
 
@@ -9,7 +11,7 @@ function getindex(x::PetscVec_, ind)
 
 	vals = zeros( length(ind) );
 	ccall( (:VecGetValues, saltlib), Cint, 
-		(PetscVec_, Cint, Ptr{Cint}, Ptr{Cdouble}), 
+		(PetscVec_, Int, Ptr{Int}, Ptr{Cdouble}), 
 		x, length(ind), int32(ind-1), vals
 	);
 	
@@ -20,30 +22,30 @@ function getindex(x::PetscVec_, ind)
 	end
 end
 
-function setindex!(x::PetscVec_, vals, ind)
-
-	length(vals) != length(ind) && throw(ArgumentError("vals and ind must have same length"))
-
-	if typeof(ind) <: Integer || typeof(ind) <: Range1{Int64}
-		ind = [ind]
-	end
-
-	if typeof(vals) <: Cdouble
-		vals = [vals]
-	end
-
-	ccall( (:VecSetValues, saltlib), Cint, 
-		(PetscVec_, Cint, Ptr{Cint}, Ptr{Cdouble}, Cint),
-		x, length(ind), int32(ind-1), vals, 1
-	);  # 1 is INSERT_VALUES
+function setindex!(x::PetscVec_, vals::Array{Cdouble}, ind::Array{Int})
+    length(vals) != length(ind) && throw(ArgumentError("vals and ind must have same length"))
+    
+    ccall( (:VecSetValues, saltlib), Cint, 
+	  (PetscVec_, Int, Ptr{Int}, Ptr{Cdouble}, Int),
+	  x, length(ind), int32(ind-1), vals, 1
+	  )  # 1 is INSERT_VALUES
+    
+    jul
 end
 
-import Base.endof  # for some reason you don't have to do this for getindex and setindex
+setindex!(x::PetscVec_, v::Array{Cdouble}, i::AbstractArray) =
+  setindex!(x, v, copy!(Array(Int, length(i)), i))
+
+setindex!(x::PetscVec_, v::AbstractArray, i::AbstractArray) =
+  setindex!(x, copy!(Array(Cdouble, length(v)), v), i)
+
+setindex!(x::PetscVec_, v::Real, i::Integer) = 
+   setindex!(x, Cdouble[val], Int[i])
 
 function endof(x::PetscVec_)
 
 	N = [0];
 	ccall( (:VecGetSize, saltlib), Cint,
-		(PetscVec_, Ptr{Cint} ), x, N );
+		(PetscVec_, Ptr{Int} ), x, N );
 	N[1]
 end
