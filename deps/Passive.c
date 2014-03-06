@@ -45,7 +45,7 @@ Mode *Passive(int *added, int BCPeriod, int *bl, double *k, double wreal, double
 	int	i, b[3][2];
 
 	for(i=0; i<3; i++){
-		b[i][0] = bl[i];
+		b[i][0] = geo->LowerPML? 0: bl[i];
 		b[i][1] = 0;
 	}
 

@@ -64,7 +64,7 @@ function show(io::IO, mode::Mode)
 	x = linspace(0, N[1]*h[1], N[1]);
 	y = linspace(0, N[2]*h[2], N[2])';
 
-	LowerPML = false; ## TODO
+	LowerPML = sum(b.^2)!=0 ? false : true; # b = {0} when geometry created with LowerPML
 	figure();
 	if( N[2]==1 && N[3] == 1 && Nc == 1)
 		psi = mode.psi[1:N[1]] + im*mode.psi[N[1]+1:end-2];

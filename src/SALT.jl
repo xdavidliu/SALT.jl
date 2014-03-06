@@ -3,10 +3,11 @@ module SALT
 export Passive, Creeper
 
 #=========== libraries ============ #
+typealias PetscErrorCode Cint
 const saltlib = Pkg.dir("SALT", "deps", "saltlib");
 const slepc = joinpath(ENV["SLEPC_DIR"], ENV["PETSC_ARCH"], "lib", "libslepc");
 
-ccall((:SlepcInitialize, slepc), Cint,
+ccall((:SlepcInitialize, slepc), PetscErrorCode,
 	(Ptr{Void}, Ptr{Void}, Ptr{Void}, Ptr{Void}),
 	C_NULL, C_NULL, C_NULL, C_NULL); # ignore arguments for now
 
@@ -26,6 +27,7 @@ function Passive(boundary_condition, ωguess, geo::Geometry;
     while length(bl) < 3
         push!(bl, bl[end])
     end
+	# if LowerPML==true, these will be set to 0 in Passive.c
 
 	N = GetN(geo);
 	Nadded = [0];
