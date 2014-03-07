@@ -28,7 +28,10 @@ function setindex!(x::PetscVec_, vals::Array{Cdouble}, ind::Array{Int})
 	  (PetscVec_, Int, Ptr{Int}, Ptr{Cdouble}, Int),
 	  x, length(ind), int32(ind-1), vals, 1
 	  )  # 1 is INSERT_VALUES
-    
+
+	ccall( (:AssembleVec, saltlib), Void,
+		(PetscVec_,), x);
+
 	vals
 end
 

@@ -100,8 +100,8 @@ function Creeper(ms::Array{Mode, 1},
 end
 
 Creeper(ms::Mode, 
-	geo::Geometry; _Dmax::Cdouble=-5.0, _ftol::Cdouble=1.0e-7, 
-	_printNewton::Bool=true, _dD::Cdouble=0.0, _steps::Int64=20) = 
-Creeper([ms], geo, Dmax=_Dmax, ftol=_ftol, printNewton=_printNewton, dD=_dD, steps=_steps);
+	geo::Geometry; Dmax::Cdouble=-5.0, ftol::Cdouble=1.0e-7, 
+	printNewton::Bool=true, dD::Cdouble=0.0, steps::Int64=20) = 
+Creeper([ms], geo, Dmax=Dmax, ftol=ftol, printNewton=printNewton, dD=dD, steps=steps);
 
 end
