@@ -52,6 +52,9 @@ function show(io::IO, mode::Mode)
 	
 	print(io, mode.Nc, " electric field components\n");
 	print(io, mode.N[1], " x ", mode.N[2], " x ", mode.N[3], " pixels\n");
+end
+
+function writemime(io::IO, m::MIME"image/png", mode::Mode)
 	h = mode.h;
 	N = mode.N;
 	Nc = mode.Nc;
@@ -65,28 +68,36 @@ function show(io::IO, mode::Mode)
 	y = linspace(0, N[2]*h[2], N[2])';
 
 	LowerPML = sum(b.^2)!=0 ? false : true; # b = {0} when geometry created with LowerPML
-	figure();
-	if( N[2]==1 && N[3] == 1 && Nc == 1)
-		psi = mode.psi[1:N[1]] + im*mode.psi[N[1]+1:end-2];
-		if !LowerPML
-			x = [-flipud(x), x[2:end]];
-			psi = [b[1]*flipud(psi), psi[2:end]]; 
-		end	
 
-		plot(x, real(psi), x, imag(psi));
-		legend(["real", "imag"]);
-		ylabel("\$\\Psi(x)\$");
-		xlabel("\$x\$");
-	elseif( N[2]>1 && Nc == 3)
-		X = ( ones(length(y))' .* x )'; # meshgrid using broadcasting
-		Y = ( y .* ones(length(x)) )';
+	i = isinteractive()
+	try
+		ioff()
+		f = figure();
+		if( N[2]==1 && N[3] == 1 && Nc == 1)
+			psi = mode.psi[1:N[1]] + im*mode.psi[N[1]+1:end-2];
+			if !LowerPML
+				x = [-flipud(x), x[2:end]];
+				psi = [b[1]*flipud(psi), psi[2:end]]; 
+			end	
 
-		plotTEslice(mode.psi[1:end-2], N, h, b);
-	end 
+			plot(x, real(psi), x, imag(psi));
+			legend(["real", "imag"]);
+			ylabel("\$\\Psi(x)\$");
+			xlabel("\$x\$");
+		elseif( N[2]>1 && Nc == 3)
+			X = ( ones(length(y))' .* x )'; # meshgrid using broadcasting
+			Y = ( y .* ones(length(x)) )';
 
-	title(
-		string("Mode: \$\\omega\$ = ", string(real(omega))[1:min(7, end)], " + i(", 
-		string(imag(omega))[1:min(7, end)], "), |\$\\Psi\$| = ", string(magnitude)[1:min(5, end)] )
-	);
+			plotTEslice(mode.psi[1:end-2], N, h, b);
+		end 
 
+		title(
+			string("Mode: \$\\omega\$ = ", string(real(omega))[1:min(7, end)], " + i(", 
+			string(imag(omega))[1:min(7, end)], "), |\$\\Psi\$| = ", string(magnitude)[1:min(5, end)] )
+		);
+		writemime(io, m, f);
+		close(f);
+	finally
+		i && ion()
+	end
 end
