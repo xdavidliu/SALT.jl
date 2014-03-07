@@ -84,13 +84,20 @@ function show(io::IO, geo::Geometry)
     print(io, "SALT Geometry: ", geo.g, "\n")
 	
 	Nc = GetNc(geo);
-
 	N = GetN(geo);
-	print(io, N[1], " x ", N[2], " x ", N[3], " pixels in cell\n");
 	Npml = GetNpml(geo);
-	print(io, Npml[1], " x ", Npml[2], " x ", Npml[3], " pixel PML thickness\n");
 	h = GetCellh(geo);
+
+	print(io, N[1], " x ", N[2], " x ", N[3], " pixels in cell\n");
+	print(io, Npml[1], " x ", Npml[2], " x ", Npml[3], " pixel PML thickness\n");
 	print(io, h[1], " x ", h[2], " x ", h[3], " cell\n");
+end
+
+function writemime(io::IO, m::MIME"image/png", geo::Geometry)
+	N = GetN(geo);
+	Nc = GetNc(geo);
+	h = GetCellh(geo);
+
 	x = linspace(0, N[1]*h[1], N[1]);	
 	y = linspace(0, N[2]*h[2], N[2])';
 	eps = geo.eps[1:N[1]*N[2]*N[3]]; # real part only
@@ -98,44 +105,52 @@ function show(io::IO, geo::Geometry)
 
 	LowerPML = 	bool( ccall( (:GetLowerPML, saltlib), Cint,
 		(Geometry_,), geo.g) );
-	figure();
-	subplot(221)
 
-	# cannot get L"$\varepsilon" to work here
-	if( N[2]==1 && N[3] == 1)
-		xp = LowerPML? x : [-flipud(x), x[2:end] ];
-		eps = LowerPML? eps : [flipud(eps), eps[2:end] ];
+	i = isinteractive()
+	try
+		ioff()
+		f = figure();
+		subplot(221)
 
-		plot(xp, eps);
-		xlabel("x");
-		ylabel("\$\\epsilon\$");
-	elseif( N[2]>1 && N[3]>1 && !LowerPML )
-		eps = reshape(eps, N[3], N[2], N[1]);
-		eps = squeeze( eps[1,:,:], 1);
-		eps, X, Y = quadrants(eps, 1, 1, 0, x[2]-x[1], y[2]-y[1]);
+		# cannot get L"$\varepsilon" to work here
+		if( N[2]==1 && N[3] == 1)
+			xp = LowerPML? x : [-flipud(x), x[2:end] ];
+			eps = LowerPML? eps : [flipud(eps), eps[2:end] ];
 
-		pcolor(X, Y, eps, cmap="Blues" );
-		axis("equal"); axis("off");
-		colorbar();
+			plot(xp, eps);
+			xlabel("x");
+			ylabel("\$\\epsilon\$");
+		elseif( N[2]>1 && N[3]>1 && !LowerPML )
+			eps = reshape(eps, N[3], N[2], N[1]);
+			eps = squeeze( eps[1,:,:], 1);
+			eps, X, Y = quadrants(eps, 1, 1, 0, x[2]-x[1], y[2]-y[1]);
+
+			pcolor(X, Y, eps, cmap="Blues" );
+			axis("equal"); axis("off");
+			colorbar();
+		end
+		title("Dielectric of passive medium");
+
+		subplot(222)
+		if( N[2]==1 && N[3] == 1 && !LowerPML)
+			xp = LowerPML? x : [-flipud(x), x[2:end] ];
+			fprof = LowerPML? fprof : [flipud(fprof), fprof[2:end] ];
+
+			plot(xp, fprof);
+			xlabel("x");
+			ylabel("\$f(x)\$");	
+		elseif( N[2]>1 && N[3]>1 && !LowerPML )
+			fprof = reshape(fprof, N[3], N[2], N[1]);
+			fprof = squeeze( fprof[1, :, :],1 );
+			fprof, X, Y = quadrants(fprof, 1, 1, 0, x[2]-x[1], y[2]-y[1]);		
+
+			pcolor(X, Y, fprof, cmap="Greens" );
+			axis("equal"); axis("off");		
+		end
+		title("gain profile");
+		writemime(io, m, f);
+		close(f);
+	finally
+		i && ion()
 	end
-	title("Dielectric of passive medium");
-
-	subplot(222)
-	if( N[2]==1 && N[3] == 1 && !LowerPML)
-		xp = LowerPML? x : [-flipud(x), x[2:end] ];
-		fprof = LowerPML? fprof : [flipud(fprof), fprof[2:end] ];
-
-		plot(xp, fprof);
-		xlabel("x");
-		ylabel("\$f(x)\$");	
-	elseif( N[2]>1 && N[3]>1 && !LowerPML )
-		fprof = reshape(fprof, N[3], N[2], N[1]);
-		fprof = squeeze( fprof[1, :, :],1 );
-		fprof, X, Y = quadrants(fprof, 1, 1, 0, x[2]-x[1], y[2]-y[1]);		
-
-		pcolor(X, Y, fprof, cmap="Greens" );
-		axis("equal"); axis("off");		
-	end
-	title("gain profile");
-
 end

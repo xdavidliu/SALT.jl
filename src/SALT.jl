@@ -12,6 +12,7 @@ ccall((:SlepcInitialize, slepc), PetscErrorCode,
 	C_NULL, C_NULL, C_NULL, C_NULL); # ignore arguments for now
 
 import Base.show
+import Base: writemime
 
 include("PetscVec.jl");
 include("Geometry.jl");
