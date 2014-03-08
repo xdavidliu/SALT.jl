@@ -43,8 +43,8 @@ function Geometry(ε::Array{Cdouble}, grid_spacing, nPML_,
 
     Geometry( ccall( ("CreateGeometry",saltlib), Geometry_,
             (Ptr{Cint}, Ptr{Cdouble}, Ptr{Cint},
-            Cint, Cint, Ptr{Cdouble}, Ptr{Cdouble}, Cdouble, Cdouble),
-            N, h, nPML, n_vectorcomp, lowerPML, ε, gain_prof, ω_gain, γ_gain))
+            Cint, Cint, Ptr{Cdouble}, Ptr{Cdouble}, Ptr{Cdouble}, Cdouble, Cdouble),
+            N, h, nPML, n_vectorcomp, lowerPML, ε, C_NULL, gain_prof, ω_gain, γ_gain))
 end
 
 function GetN(geo::Geometry)

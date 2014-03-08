@@ -83,6 +83,33 @@ Mode *ReadModes(Geometry geo, char **namesin, char **namesout, int Nm){
 	return ms;
 }
 
+double *ReadVecToArray(int N, const char *filename){
+// make sure to free returned array	after done using it
+	Vec v;
+	CreateVec(N, &v);
+	FILE *fp;
+	fp = fopen(filename, "r");
+	if(fp==NULL){
+		char message[PETSC_MAX_PATH_LEN];
+		sprintf(message, "failed to read %s", filename);
+		MyError(message);
+	}
+	ReadVectorC(fp, N, v);
+	fclose(fp);
+
+	int ns, ne, i;
+	VecGetOwnershipRange(v, &ns, &ne);
+	double *vals, *valsout = (double*) malloc( (ne-ns)*sizeof(double) );	
+	VecGetArray(v, &vals);
+	for(i=ns; i<ne; i++){
+		valsout[i-ns] = vals[i-ns];
+	}
+	VecRestoreArray(v, &vals);
+	VecDestroy(&v);
+
+	return valsout;
+}
+
 Geometry ReadCreateGeometry(){
 	int i, N[3], Npml[3], Nc, LowerPML;
 	double h[3], wa, y;
@@ -107,38 +134,14 @@ Geometry ReadCreateGeometry(){
 	PetscOptionsGetString(PETSC_NULL,"-epsfile", epsfile, PETSC_MAX_PATH_LEN, NULL); 
 	PetscOptionsGetString(PETSC_NULL,"-fproffile", fproffile, PETSC_MAX_PATH_LEN, NULL); 
 
-	Vec veps, vfprof;
-	CreateVec(N[0]*N[1]*N[2], &veps);
-	VecDuplicate(veps, &vfprof);
-	FILE *fp;
-	fp = fopen(epsfile, "r");
-	if(fp==NULL){
-		char message[PETSC_MAX_PATH_LEN];
-		sprintf(message, "failed to read %s", epsfile);
-		MyError(message);
-	}
-	ReadVectorC(fp, N[0]*N[1]*N[2], veps);
-	fclose(fp);
-
-	fp = fopen(fproffile, "r");
-	if(fp==NULL){
-		char message[PETSC_MAX_PATH_LEN];
-		sprintf(message, "failed to read %s", fproffile);
-		MyError(message);
-	}
-	ReadVectorC(fp, N[0]*N[1]*N[2], vfprof);
-	fclose(fp);
-
 	double *eps, *fprof;
-	VecGetArray(veps, &eps);
-	VecGetArray(vfprof, &fprof);
 
-	Geometry geo = CreateGeometry(N, h, Npml, Nc, LowerPML, eps, fprof, wa, y);    
+	eps = ReadVecToArray(N[0]*N[1]*N[2], epsfile);
+	fprof = ReadVecToArray(N[0]*N[1]*N[2], fproffile);
+	Geometry geo = CreateGeometry(N, h, Npml, Nc, LowerPML, eps, NULL, fprof, wa, y);    
+	free(eps);
+	free(fprof);
 
-	VecRestoreArray(veps, &eps);
-	VecRestoreArray(vfprof, &fprof);
-	VecDestroy(&veps);
-	VecDestroy(&vfprof);
 	return geo;
 }
 

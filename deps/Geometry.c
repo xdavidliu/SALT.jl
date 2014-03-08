@@ -66,7 +66,7 @@ void VecSqMedium(Geometry geo, Vec v, Vec vsq, Vec scratchM){
 	InterpolateVec(geo, scratchM, vsq);
 }
 
-Geometry CreateGeometry(int N[3], double h[3], int Npml[3], int Nc, int LowerPML, double *eps, double *fprof, double wa, double y){
+Geometry CreateGeometry(int N[3], double h[3], int Npml[3], int Nc, int LowerPML, double *eps, double *epsI, double *fprof, double wa, double y){
 	int i;
 
         Geometry geo = (Geometry) malloc(sizeof(struct Geometry_s));
@@ -102,7 +102,7 @@ Geometry CreateGeometry(int N[3], double h[3], int Npml[3], int Nc, int LowerPML
 		if(i>0)VecDuplicate(geo->vMscratch[0], &geo->vMscratch[i]);
 	}
 
-	{ 	double *scratch;
+	{ 	double *scratch; // TODO: remove these redundant lines
 		int ns, ne;
 		VecGetOwnershipRange(geo->vMscratch[0], &ns, &ne);
 		VecGetArray(geo->vMscratch[0], &scratch);
@@ -123,6 +123,24 @@ Geometry CreateGeometry(int N[3], double h[3], int Npml[3], int Nc, int LowerPML
 	InterpolateVec(geo, geo->vMscratch[0], geo->vscratch[1]);
 	VecShift(geo->vscratch[1], 1.0);
 	VecPointwiseMult(geo->veps, geo->vscratch[1], geo->vepspml);
+
+	if(epsI != NULL){ // imaginary part of passive dielectric
+		double *scratch;
+		int ns, ne;
+		VecGetOwnershipRange(geo->vMscratch[0], &ns, &ne);
+		VecGetArray(geo->vMscratch[0], &scratch);
+		for(i=ns; i<ne; i++){
+			scratch[i-ns] = epsI[i-ns];
+		}
+		VecRestoreArray(geo->vMscratch[0], &scratch);
+
+		InterpolateVec(geo, geo->vMscratch[0], geo->vscratch[1]);
+		VecPointwiseMult(geo->vscratch[1], geo->vscratch[1], geo->vepspml);
+		TimesI(geo, geo->vscratch[1], geo->vscratch[2]);
+
+		VecAXPY(geo->veps, 1.0, geo->vscratch[1]);
+	}
+
 	TimesI(geo, geo->veps, geo->vIeps); // vIeps for convenience only, make sure to update it later if eps ever changes!
 
 	geo->D = 0.0;
