@@ -138,7 +138,7 @@ Geometry CreateGeometry(int N[3], double h[3], int Npml[3], int Nc, int LowerPML
 		VecPointwiseMult(geo->vscratch[1], geo->vscratch[1], geo->vepspml);
 		TimesI(geo, geo->vscratch[1], geo->vscratch[2]);
 
-		VecAXPY(geo->veps, 1.0, geo->vscratch[1]);
+		VecAXPY(geo->veps, 1.0, geo->vscratch[2]);
 	}
 
 	TimesI(geo, geo->veps, geo->vIeps); // vIeps for convenience only, make sure to update it later if eps ever changes!

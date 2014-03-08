@@ -130,17 +130,26 @@ Geometry ReadCreateGeometry(){
 		PetscOptionsGetReal(PETSC_NULL,"-gamma", &y,NULL); 
 	}
 
-	char epsfile[PETSC_MAX_PATH_LEN], fproffile[PETSC_MAX_PATH_LEN];
+	char epsfile[PETSC_MAX_PATH_LEN], fproffile[PETSC_MAX_PATH_LEN], epsIfile[PETSC_MAX_PATH_LEN];
 	PetscOptionsGetString(PETSC_NULL,"-epsfile", epsfile, PETSC_MAX_PATH_LEN, NULL); 
 	PetscOptionsGetString(PETSC_NULL,"-fproffile", fproffile, PETSC_MAX_PATH_LEN, NULL); 
 
-	double *eps, *fprof;
-
+	double *eps, *fprof, *epsI;
 	eps = ReadVecToArray(N[0]*N[1]*N[2], epsfile);
 	fprof = ReadVecToArray(N[0]*N[1]*N[2], fproffile);
-	Geometry geo = CreateGeometry(N, h, Npml, Nc, LowerPML, eps, NULL, fprof, wa, y);    
+	
+	PetscBool exists_epsIfile;
+	PetscOptionsGetString(PETSC_NULL,"-epsIfile", epsIfile, PETSC_MAX_PATH_LEN, &exists_epsIfile); 
+	if(exists_epsIfile){
+		epsI = ReadVecToArray(N[0]*N[1]*N[2], epsIfile);
+	}else{
+		epsI = NULL;
+	}
+
+	Geometry geo = CreateGeometry(N, h, Npml, Nc, LowerPML, eps, epsI, fprof, wa, y);    
 	free(eps);
 	free(fprof);
+	if(exists_epsIfile) free(epsI);
 
 	return geo;
 }
