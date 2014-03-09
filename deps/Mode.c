@@ -58,7 +58,6 @@ void Write(Mode m, const Geometry geo){
 	fprintf(fp, "ifix=%i;\n", m->ifix);
 
 	fprintf(fp, "b=[%i %i %i];\n", m->b[0][0], m->b[1][0], m->b[2][0]);
-	fprintf(fp, "BCPeriod=%i;\n", m->BCPeriod);
 
 	fprintf(fp, "D=%1.15g;\n", geo->D);
 	fprintf(fp, "k=[\n%1.15g\n%1.15g\n%1.15g\n];\n", m->k[0], m->k[1], m->k[2]);
@@ -147,7 +146,7 @@ void Setup(Mode m, Geometry geo){
 	KSPCreate(PETSC_COMM_WORLD,&m->ksp);
 	AllocateJacobian(m->J, geo);
 
-    MoperatorGeneralBlochFill(geo, m->J, m->b, m->BCPeriod, m->k, 0);
+	MoperatorGeneralBlochFill(geo, m->J, m->b, m->k, 0);
 	AddRowDerivatives(m->J, geo, m->ifix, 0);
 	AssembleMat(m->J);
 	MatSetOption(m->J,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
@@ -210,7 +209,6 @@ Mode CopyMode(Mode mold){
 	sprintf(m->name, "%s", mold->name);
 	m->lasing = mold->lasing;
 	m->ifix = mold->ifix;
-	m->BCPeriod = mold->BCPeriod;
 
 	m->ksp = mold->ksp;
 	m->J = mold->J; // just for consistency; in all cases, these will have been destroyed

@@ -118,7 +118,7 @@ PetscErrorCode Bundle(Mode *ms, int size, Geometry geo){
 		Mode m = ms[ih];
 		m->J = J;// bundle shares J and v
 		m->ksp = ksp;
-		MoperatorGeneralBlochFill(geo, J, m->b, m->BCPeriod, m->k, ih);
+		MoperatorGeneralBlochFill(geo, J, m->b, m->k, ih);
 		AddRowDerivatives(J, geo, m->ifix, ih);
 	}
 

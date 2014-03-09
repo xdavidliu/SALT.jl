@@ -75,7 +75,7 @@ void VecSqMedium(Geometry geo, Vec v, Vec vsq, Vec scratchM);
 int Last2(Geometry geo, int i);
 void SetJacobian(Geometry geo, Mat J, Vec v, int jc, int jr, int jh);
 
-void MoperatorGeneralBlochFill(Geometry geo, Mat A,  int b[3][2], int DimPeriod, double k[3], int ih);
+void MoperatorGeneralBlochFill(Geometry geo, Mat A,  int b[3][2], double k[3], int ih);
 
 int Nxyz(Geometry geo);
 int Nxyzc(Geometry geo);
@@ -90,7 +90,7 @@ typedef struct Mode_s{
 	Vec vpsi;
 	char name[PETSC_MAX_PATH_LEN];
 	double k[3];
-	int ifix, BCPeriod, b[3][2], lasing;
+	int ifix, b[3][2], lasing;
 	Mat J;
 	KSP ksp; // one ksp per J seems faster
 } *Mode;
@@ -153,6 +153,6 @@ dcomp pmlval(int i, int* N, int* Npml, double* h, int LowerPML, int k);
 void AllocateJacobian(Mat J, Geometry geo);
 void AddRowDerivatives(Mat J, Geometry geo, int ifix, int ih);
 
-Mode *Passive(int *added, int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev,  Geometry geo);
+Mode *Passive(int *added, int *bl, double *k, double wreal, double wimag, double modenorm, int nev,  Geometry geo);
 int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int Nm, Geometry geo);
 

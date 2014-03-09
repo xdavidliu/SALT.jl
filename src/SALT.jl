@@ -32,9 +32,9 @@ function Passive(boundary_condition, ωguess, geo::Geometry;
 
 	N = GetN(geo);
 	Nadded = [0];
-	ms = ccall( ("Passive", saltlib), Ptr{Void}, (Ptr{Cint}, Cint, Ptr{Cint}, 
+	ms = ccall( ("Passive", saltlib), Ptr{Void}, (Ptr{Cint}, Ptr{Cint}, 
 		Ptr{Cdouble}, Cdouble, Cdouble, Cdouble, Cint, Geometry), 
-		Nadded, int32( BCPeriod(N, k) ), int32(bl), k, real(ωguess), imag(ωguess), modenorm, nev, geo );
+		Nadded, int32(bl), k, real(ωguess), imag(ωguess), modenorm, nev, geo );
 	Nadded = Nadded[1];
 
 	ma = Array(Mode, Nadded);

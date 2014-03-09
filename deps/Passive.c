@@ -1,6 +1,6 @@
 #include "salt.h"
 
-Mode CreateMode(Geometry geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[3]){
+Mode CreateMode(Geometry geo, int ifix_, int b_[3][2], double k_[3]){
 	Mode m = (Mode) malloc(sizeof(struct Mode_s) );
 	CreateVec(2*Nxyzc(geo)+2, &m->vpsi);
 	
@@ -9,7 +9,6 @@ Mode CreateMode(Geometry geo, int ifix_, int b_[3][2], int BCPeriod_, double k_[
 
 	m->lasing = 0;
 	m->ifix = ifix_;
-	m->BCPeriod = BCPeriod_;
 	int i, j;
 	for(i=0; i<3; i++) for(j=0; j<2; j++) m->b[i][j] = b_[i][j];
 	for(i=0; i<3; i++) m->k[i] = k_[i];
@@ -36,7 +35,7 @@ void FillBop(Geometry geo, Mat Bop, dcomp w){
 }
 
 // everything after modeout is directly from ReadGeometry
-Mode *Passive(int *added, int BCPeriod, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, Geometry geo){
+Mode *Passive(int *added, int *bl, double *k, double wreal, double wimag, double modenorm, int nev, Geometry geo){
 
     	tv t1, t2, t3;
 
@@ -52,7 +51,7 @@ Mode *Passive(int *added, int BCPeriod, int *bl, double *k, double wreal, double
 	Mat Mop;
 	CreateSquareMatrix(2*Nxyzc(geo), 26, &Mop);
 
-	MoperatorGeneralBlochFill(geo, Mop, b, BCPeriod, k, 0);
+	MoperatorGeneralBlochFill(geo, Mop, b, k, 0);
 	AssembleMat(Mop);
 
 	dcomp guess = -csqr(wreal + ComplexI * wimag);
@@ -123,7 +122,7 @@ Mode *Passive(int *added, int BCPeriod, int *bl, double *k, double wreal, double
 
 		if(cimag(w) > 0.0) w = conj(w);
 
-		Mode m = CreateMode(geo, 0, b, BCPeriod, k);
+		Mode m = CreateMode(geo, 0, b, k);
 		ScatterRange(v, m->vpsi, 0, 0, xyzcrGrid(&geo->gN) );
 
 		Fix(m, geo, modenorm);

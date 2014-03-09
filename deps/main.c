@@ -39,9 +39,6 @@ Mode ModeRead(const char *Name, Geometry geo, double *Dout){
 	for(i=0; i<3; i++) m->b[i][1] = 0;
 
 	fgets(w, PETSC_MAX_PATH_LEN, fp);
-	sscanf(w, "BCPeriod=%i;", &m->BCPeriod); 	 
-
-	fgets(w, PETSC_MAX_PATH_LEN, fp);
 	sscanf(w, "D=%lf;", Dout); 	 
 
 	fgets(w, PETSC_MAX_PATH_LEN, fp); // k=[ line
@@ -57,7 +54,6 @@ Mode ModeRead(const char *Name, Geometry geo, double *Dout){
 	MPI_Bcast(&m->ifix, 1, MPI_INT, 0, PETSC_COMM_WORLD);
 	for(i=0; i<3; i++) 
 	   MPI_Bcast(m->b[i], 2, MPI_INT, 0, PETSC_COMM_WORLD);
-	MPI_Bcast(&m->BCPeriod, 1, MPI_INT, 0, PETSC_COMM_WORLD);
 	MPI_Bcast(Dout, 1, MPI_DOUBLE, 0, PETSC_COMM_WORLD);
 
 	double val1, val2;
@@ -156,7 +152,7 @@ Geometry ReadCreateGeometry(){
 
 void mainPassive(){
 
-	int i, BCPeriod=0, bl[3] = {0}, nev=0;
+	int i, bl[3] = {0}, nev=0;
 	double k[3] = {0},wreal = 0., wimag=0., modenorm=1.;
 	char option[PETSC_MAX_PATH_LEN];
 	const char x[3] = {'x', 'y', 'z'};
@@ -173,13 +169,12 @@ void mainPassive(){
 	PetscOptionsGetReal(PETSC_NULL,"-wreal", &wreal,NULL); 
 	PetscOptionsGetReal(PETSC_NULL,"-wimag", &wimag,NULL); 
 	PetscOptionsGetInt(PETSC_NULL,"-nev", &nev,NULL);
-	PetscOptionsGetInt(PETSC_NULL,"-BCPeriod", &BCPeriod,NULL);
 	PetscOptionsGetString(PETSC_NULL,"-passiveout", modeout, PETSC_MAX_PATH_LEN, NULL); 
 
 	Geometry geo = ReadCreateGeometry();
 	
 	int added;
-	Mode *ms = Passive(&added, BCPeriod, bl, k, wreal, wimag, modenorm, nev, geo);
+	Mode *ms = Passive(&added, bl, k, wreal, wimag, modenorm, nev, geo);
 	for(i = 0; i<added; i++){
 		if(added == 1)
 			sprintf(ms[i]->name, "%s", modeout);

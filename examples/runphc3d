@@ -18,8 +18,7 @@ GEO="-Nc 3 -Nx 25 -Ny 20 -Nz 7
 
 PASSIVE="-wreal 1.725 -wimag -0.0 
 -bx 1 -by -1 -bz 1
--kx 0 -ky 0 -kz 0
--BCPeriod 0 -norm 0.01
+-kx 0 -ky 0 -kz 0 -norm 0.01
 -passiveout pass3d
 -nev 1";
 
