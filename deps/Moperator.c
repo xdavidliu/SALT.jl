@@ -1,7 +1,11 @@
 #include "salt.h"
 
-int periodic(int ic, int BCPeriod){
-	return ic == (BCPeriod-1) || BCPeriod == 4 || (BCPeriod<0 && ic !=-(BCPeriod+1));
+int periodic(int ic, int *N, double *k){
+	
+	if( N[ic] == 1 || k[ic] != 0.0)
+		return 1;
+	else
+		return 0;
 }
 
 dcomp zval(int i, const double* f, int Nxyzc){
@@ -73,13 +77,13 @@ for (itrue = ns; itrue < ne && itrue < 2*Nxyzc(geo); ++itrue) {
 	project(&prow, geo->Nc);
 for(ib=0; ib<2; ib++){
 	if(p.ix[p.ic] == N[p.ic]-1){
-		int per = periodic(p.ic, DimPeriod );
+		int per = periodic(p.ic, N, k );
 		cidu = per ? (1-N[p.ic])*cid : 0;
 		cidu_phase = per? cexp(ComplexI*blochbc[p.ic]) : bc[p.ic][1][cp[ib]];
 	}
 
 	if(p.ix[cp[ib]] == 0){
-		int per = periodic(cp[ib], DimPeriod );
+		int per = periodic(cp[ib], N, k );
 		cpidl[ib] = per ? (1-N[cp[ib]])*cpid[ib] : 0;
 		cpidl_phase[ib] = per ? cexp(-ComplexI*blochbc[cp[ib]]) : bc[cp[ib]][0][cp[ib]];
 	}
@@ -110,13 +114,13 @@ for(ib=0; ib<2; ib++){
 	}
 
 	if(p.ix[cp[ib]] == N[cp[ib]]-1){
-		int per = periodic(cp[ib], DimPeriod );
+		int per = periodic(cp[ib], N, k );
 		cpidu[ib] = per ? (1-N[cp[ib]])*cpid[ib] : 0;
 		cpidu_phase[ib] = per? cexp(ComplexI*blochbc[cp[ib]]) : bc[cp[ib]][1][p.ic];
 	}
 
 	if(p.ix[cp[ib]] == 0){
-		int per = periodic(cp[ib], DimPeriod );
+		int per = periodic(cp[ib], N, k );
 		cpidl[ib] = per ? (1-N[cp[ib]])*cpid[ib] : -cpidu[ib];
 		cpidl_phase[ib] = per? cexp(-ComplexI*blochbc[cp[ib]]) : bc[cp[ib]][0][p.ic];
 	}   
