@@ -19,7 +19,7 @@ void InterpolateVec(Geometry geo, Vec vM, Vec vN){
 		CreatePoint_i(&p, i, &geo->gN);
 		if( projectmedium(&p, &geo->gM, geo->LowerPML) ){
 			int ixyz = xyz(&p);
-			if( ms <= ixyz && ixyz < me)
+			if( ms <= ixyz && ixyz < me && vals[ixyz-ms] != 0.0)
 				VecSetValue(vN, i, vals[ixyz-ms], ADD_VALUES);
 		}
 	}
@@ -31,6 +31,9 @@ void InterpolateVec(Geometry geo, Vec vM, Vec vN){
 void CollectVec(Geometry geo, Vec vN, Vec vM){
 	VecSet(vM, 0.0);
 
+	Vecfun f;
+	CreateVecfun(&f, geo->vf);
+
 	const double *vals;
 	VecGetArrayRead(vN, &vals);
 	int ns, ne;
@@ -39,7 +42,9 @@ void CollectVec(Geometry geo, Vec vN, Vec vM){
 
 	int i;
 	for(i=ns; i<ne; i++){
-	
+		if( valr(&f, i) == 0.0) continue;
+		// skip if gain profile zero here
+
 		Point p;
 		CreatePoint_i(&p, i, &geo->gN);
 		if( projectmedium(&p, &geo->gM, geo->LowerPML) )
@@ -47,6 +52,7 @@ void CollectVec(Geometry geo, Vec vN, Vec vM){
 	}
 
 	VecRestoreArrayRead(vN, &vals);
+	DestroyVecfun(&f);
 	AssembleVec(vM);
 }
 
@@ -148,19 +154,20 @@ Geometry CreateGeometry(int N[3], double h[3], int Npml[3], int Nc, int LowerPML
 	geo->y = y;
 
 	VecDuplicate(geo->veps, &geo->vf);
+	VecDuplicate(geo->vMscratch[0], &geo->vfM);
 
 	{ 	double *scratch;
 		int ns, ne;
-		VecGetOwnershipRange(geo->vMscratch[1], &ns, &ne);
-		VecGetArray(geo->vMscratch[1], &scratch);
+		VecGetOwnershipRange(geo->vfM, &ns, &ne);
+		VecGetArray(geo->vfM, &scratch);
 
 		for(i=ns; i<ne;i++)
 			scratch[i-ns] = fprof[i-ns];
 
-		VecRestoreArray(geo->vMscratch[1], &scratch);
+		VecRestoreArray(geo->vfM, &scratch);
 	}
 
-	InterpolateVec(geo, geo->vMscratch[1], geo->vf);
+	InterpolateVec(geo, geo->vfM, geo->vf);
 
         return geo;
 }
@@ -179,6 +186,7 @@ void DestroyGeometry(Geometry geo){
 		VecDestroy(&geo->vIeps);
 		VecDestroy(&geo->vepspml);
 		VecDestroy(&geo->vf);
+		VecDestroy(&geo->vfM);
 		free(geo);
     }
 }

@@ -59,7 +59,7 @@ typedef struct Geometry_s{
 
 	Grid gN, gM; // technically could remove gM, but keep it around in case need later
 
-	Vec vscratch[SCRATCHNUM], vMscratch[SCRATCHNUM], vNhscratch[SCRATCHNUM], vH, veps, vIeps, vf;
+	Vec vscratch[SCRATCHNUM], vMscratch[SCRATCHNUM], vNhscratch[SCRATCHNUM], vH, veps, vIeps, vf, vfM; // keeping vfM saves time with collect and stamp
 	double D, wa, y;
 } *Geometry;
 
