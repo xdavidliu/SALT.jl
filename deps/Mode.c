@@ -64,6 +64,7 @@ void Write(Mode m, const Geometry geo){
 	// "read" constructor for Mode depends on this
 
 	// additional lines for plotting only, not read in ReadMode
+	// NOTE: if you change these make sure to change writeModeFile.m (matlab script from r031414)
 	const int *N = &(geo->gN.N[0]);
 	const double *h = &(geo->h[0]);
 	fprintf(fp, "N = [%i, %i, %i];\n", N[0],  N[1], N[2]);
