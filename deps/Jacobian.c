@@ -200,6 +200,9 @@ double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton
 	VecNorm(f, NORM_2, &fnorm);
 
 	if( printnewton ) PetscPrintf(PETSC_COMM_WORLD, "|f| = %.0e;", fnorm);
+
+	PetscPrintf(PETSC_COMM_WORLD, " DEBUG: c = %g", get_c(ms[0]) );
+
 	// no \n here to make room for timing printf statement immediately afterwards
 
 	if(fnorm < ftol )

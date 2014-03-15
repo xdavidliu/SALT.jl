@@ -61,6 +61,8 @@ void NewtonSolve(Mode *ms, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int 
 
 		gettimeofday(&t2, NULL);
 		KSPSolve(ksp, f, dv);
+		KSPSetOperators(ms[0]->ksp, ms[0]->J, ms[0]->J, SAME_PRECONDITIONER);
+
 		gettimeofday(&t3, NULL);
 
 		int printtime = 0; // disable printtime for now
@@ -69,7 +71,9 @@ void NewtonSolve(Mode *ms, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int 
 		else if(printnewton) PetscPrintf(PETSC_COMM_WORLD, "\n");
 
 		its++;
-		if(its > 8) MyError("Something's wrong, Newton shouldn't take this long to converge. Try a different starting point.\n");
+		if(its > 6)
+			KSPSetOperators(ms[0]->ksp, ms[0]->J, ms[0]->J, SAME_NONZERO_PATTERN);
+		// refresh LU factorization. In next KSP solve, reset to SAME_PRECONDITIONER, do not need to worry about any other instances of KSPSolve
 	}
 
 	gettimeofday(&t2, NULL);
