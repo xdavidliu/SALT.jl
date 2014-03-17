@@ -117,10 +117,9 @@ Mode *Passive(int *added, int *bl, double *k, double wreal, double wimag, double
 		int fake = dvnorm / vnorm < 1e-5;
 		//==============
 
-		if( cimag(w) > 0.0 || fake ) continue; // could use ^ (XOR) here, but the positive frequency ones are exact duplicates.
+		// if imaginary part is not same sign as guess, skip
+		if( cimag(w) * wimag < 0.0 || fake ) continue; 
 		else j++;
-
-		if(cimag(w) > 0.0) w = conj(w);
 
 		Mode m = CreateMode(geo, 0, b, k);
 		ScatterRange(v, m->vpsi, 0, 0, xyzcrGrid(&geo->gN) );

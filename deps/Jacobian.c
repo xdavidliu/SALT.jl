@@ -188,23 +188,16 @@ double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton
 	// row derivatives already added in add placeholders!
 
 	AssembleMat(J);
-
 	MatMult(J, v, f);
-
 	for(kh = 0; kh<Nm; kh++) for(ir=0; ir<2; ir++)
 		VecSetValue(f, kh*NJ(geo) + Nxyzcr(geo)+ir, 0.0, INSERT_VALUES);
 
 	AssembleVec(f);
-
 	double fnorm;
 	VecNorm(f, NORM_2, &fnorm);
 
-	if( printnewton ) PetscPrintf(PETSC_COMM_WORLD, "|f| = %.0e;", fnorm);
-
-	PetscPrintf(PETSC_COMM_WORLD, " DEBUG: c = %g", get_c(ms[0]) );
-
+	if( printnewton ) PetscPrintf(PETSC_COMM_WORLD, "|f| = %1.6e;", fnorm);
 	// no \n here to make room for timing printf statement immediately afterwards
-
 	if(fnorm < ftol )
 		return fnorm;   		// TODO: deleted old integral routine. Write new one here.
 
