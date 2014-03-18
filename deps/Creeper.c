@@ -134,8 +134,11 @@ int FindModeAtThreshold(Mode *ms, int size){
 	for(ih = 0; ih<size; ih++){
 		Mode m = ms[ih];
 		if( get_c(m) == 0.0 && m->lasing ){
-			n = ih;
-			break;
+	
+			if(n == -1)
+				n = ih;
+			else
+				MyError("found two modes at threshold! FirstStep does not support multimode yet");
 		}
 	}
 	return n;
