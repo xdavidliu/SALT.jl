@@ -78,13 +78,15 @@ void NewtonSolve(Mode *ms, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int 
 
 	gettimeofday(&t2, NULL);
 
-	// removed print statement; redo these for multimode.
 	if(printnewton){ 
 		PetscPrintf(PETSC_COMM_WORLD, "\nconverged!\n" );
 		for(ih=0; ih<Nm; ih++){
 			dcomp w = get_w(ms[ih]);
-			PetscPrintf(PETSC_COMM_WORLD, "%s at D = %g: w = %g + i(%g)", 
-				ms[ih]->name,  geo->D, creal(w), cimag(w));
+			PetscPrintf(PETSC_COMM_WORLD, "%s at D = %g: w = %g", ms[ih]->name,  geo->D, creal(w));
+			if(! ms[ih]->lasing)
+				PetscPrintf(PETSC_COMM_WORLD, " + i(%g)", cimag(w) );
+			else
+				PetscPrintf(PETSC_COMM_WORLD, ", c = %g", get_c(ms[ih]) );
 
 			if( GetSize() == 1 && ms[ih]->lasing && geo->LowerPML==0 
 			&& geo->gN.N[1] == 1 && geo->gN.N[2] == 1 && geo->Nc == 1)  

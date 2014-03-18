@@ -198,6 +198,10 @@ double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton
 
 	if( printnewton ) PetscPrintf(PETSC_COMM_WORLD, "|f| = %1.6e;", fnorm);
 	// no \n here to make room for timing printf statement immediately afterwards
+
+	if(Nm==2) //DEBUG
+		PetscPrintf(PETSC_COMM_WORLD, " DEBUG: c = (%g, %g)", get_c(ms[0]), get_c(ms[1]) );
+
 	if(fnorm < ftol )
 		return fnorm;   		// TODO: deleted old integral routine. Write new one here.
 
