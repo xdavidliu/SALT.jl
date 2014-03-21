@@ -149,6 +149,49 @@ void ComputeGain(Geometry geo, Mode *ms, int Nh){
 	DestroyVecfun(&H);
 }
 
+// for 2 modes near degeneracy. Call this instead of ComputeGain. see r032114 for derivation of off-diagonal terms
+void ComputeGainNearDeg(Geometry geo, Mode *ms){ 
+	if(GetSize() != 1) 
+		MyError("ComputeGainNearDeg not implemented for parallel yet");
+
+	VecSet(geo->vH, 0.0);	
+	dcomp yw = gamma_w(ms[0], geo); // use same Gamma for both
+	double mc[2] = {get_c(ms[0]), get_c(ms[1]) },
+		mw[2] = {creal(get_w(ms[0])), creal(get_w(ms[1])) };
+
+	double *psi[2], *fprof, *H;
+	int i;
+
+	VecGetArray( geo->vH, &H);
+	VecGetArray( geo->vf, &fprof);
+	for(i=0; i<2; i++)
+		VecGetArray(ms[i]->vpsi, &psi[i]);
+
+	double gampar = 1.0; // TODO: make this member of Geometry, read from command line and put in Constructor, etc.
+
+	for(i=0; i<Nxyzcr(geo); i++){
+
+		double pR[2], pI[2];
+		int im;
+		for(im=0; im<2; im++){
+			// pR[im] = psi[im][  //TODO
+
+		}
+		double valdiag = sqr(cabs( mc[0]*psi[0][i] )) + sqr(cabs( mc[1]*psi[1][i] ));
+		double valoff = mc[0]*mc[1] * 2*gampar / (sqr(gampar) + sqr(mw[1] - mw[0] ) );
+			valoff *= gampar * (pR[0]*pR[1] + pI[0]*pI[1]) + (mw[1] - mw[0])* (pR[0]*pI[1] - pI[0]*pR[1]);
+		H[i] = 1.0 / (1.0 + yw * valdiag + yw * valoff );
+	}
+
+	VecRestoreArray( geo->vH, &H);
+	VecRestoreArray( geo->vf, &fprof);	
+	for(i=0; i<2; i++)
+		VecRestoreArray(ms[i]->vpsi, &psi[i]);
+
+
+}
+
+
 double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton){
 	Mode m = ms[0];
 	int lasing = m->lasing, Nm;
