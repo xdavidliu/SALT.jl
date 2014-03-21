@@ -71,37 +71,49 @@ void TensorDerivative(Mode m, Mode mj, Geometry geo, int jc, int jr, Vec df, Vec
 	DestroyComplexfun(&psi);
 }
 
-// for two modes only. Call once for entire Jacobian, unlike TensorDerivative which does a block column at a time. See r032114 for derivation
+// for two modes only. Call once for entire Jacobian, unlike TensorDerivative which does a block column at a time. Also, directly sets the values of J rather than set an intermediate vector. See r032114 for derivation of terms
 void TensorDerivativeNearDeg(Geometry geo, Mode *ms){
 
 	if(GetSize() != 1 || geo->Nc != 1) 
 		MyError("ComputeGainNearDeg not implemented for parallel or Nc > 1 yet");
 
 	int im, ir, jm, jr, i;
-	double *H, *fprof, mc[2], mw[2], Yw[2];
+	double *H, *fprof, mc[2], mw[2], *psi[2];
+	dcomp yw[2];
 	
 	for(im =0; im<2; im++){
 		mc[im] = get_c(ms[im]);
 		mw[im] = creal(get_w(ms[im]));
-		Yw[im] = sqr(cabs( gamma_w(ms[im], geo) ));
+		yw[im] = gamma_w(ms[im], geo);
+		VecGetArray(ms[im]->vpsi, &psi[im]);
 	}
 
 	VecGetArray(geo->vH, &H);
 	VecGetArray(geo->vf, &fprof);
 
-	for(im = 0; im<2; im++) for(jm = 0; jm<2; jm++)
-	for(ir = 0; ir<2; ir++) for(jr = 0; jr<2; jr++)
 	for(i=0; i<Nxyz(geo); i++){
 
-		
-		dcomp ket_term = -csqr(mw[im] ) * sqr(mjc) * sqr(cabs(yjw)) * 2.0
-			* sqr(valr(&H, i) ) * geo->D * valr(&f, i) * yw * valc(&psi, i);	
-		double val = valr(&psibra, i) * (ir(geo, i)? cimag(ket_term) : creal(ket_term) );
+		dcomp pcomp[2];
+		for(im=0; im<2; im++)
+			pcomp[im] = psi[im][i] + ComplexI * psi[im][i+Nxyz(geo)];
 
+		for(im = 0; im<2; im++) for(jm = 0; jm<2; jm++)
+		for(ir = 0; ir<2; ir++) for(jr = 0; jr<2; jr++){
 
+			double psibra = jr? cimag( pcomp[jm] ) :creal( pcomp[jm] );
+			dcomp ket_term = -csqr(mw[im] ) * sqr(mc[jm]) * sqr(cabs(yw[jm])) * 2.0
+				* sqr( H[i] ) * geo->D * fprof[i] * yw[im] * pcomp[im];	
+			double val = psibra * (ir? cimag(ket_term) : creal(ket_term) );
+
+			int row = im * Nxyzcr(geo) + ir*Nxyzc(geo) + i,
+			    column = jm * Nxyzcr(geo) + jr*Nxyzc(geo) + i;
+			MatSetValue(ms[0]->J, row, column, val, ADD_VALUES);  
+		}
 	}	
 	VecRestoreArray(geo->vH, &H);
 	VecRestoreArray(geo->vf, &fprof);
+	for(im=0; im<2; im++)
+		VecRestoreArray(ms[im]->vpsi, &psi[im]);
 }
 
 void ColumnDerivative(Mode m, Mode mj, Geometry geo, Vec dfR, Vec dfI, Vec vIpsi, Vec vpsisq, int ih){
@@ -205,6 +217,7 @@ void ComputeGainNearDeg(Geometry geo, Mode *ms){
 	int im;
 
 	for(i=0; i<Nxyzcr(geo); i++){ // assume Nc = 1
+		if(fprof[i] == 0) continue;
 		int ixyz = i % Nxyz(geo);
 		for(im=0; im<2; im++){
 			pR[im] = psi[im][ixyz];
