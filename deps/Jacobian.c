@@ -71,6 +71,39 @@ void TensorDerivative(Mode m, Mode mj, Geometry geo, int jc, int jr, Vec df, Vec
 	DestroyComplexfun(&psi);
 }
 
+// for two modes only. Call once for entire Jacobian, unlike TensorDerivative which does a block column at a time. See r032114 for derivation
+void TensorDerivativeNearDeg(Geometry geo, Mode *ms){
+
+	if(GetSize() != 1 || geo->Nc != 1) 
+		MyError("ComputeGainNearDeg not implemented for parallel or Nc > 1 yet");
+
+	int im, ir, jm, jr, i;
+	double *H, *fprof, mc[2], mw[2], Yw[2];
+	
+	for(im =0; im<2; im++){
+		mc[im] = get_c(ms[im]);
+		mw[im] = creal(get_w(ms[im]));
+		Yw[im] = sqr(cabs( gamma_w(ms[im], geo) ));
+	}
+
+	VecGetArray(geo->vH, &H);
+	VecGetArray(geo->vf, &fprof);
+
+	for(im = 0; im<2; im++) for(jm = 0; jm<2; jm++)
+	for(ir = 0; ir<2; ir++) for(jr = 0; jr<2; jr++)
+	for(i=0; i<Nxyz(geo); i++){
+
+		
+		dcomp ket_term = -csqr(mw[im] ) * sqr(mjc) * sqr(cabs(yjw)) * 2.0
+			* sqr(valr(&H, i) ) * geo->D * valr(&f, i) * yw * valc(&psi, i);	
+		double val = valr(&psibra, i) * (ir(geo, i)? cimag(ket_term) : creal(ket_term) );
+
+
+	}	
+	VecRestoreArray(geo->vH, &H);
+	VecRestoreArray(geo->vf, &fprof);
+}
+
 void ColumnDerivative(Mode m, Mode mj, Geometry geo, Vec dfR, Vec dfI, Vec vIpsi, Vec vpsisq, int ih){
 	// vIpsi is for m, vpsisq is for mj
 	// use pointers so can check whether ih = jh
@@ -151,8 +184,8 @@ void ComputeGain(Geometry geo, Mode *ms, int Nh){
 
 // for 2 modes near degeneracy. Call this instead of ComputeGain. see r032114 for derivation of off-diagonal terms
 void ComputeGainNearDeg(Geometry geo, Mode *ms){ 
-	if(GetSize() != 1) 
-		MyError("ComputeGainNearDeg not implemented for parallel yet");
+	if(GetSize() != 1 || geo->Nc != 1) 
+		MyError("ComputeGainNearDeg not implemented for parallel or Nc > 1 yet");
 
 	VecSet(geo->vH, 0.0);	
 	dcomp yw = gamma_w(ms[0], geo); // use same Gamma for both
@@ -168,19 +201,21 @@ void ComputeGainNearDeg(Geometry geo, Mode *ms){
 		VecGetArray(ms[i]->vpsi, &psi[i]);
 
 	double gampar = 1.0; // TODO: make this member of Geometry, read from command line and put in Constructor, etc.
+	double pR[2], pI[2];
+	int im;
 
-	for(i=0; i<Nxyzcr(geo); i++){
-
-		double pR[2], pI[2];
-		int im;
+	for(i=0; i<Nxyzcr(geo); i++){ // assume Nc = 1
+		int ixyz = i % Nxyz(geo);
 		for(im=0; im<2; im++){
-			// pR[im] = psi[im][  //TODO
-
+			pR[im] = psi[im][ixyz];
+			pI[im] = psi[im][ixyz + Nxyz(geo)];
 		}
-		double valdiag = sqr(cabs( mc[0]*psi[0][i] )) + sqr(cabs( mc[1]*psi[1][i] ));
+		double valdiag = 0;
+		for(im=0; im<2; im++)
+			valdiag += sqr(mc[im]*cabs(pR[im] + ComplexI*pI[im]));
 		double valoff = mc[0]*mc[1] * 2*gampar / (sqr(gampar) + sqr(mw[1] - mw[0] ) );
 			valoff *= gampar * (pR[0]*pR[1] + pI[0]*pI[1]) + (mw[1] - mw[0])* (pR[0]*pI[1] - pI[0]*pR[1]);
-		H[i] = 1.0 / (1.0 + yw * valdiag + yw * valoff );
+		H[i] = 1.0 / (1.0 + csqr(yw) * (valdiag + valoff) );
 	}
 
 	VecRestoreArray( geo->vH, &H);
