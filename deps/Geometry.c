@@ -148,9 +148,14 @@ Geometry CreateGeometry(int N[3], double h[3], int Npml[3], int Nc, int LowerPML
 	geo->wa = wa;
 	geo->y = y;
 
+	geo->G0 = 0.0;
+	geo->gampar = -1.0; // use negative numbers to indicate no near-degenerate cross term
+	PetscOptionsGetReal(PETSC_NULL,"-G0", &geo->G0,NULL); 
+	PetscOptionsGetReal(PETSC_NULL,"-gampar", &geo->gampar,NULL); 
+	// hack, 032414. cross term not incorporated in main interface yet.
+
 	VecDuplicate(geo->veps, &geo->vf);
 	VecDuplicate(geo->vMscratch[0], &geo->vfM);
-
 	VecGetArray(geo->vfM, &scratch);
 	for(i=ms; i<me;i++)
 		scratch[i-ms] = fprof[i-ms];

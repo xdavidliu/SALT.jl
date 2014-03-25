@@ -44,6 +44,21 @@ void LinearDerivative(Mode m, Geometry geo, Vec dfR, Vec dfI, int ih){
 	DestroyComplexfun(&eps);
 }
 
+double hcross(int ixyz, Mode *ms, double w[2], double c[2], Geometry geo){
+	// for two modes near degeneracy, Nc = 1, sequential only!
+	// pass in w and c for efficiency
+	// no need to check fprof == 0 here; assume that's already done before calling this routine
+
+	double psi[2][2]; // [im][ir], so can VecGetValues two at a time
+	int im, ind[2] = {ixyz, ixyz+ Nxyzc(geo)};
+
+	for(im=0; im<2; im++)
+		VecGetValues(ms[im]->vpsi, 2, ind, psi[im]);
+
+	double G12 = sqr(geo->gampar) / ( sqr(geo->gampar) + sqr(w[1] - w[0]) );
+	return 2*geo->G0 * G12 * c[0]*c[1]*( psi[0][0]*psi[1][0] + psi[0][1]*psi[1][1] );
+}
+
 void TensorDerivative(Mode m, Mode mj, Geometry geo, int jc, int jr, Vec df, Vec vpsibra, Vec vIpsi, int ih){
 	double mjc = get_c(mj);
 	dcomp mw = get_w(m), yw = gamma_w(m, geo), yjw = gamma_w(mj, geo);
@@ -138,11 +153,21 @@ void ComputeGain(Geometry geo, Mode *ms, int Nh){
 
 		Vecfun psisq;
 		CreateVecfun(&psisq ,geo->vscratch[3]);
-
 		for(i=H.ns; i<H.ne; i++)
 			setr(&H, i, valr(&H, i) + sqr(cabs(yw)) *sqr(mc) * valr(&psisq, i) ) ;
 	}
 
+	if(Nh == 2 && GetSize()==1 && geo->Nc==1 && geo->gampar > 0.0){ // cross term
+		double w[2], c[2];
+		for(i=0; i<2; i++){
+			w[i] = creal( get_w(ms[i]));
+			c[i] = get_c(ms[i]);
+		}		
+
+		for(i=H.ns; i<H.ne; i++)
+			setr(&H, i, valr(&H, i) + hcross(i%Nxyz(geo), ms, w, c, geo) );
+	}
+	
 	for(i=H.ns; i<H.ne; i++)
 		setr(&H, i, 1.0 / (1.0 + valr(&H, i) ) );
 

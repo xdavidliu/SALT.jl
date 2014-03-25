@@ -54,7 +54,8 @@ int xyzcr(Point *p);
 typedef struct Geometry_s{
 
 	int Npml[3], Nc, LowerPML;
-	double h[3];
+	double h[3], gampar, G0; // last 2 not used in main interface, only for nearly degenerate modes
+	// G0 is Gamma_0, or the threshold |yk|^2 of the two modes. Saves having to consider annoying ineffectual terms in Jacobian from cross term.
 	Vec vepspml;
 
 	Grid gN, gM; // technically could remove gM, but keep it around in case need later
