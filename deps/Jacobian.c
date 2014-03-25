@@ -86,10 +86,10 @@ void TensorDerivative(Mode m, Mode mj, Geometry geo, int jc, int jr, Vec df, Vec
 	DestroyComplexfun(&psi);
 }
 
-void TensorDerivativeCross(Mode *ms, Geometry geo, int jr, Vec df, Vec vpsibra, Vec vIpsi){
+void TensorDerivativeCross(Mode *ms, Geometry geo, int jr, int jh, Vec df, Vec vIpsi){
 // as with all cross routines, only for Nc = 1, Nm = 2, sequential
 	// this block same as ColumnDerivativeCross
-	AssembleVec(dfR); AssembleVec(dfI);
+	AssembleVec(df);
 	double w[2], c[2];
 	dcomp yw[2];
 	int i, ih;
@@ -99,32 +99,33 @@ void TensorDerivativeCross(Mode *ms, Geometry geo, int jr, Vec df, Vec vpsibra, 
 		yw[i] = gamma_w( ms[i], geo);
 	}          
 	
-	double *dfdpsi;
+	double *dfdpsi, *psijp1;
 	VecGetArray(df, &dfdpsi);
-	Vecfun f, H, psibra;
-	CreateVecfun(&psibra, vpsibra);
+	VecGetArray(ms[(jh+1)%2]->vpsi, &psijp1);
+	Vecfun f, H;
 	CreateVecfun(&f, geo->vf);
 	CreateVecfun(&H, geo->vH);
 	
+	double G12 = sqr(geo->gampar) / ( sqr(geo->gampar) + sqr(w[1] - w[0]) );
 	for(ih=0; ih<2; ih++){
 		Complexfun psi;
 		TimesI(geo, ms[ih]->vpsi, vIpsi);
 		CreateComplexfun(&psi,ms[ih]->vpsi, vIpsi);
 
 		for(i=0; i<Nxyz(geo); i++){
-			dcomp ksqDHsq_Hcross_ywpsi = sqr(w[ih])*geo->D* sqr(valr(&H, i) )
-				* hcross(i, ms, w, c, geo) * yw[ih] * valc(&psi, i);
-			dcomp dfdpsi_cross = ksqDHsq_Hcross_ywpsi * 
-			// TODO: need to complete this part. perhaps don't use hcross here...
-			dfdpsi[i + ih*NJ(geo)] = creal(
+			dcomp ksqDHsq_ywpsi = sqr(w[ih])*geo->D* sqr(valr(&H, i) )
+				* yw[ih] * valc(&psi, i);
+			dcomp dfdpsi_cross = ksqDHsq_ywpsi * 2*geo->G0*G12 * c[0]*c[1]*psijp1[i+jr*Nxyz(geo)]; 
+			dfdpsi[i + ih*NJ(geo)] += creal(dfdpsi_cross);
+			dfdpsi[i + ih*NJ(geo) + Nxyz(geo)] += cimag(dfdpsi_cross);
 		}
 		DestroyComplexfun(&psi);
 	}
 
-	DestroyVecfun(&psibra);
 	DestroyVecfun(&H);
 	DestroyVecfun(&f);
 	VecRestoreArray(df, &dfdpsi);
+	VecRestoreArray(ms[(jh+1)%2]->vpsi, &psijp1);
 }
 
 void ColumnDerivative(Mode m, Mode mj, Geometry geo, Vec dfR, Vec dfI, Vec vIpsi, Vec vpsisq, int ih){
