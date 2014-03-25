@@ -1,8 +1,8 @@
 #include "salt.h"
 
 void VecSetComplex(Vec vR, Vec vI, int i, int ir, dcomp val, InsertMode addv){
-		VecSetValue(vR, i, ir? cimag(val) : creal(val), addv );
-		VecSetValue(vI, i, ir? creal(val) : -cimag(val), addv );
+	VecSetValue(vR, i, ir? cimag(val) : creal(val), addv );
+	VecSetValue(vI, i, ir? creal(val) : -cimag(val), addv );
 }
 
 void Isolate(Vec v, Grid *gN, int ic, int ir){
@@ -69,51 +69,6 @@ void TensorDerivative(Mode m, Mode mj, Geometry geo, int jc, int jr, Vec df, Vec
 	DestroyVecfun(&H);
 	DestroyVecfun(&psibra);
 	DestroyComplexfun(&psi);
-}
-
-// for two modes only. Call once for entire Jacobian, unlike TensorDerivative which does a block column at a time. Also, directly sets the values of J rather than set an intermediate vector. See r032114 for derivation of terms
-void TensorDerivativeNearDeg(Geometry geo, Mode *ms){
-
-	if(GetSize() != 1 || geo->Nc != 1) 
-		MyError("ComputeGainNearDeg not implemented for parallel or Nc > 1 yet");
-
-	int im, ir, jm, jr, i;
-	double *H, *fprof, mc[2], mw[2], *psi[2];
-	dcomp yw[2];
-	
-	for(im =0; im<2; im++){
-		mc[im] = get_c(ms[im]);
-		mw[im] = creal(get_w(ms[im]));
-		yw[im] = gamma_w(ms[im], geo);
-		VecGetArray(ms[im]->vpsi, &psi[im]);
-	}
-
-	VecGetArray(geo->vH, &H);
-	VecGetArray(geo->vf, &fprof);
-
-	for(i=0; i<Nxyz(geo); i++){
-
-		dcomp pcomp[2];
-		for(im=0; im<2; im++)
-			pcomp[im] = psi[im][i] + ComplexI * psi[im][i+Nxyz(geo)];
-
-		for(im = 0; im<2; im++) for(jm = 0; jm<2; jm++)
-		for(ir = 0; ir<2; ir++) for(jr = 0; jr<2; jr++){
-
-			double psibra = jr? cimag( pcomp[jm] ) :creal( pcomp[jm] );
-			dcomp ket_term = -csqr(mw[im] ) * sqr(mc[jm]) * sqr(cabs(yw[jm])) * 2.0
-				* sqr( H[i] ) * geo->D * fprof[i] * yw[im] * pcomp[im];	
-			double val = psibra * (ir? cimag(ket_term) : creal(ket_term) );
-
-			int row = im * Nxyzcr(geo) + ir*Nxyzc(geo) + i,
-			    column = jm * Nxyzcr(geo) + jr*Nxyzc(geo) + i;
-			MatSetValue(ms[0]->J, row, column, val, ADD_VALUES);  
-		}
-	}	
-	VecRestoreArray(geo->vH, &H);
-	VecRestoreArray(geo->vf, &fprof);
-	for(im=0; im<2; im++)
-		VecRestoreArray(ms[im]->vpsi, &psi[im]);
 }
 
 void ColumnDerivative(Mode m, Mode mj, Geometry geo, Vec dfR, Vec dfI, Vec vIpsi, Vec vpsisq, int ih){
@@ -193,52 +148,6 @@ void ComputeGain(Geometry geo, Mode *ms, int Nh){
 
 	DestroyVecfun(&H);
 }
-
-// for 2 modes near degeneracy. Call this instead of ComputeGain. see r032114 for derivation of off-diagonal terms
-void ComputeGainNearDeg(Geometry geo, Mode *ms){ 
-	if(GetSize() != 1 || geo->Nc != 1) 
-		MyError("ComputeGainNearDeg not implemented for parallel or Nc > 1 yet");
-
-	VecSet(geo->vH, 0.0);	
-	dcomp yw = gamma_w(ms[0], geo); // use same Gamma for both
-	double mc[2] = {get_c(ms[0]), get_c(ms[1]) },
-		mw[2] = {creal(get_w(ms[0])), creal(get_w(ms[1])) };
-
-	double *psi[2], *fprof, *H;
-	int i;
-
-	VecGetArray( geo->vH, &H);
-	VecGetArray( geo->vf, &fprof);
-	for(i=0; i<2; i++)
-		VecGetArray(ms[i]->vpsi, &psi[i]);
-
-	double gampar = 1.0; // TODO: make this member of Geometry, read from command line and put in Constructor, etc.
-	double pR[2], pI[2];
-	int im;
-
-	for(i=0; i<Nxyzcr(geo); i++){ // assume Nc = 1
-		if(fprof[i] == 0) continue;
-		int ixyz = i % Nxyz(geo);
-		for(im=0; im<2; im++){
-			pR[im] = psi[im][ixyz];
-			pI[im] = psi[im][ixyz + Nxyz(geo)];
-		}
-		double valdiag = 0;
-		for(im=0; im<2; im++)
-			valdiag += sqr(mc[im]*cabs(pR[im] + ComplexI*pI[im]));
-		double valoff = mc[0]*mc[1] * 2*gampar / (sqr(gampar) + sqr(mw[1] - mw[0] ) );
-			valoff *= gampar * (pR[0]*pR[1] + pI[0]*pI[1]) + (mw[1] - mw[0])* (pR[0]*pI[1] - pI[0]*pR[1]);
-		H[i] = 1.0 / (1.0 + csqr(yw) * (valdiag + valoff) );
-	}
-
-	VecRestoreArray( geo->vH, &H);
-	VecRestoreArray( geo->vf, &fprof);	
-	for(i=0; i<2; i++)
-		VecRestoreArray(ms[i]->vpsi, &psi[i]);
-
-
-}
-
 
 double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton){
 	Mode m = ms[0];
