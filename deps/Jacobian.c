@@ -113,9 +113,10 @@ void TensorDerivativeCross(Mode *ms, Geometry geo, int jr, int jh, Vec df, Vec v
 		CreateComplexfun(&psi,ms[ih]->vpsi, vIpsi);
 
 		for(i=0; i<Nxyz(geo); i++){
-			dcomp ksqDHsq_ywpsi = sqr(w[ih])*geo->D* sqr(valr(&H, i) )
-				* yw[ih] * valc(&psi, i);
-			dcomp dfdpsi_cross = ksqDHsq_ywpsi * 2*geo->G0*G12 * c[0]*c[1]*psijp1[i+jr*Nxyz(geo)]; 
+			if( valr(&f, i) == 0.0 ) continue;
+			dcomp ksqDfHsq_ywpsi = sqr(w[ih])*geo->D * valr(&f, i) 
+				* sqr(valr(&H, i) ) * yw[ih] * valc(&psi, i);
+			dcomp dfdpsi_cross = ksqDfHsq_ywpsi * 2*geo->G0*G12 * c[0]*c[1]*psijp1[i+jr*Nxyz(geo)]; 
 			dfdpsi[i + ih*NJ(geo)] += creal(dfdpsi_cross);
 			dfdpsi[i + ih*NJ(geo) + Nxyz(geo)] += cimag(dfdpsi_cross);
 		}
@@ -197,11 +198,11 @@ void ColumnDerivativeCross(Vec dfR, Vec dfI, Vec vIpsi, Mode *ms, Geometry geo){
 		*dfdk, *dfdc;
 	VecGetArray(dfR, &dfdk);
 	VecGetArray(dfI, &dfdc);
-	for(ih=0; ih<2; ih++){
+	Vecfun f, H;
+	CreateVecfun(&f, geo->vf);
+	CreateVecfun(&H, geo->vH);
 
-		Vecfun f, H;
-		CreateVecfun(&f, geo->vf);
-		CreateVecfun(&H, geo->vH);
+	for(ih=0; ih<2; ih++){
 		Complexfun psi;
 		TimesI(geo, ms[ih]->vpsi, vIpsi);
 		CreateComplexfun(&psi,ms[ih]->vpsi, vIpsi);
@@ -209,11 +210,11 @@ void ColumnDerivativeCross(Vec dfR, Vec dfI, Vec vIpsi, Mode *ms, Geometry geo){
 		for(i=0; i<Nxyzc(geo); i++){ // sequential only
 			if( valr(&f, i) == 0) continue;
 
-			dcomp ksqDHsqhcross_ywpsi = sqr(w[ih])*geo->D * sqr(valr(&H, i))
+			dcomp ksqDfHsqhcross_ywpsi = sqr(w[ih])*geo->D * valr(&f, i) * sqr(valr(&H, i))
 				* hcross(i, ms, w, c, geo) * yw[ih] * valc(&psi, i);
-			dcomp dfdk_cross = 2.0 * ksqDHsqhcross_ywpsi * 
+			dcomp dfdk_cross = 2.0 * ksqDfHsqhcross_ywpsi * 
 					(w[ih] - w[(ih+1)%2])/sqr(geo->gampar) * G12, 
-				dfdc_cross = -2.0 * ksqDHsqhcross_ywpsi / c[ih];
+				dfdc_cross = -2.0 * ksqDfHsqhcross_ywpsi / c[ih];
 
 			dfdk[ih*NJ(geo) + i] += creal( dfdk_cross); 
 			dfdk[ih*NJ(geo) + i + Nxyzc(geo)] += cimag( dfdk_cross);
@@ -221,10 +222,10 @@ void ColumnDerivativeCross(Vec dfR, Vec dfI, Vec vIpsi, Mode *ms, Geometry geo){
 			dfdc[ih*NJ(geo) + i + Nxyzc(geo)] += cimag( dfdc_cross);
 			// same as VecSetValue in ColumnDerivative
 		}
-		DestroyVecfun(&H);
-		DestroyVecfun(&f);
 		DestroyComplexfun(&psi);
 	}
+	DestroyVecfun(&H);
+	DestroyVecfun(&f);
 	VecRestoreArray(dfR, &dfdk);
 	VecRestoreArray(dfI, &dfdc);
 }
@@ -233,8 +234,9 @@ void ComputeGain(Geometry geo, Mode *ms, int Nh){
 	// TODO: skip points where fprof[i] = 0, saves some time	
 
 	VecSet(geo->vH, 0.0);
-	Vecfun H;
+	Vecfun H, f;
 	CreateVecfun(&H, geo->vH);
+	CreateVecfun(&f, geo->vf);
 	int i, ih;
 	for(ih=0; ih<Nh; ih++){
 		Mode m = ms[ih];
@@ -246,8 +248,10 @@ void ComputeGain(Geometry geo, Mode *ms, int Nh){
 
 		Vecfun psisq;
 		CreateVecfun(&psisq ,geo->vscratch[3]);
-		for(i=H.ns; i<H.ne; i++)
+		for(i=H.ns; i<H.ne; i++){
+			if(valr(&f, i) == 0.0) continue;
 			setr(&H, i, valr(&H, i) + sqr(cabs(yw)) *sqr(mc) * valr(&psisq, i) ) ;
+		}
 	}
 
 	if(Nh == 2 && GetSize()==1 && geo->Nc==1 && geo->gampar > 0.0){ // cross term
@@ -257,12 +261,15 @@ void ComputeGain(Geometry geo, Mode *ms, int Nh){
 			c[i] = get_c(ms[i]);
 		}		
 
-		for(i=H.ns; i<H.ne; i++)
+		for(i=H.ns; i<H.ne; i++){
+			if(valr(&f, i) == 0.0) continue;
 			setr(&H, i, valr(&H, i) + hcross(i%Nxyz(geo), ms, w, c, geo) );
+		}
 	}
 	
 	for(i=H.ns; i<H.ne; i++)
 		setr(&H, i, 1.0 / (1.0 + valr(&H, i) ) );
+	// for plotting purposes, don't check if valr(&f, i)==0 here
 	DestroyVecfun(&H);
 }
 
@@ -364,6 +371,7 @@ double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton
 					TimesI(geo, mi->vpsi, vIpsi);
 					TensorDerivative(mi, mj, geo, jc, jr, dfR, vpsibra, vIpsi, ih);
 				}
+				TensorDerivativeCross(ms, geo, jr, jh, dfR, vIpsi);
 				SetJacobian(geo, J, dfR, jc, jr, jh);
 			}
 		}
