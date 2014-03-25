@@ -86,6 +86,47 @@ void TensorDerivative(Mode m, Mode mj, Geometry geo, int jc, int jr, Vec df, Vec
 	DestroyComplexfun(&psi);
 }
 
+void TensorDerivativeCross(Mode *ms, Geometry geo, int jr, Vec df, Vec vpsibra, Vec vIpsi){
+// as with all cross routines, only for Nc = 1, Nm = 2, sequential
+	// this block same as ColumnDerivativeCross
+	AssembleVec(dfR); AssembleVec(dfI);
+	double w[2], c[2];
+	dcomp yw[2];
+	int i, ih;
+	for(i=0; i<2; i++){
+		w[i] = creal( get_w(ms[i]));
+		c[i] = get_c(ms[i]);
+		yw[i] = gamma_w( ms[i], geo);
+	}          
+	
+	double *dfdpsi;
+	VecGetArray(df, &dfdpsi);
+	Vecfun f, H, psibra;
+	CreateVecfun(&psibra, vpsibra);
+	CreateVecfun(&f, geo->vf);
+	CreateVecfun(&H, geo->vH);
+	
+	for(ih=0; ih<2; ih++){
+		Complexfun psi;
+		TimesI(geo, ms[ih]->vpsi, vIpsi);
+		CreateComplexfun(&psi,ms[ih]->vpsi, vIpsi);
+
+		for(i=0; i<Nxyz(geo); i++){
+			dcomp ksqDHsq_Hcross_ywpsi = sqr(w[ih])*geo->D* sqr(valr(&H, i) )
+				* hcross(i, ms, w, c, geo) * yw[ih] * valc(&psi, i);
+			dcomp dfdpsi_cross = ksqDHsq_Hcross_ywpsi * 
+			// TODO: need to complete this part. perhaps don't use hcross here...
+			dfdpsi[i + ih*NJ(geo)] = creal(
+		}
+		DestroyComplexfun(&psi);
+	}
+
+	DestroyVecfun(&psibra);
+	DestroyVecfun(&H);
+	DestroyVecfun(&f);
+	VecRestoreArray(df, &dfdpsi);
+}
+
 void ColumnDerivative(Mode m, Mode mj, Geometry geo, Vec dfR, Vec dfI, Vec vIpsi, Vec vpsisq, int ih){
 	// vIpsi is for m, vpsisq is for mj
 	// use pointers so can check whether ih = jh
@@ -138,6 +179,7 @@ void ColumnDerivative(Mode m, Mode mj, Geometry geo, Vec dfR, Vec dfI, Vec vIpsi
 }
 
 void ColumnDerivativeCross(Vec dfR, Vec dfI, Vec vIpsi, Mode *ms, Geometry geo){
+// for two modes near degeneracy, Nc = 1, sequential only!
 // cross term; can't put this in ColumnDerivative because need both w[2] and c[2]
 
 	AssembleVec(dfR); AssembleVec(dfI);
@@ -149,7 +191,6 @@ void ColumnDerivativeCross(Vec dfR, Vec dfI, Vec vIpsi, Mode *ms, Geometry geo){
 		c[i] = get_c(ms[i]);
 		yw[i] = gamma_w( ms[i], geo);
 	}          
-	
 
 	double G12 = sqr(geo->gampar) / ( sqr(geo->gampar) + sqr(w[1] - w[0]) ),
 		*dfdk, *dfdc;
