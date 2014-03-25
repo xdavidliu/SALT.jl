@@ -44,13 +44,13 @@ void LinearDerivative(Mode m, Geometry geo, Vec dfR, Vec dfI, int ih){
 	DestroyComplexfun(&eps);
 }
 
-double hcross(int ixyz, Mode *ms, double w[2], double c[2], Geometry geo){
+double hcross(int ixyzcr, Mode *ms, double w[2], double c[2], Geometry geo){
 	// for two modes near degeneracy, Nc = 1, sequential only!
 	// pass in w and c for efficiency
 	// no need to check fprof == 0 here; assume that's already done before calling this routine
 
 	double psi[2][2]; // [im][ir], so can VecGetValues two at a time
-	int im, ind[2] = {ixyz, ixyz+ Nxyzc(geo)};
+	int im, ixyz = ixyzcr % Nxyz(geo), ind[2] = {ixyz, ixyz+ Nxyzc(geo)};
 
 	for(im=0; im<2; im++)
 		VecGetValues(ms[im]->vpsi, 2, ind, psi[im]);
@@ -111,13 +111,13 @@ void ColumnDerivative(Mode m, Mode mj, Geometry geo, Vec dfR, Vec dfI, Vec vIpsi
 
 		if(m == mj)
 			dfdk += ( -csqr(mw)*yw / geo->y +2.0*mw ) * DfywHpsi + 2.0*mw* valc(&eps, i)*valc(&psi, i);
+		// note: adding dcomp to a double ignores the imaginary part
 
 		if(m->lasing && valr(&f, i) != 0.0){
 			dcomp dHdk_term = -sqr(mjc) * -2.0*(mjw-geo->wa)
 			 /sqr(geo->y) * sqr(sqr(cabs(yjw)));
 			dHdk_term *= csqr(mw)*DfywHpsi * valr(&H, i) * valr(&psisq, i);
 			dfdk += dHdk_term;
-
 			dfdc = csqr(mw) * DfywHpsi * valr(&H, i);
 			dfdc *= (-2.0*mjc)*sqr(cabs(yjw)) * valr(&psisq, i);
 		}
@@ -138,8 +138,9 @@ void ColumnDerivative(Mode m, Mode mj, Geometry geo, Vec dfR, Vec dfI, Vec vIpsi
 }
 
 void ComputeGain(Geometry geo, Mode *ms, int Nh){
-	VecSet(geo->vH, 0.0);
+	// TODO: skip points where fprof[i] = 0, saves some time	
 
+	VecSet(geo->vH, 0.0);
 	Vecfun H;
 	CreateVecfun(&H, geo->vH);
 	int i, ih;
@@ -170,7 +171,6 @@ void ComputeGain(Geometry geo, Mode *ms, int Nh){
 	
 	for(i=H.ns; i<H.ne; i++)
 		setr(&H, i, 1.0 / (1.0 + valr(&H, i) ) );
-
 	DestroyVecfun(&H);
 }
 
@@ -246,6 +246,56 @@ double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton
 
 			TimesI(geo, mi->vpsi, vIpsi);
 			ColumnDerivative(mi, mj, geo, dfR, dfI, vIpsi, vpsisq, ih);
+		}
+
+		if(Nm == 2 && GetSize()==1 && geo->Nc==1 && geo->gampar > 0.0){
+		// cross term; can't put this in ColumnDerivative because need both w[2] and c[2]
+			AssembleVec(dfR); AssembleVec(dfI);
+			double w[2], c[2];
+			dcomp yw[2];
+			int i;
+            	for(i=0; i<2; i++){
+                        w[i] = creal( get_w(ms[i]));
+                        c[i] = get_c(ms[i]);
+				yw[i] = gamma_w( ms[i], geo);
+            	}          
+			
+
+			double G12 = sqr(geo->gampar) / ( sqr(geo->gampar) + sqr(w[1] - w[0]) ),
+				*dfdk, *dfdc;
+			VecGetArray(dfR, &dfdk);
+			VecGetArray(dfI, &dfdc);
+			for(ih=0; ih<2; ih++){
+
+				Vecfun f, H;
+				CreateVecfun(&f, geo->vf);
+				CreateVecfun(&H, geo->vH);
+				Complexfun psi;
+				TimesI(geo, ms[ih]->vpsi, vIpsi);
+				CreateComplexfun(&psi,ms[ih]->vpsi, vIpsi);
+
+				for(i=0; i<Nxyzc(geo); i++){ // sequential only
+					if( valr(&f, i) == 0) continue;
+
+					dcomp ksqDHsqhcross_ywpsi = sqr(w[ih])*geo->D * sqr(valr(&H, i))
+						* hcross(i, ms, w, c, geo) * yw[ih] * valc(&psi, i);
+					dcomp dfdk_cross = 2.0 * ksqDHsqhcross_ywpsi * 
+							(w[ih] - w[(ih+1)%2])/sqr(geo->gampar) * G12, 
+						dfdc_cross = -2.0 * ksqDHsqhcross_ywpsi / c[ih];
+
+					dfdk[ih*NJ(geo) + i] += creal( dfdk_cross); 
+					dfdk[ih*NJ(geo) + i + Nxyzc(geo)] += cimag( dfdk_cross);
+					dfdc[ih*NJ(geo) + i] += creal( dfdc_cross); 
+					dfdc[ih*NJ(geo) + i + Nxyzc(geo)] += cimag( dfdc_cross);
+					// same as VecSetValue in ColumnDerivative
+				}
+				DestroyVecfun(&H);
+				DestroyVecfun(&f);
+				DestroyComplexfun(&psi);
+			}
+			VecRestoreArray(dfR, &dfdk);
+			VecRestoreArray(dfI, &dfdc);
+
 		}
 
 		SetJacobian(geo, J, dfR, -1, 0, jh);
