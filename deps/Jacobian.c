@@ -259,7 +259,7 @@ double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton
 				}
 
 				if(Nm == 2 && geo->gampar > 0.0)
-					TensorDerivativeCross(ms, geo, jr, jh, dfR, vIpsi);
+					TensorDerivativeCross(ms, geo, jc, jr, jh, dfR, vpsibra, vIpsi);
 				SetJacobian(geo, J, dfR, jc, jr, jh);
 			}
 		}

@@ -34,10 +34,10 @@ void ComputeHcross(Mode *ms, Geometry geo, Vec vIpsi0, Vec vIpsi1, Vec vhcross){
 	DestroyVecfun(&hcross);
 }
 
-void TensorDerivativeCross(Mode *ms, Geometry geo, int jr, int jh, Vec df, Vec vIpsi){
+void TensorDerivativeCross(Mode *ms, Geometry geo, int jc, int jr, int jh, Vec df, Vec vpsibra, Vec vIpsi){
 // as with all cross routines, only for  Nm = 2
 	// this block same as ColumnDerivativeCross
-	AssembleVec(df);
+	AssembleVec(df); // switch from INSERT_VALUES to ADD_VALUES
 	double w[2], c[2];
 	dcomp yw[2];
 	int i, ih;
@@ -47,11 +47,12 @@ void TensorDerivativeCross(Mode *ms, Geometry geo, int jr, int jh, Vec df, Vec v
 		yw[i] = gamma_w( ms[i], geo);
 	}          
 	
-	double *dfdpsi, *psijp1;
-	VecGetArray(df, &dfdpsi);
-	VecGetArray(ms[(jh+1)%2]->vpsi, &psijp1);
-	Vecfun f, H;
+	VecCopy(ms[(jh+1)%2]->vpsi, vpsibra);
+	Stamp(geo, vpsibra, jc, jr, geo->vMscratch[0]);
+
+	Vecfun f, H, psibra;
 	CreateVecfun(&f, geo->vf);
+	CreateVecfun(&psibra, vpsibra);
 	CreateVecfun(&H, geo->vH);
 	
 	double G12 = sqr(geo->gampar) / ( sqr(geo->gampar) + sqr(w[1] - w[0]) );
@@ -60,28 +61,26 @@ void TensorDerivativeCross(Mode *ms, Geometry geo, int jr, int jh, Vec df, Vec v
 		TimesI(geo, ms[ih]->vpsi, vIpsi);
 		CreateComplexfun(&psi,ms[ih]->vpsi, vIpsi);
 
-		for(i=0; i<Nxyz(geo); i++){
+		for(i=f.ns; i<f.ne; i++){
 			if( valr(&f, i) == 0.0 ) continue;
 			dcomp ksqDfHsq_ywpsi = sqr(w[ih])*geo->D * valr(&f, i) 
 				* sqr(valr(&H, i) ) * yw[ih] * valc(&psi, i);
-			dcomp dfdpsi_cross = ksqDfHsq_ywpsi * 2*geo->G0*G12 * c[0]*c[1]*psijp1[i+jr*Nxyz(geo)]; 
-			dfdpsi[i + ih*NJ(geo)] += creal(dfdpsi_cross);
-			dfdpsi[i + ih*NJ(geo) + Nxyz(geo)] += cimag(dfdpsi_cross);
+			dcomp dfdpsi_cross = ksqDfHsq_ywpsi * 2*geo->G0*G12 * c[0]*c[1]*valr(&psibra, i); 
+
+			int ir = i/Nxyzc(geo);
+			VecSetValue(df, i + ih*NJ(geo), ir? cimag(dfdpsi_cross) : creal(dfdpsi_cross), ADD_VALUES );
 		}
 		DestroyComplexfun(&psi);
 	}
-
 	DestroyVecfun(&H);
 	DestroyVecfun(&f);
-	VecRestoreArray(df, &dfdpsi);
-	VecRestoreArray(ms[(jh+1)%2]->vpsi, &psijp1);
 }
 
 void ColumnDerivativeCross(Vec dfR, Vec dfI, Vec vIpsi, Vec vhcross, Mode *ms, Geometry geo){
 // for two modes near degeneracy only!
 // cross term; can't put this in ColumnDerivative because need both w[2] and c[2]
 
-	AssembleVec(dfR); AssembleVec(dfI);
+	AssembleVec(dfR); AssembleVec(dfI); // switch from INSERT_VALUES to ADD_VALUES
 	double w[2], c[2];
 	dcomp yw[2];
 	int i, ih;
@@ -91,10 +90,7 @@ void ColumnDerivativeCross(Vec dfR, Vec dfI, Vec vIpsi, Vec vhcross, Mode *ms, G
 		yw[i] = gamma_w( ms[i], geo);
 	}          
 
-	double G12 = sqr(geo->gampar) / ( sqr(geo->gampar) + sqr(w[1] - w[0]) ),
-		*dfdk, *dfdc;
-	VecGetArray(dfR, &dfdk);
-	VecGetArray(dfI, &dfdc);
+	double G12 = sqr(geo->gampar) / ( sqr(geo->gampar) + sqr(w[1] - w[0]) );
 	Vecfun f, H, hcross;
 	CreateVecfun(&f, geo->vf);
 	CreateVecfun(&H, geo->vH);
@@ -105,7 +101,7 @@ void ColumnDerivativeCross(Vec dfR, Vec dfI, Vec vIpsi, Vec vhcross, Mode *ms, G
 		TimesI(geo, ms[ih]->vpsi, vIpsi);
 		CreateComplexfun(&psi,ms[ih]->vpsi, vIpsi);
 
-		for(i=0; i<Nxyzc(geo); i++){ // sequential only
+		for(i=f.ns; i<f.ne; i++){
 			if( valr(&f, i) == 0) continue;
 
 			dcomp ksqDfHsqhcross_ywpsi = sqr(w[ih])*geo->D * valr(&f, i) * sqr(valr(&H, i))
@@ -114,19 +110,16 @@ void ColumnDerivativeCross(Vec dfR, Vec dfI, Vec vIpsi, Vec vhcross, Mode *ms, G
 					(w[ih] - w[(ih+1)%2])/sqr(geo->gampar) * G12, 
 				dfdc_cross = -2.0 * ksqDfHsqhcross_ywpsi / c[ih];
 
-			dfdk[ih*NJ(geo) + i] += creal( dfdk_cross); 
-			dfdk[ih*NJ(geo) + i + Nxyzc(geo)] += cimag( dfdk_cross);
-			dfdc[ih*NJ(geo) + i] += creal( dfdc_cross); 
-			dfdc[ih*NJ(geo) + i + Nxyzc(geo)] += cimag( dfdc_cross);
-			// same as VecSetValue in ColumnDerivative
+			int ir = i / Nxyzc(geo);
+			VecSetValue(dfR, ih*NJ(geo) + i, ir? cimag(dfdk_cross) : creal(dfdk_cross), ADD_VALUES);
+			VecSetValue(dfI, ih*NJ(geo) + i, ir? cimag(dfdc_cross) : creal(dfdc_cross), ADD_VALUES);
 		}
 		DestroyComplexfun(&psi);
 	}
 	DestroyVecfun(&H);
 	DestroyVecfun(&f);
 	DestroyVecfun(&hcross);
-	VecRestoreArray(dfR, &dfdk);
-	VecRestoreArray(dfI, &dfdc);
+	AssembleVec(dfR); AssembleVec(dfI);
 }
 
 void AddCrossTerm(Geometry geo, Vec vhcross){
