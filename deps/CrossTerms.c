@@ -35,7 +35,7 @@ void ComputeHcross(Mode *ms, Geometry geo, Vec vIpsi0, Vec vIpsi1, Vec vhcross){
 }
 
 void TensorDerivativeCross(Mode *ms, Geometry geo, int jr, int jh, Vec df, Vec vIpsi){
-// as with all cross routines, only for Nc = 1, Nm = 2, sequential
+// as with all cross routines, only for  Nm = 2
 	// this block same as ColumnDerivativeCross
 	AssembleVec(df);
 	double w[2], c[2];
@@ -78,7 +78,7 @@ void TensorDerivativeCross(Mode *ms, Geometry geo, int jr, int jh, Vec df, Vec v
 }
 
 void ColumnDerivativeCross(Vec dfR, Vec dfI, Vec vIpsi, Vec vhcross, Mode *ms, Geometry geo){
-// for two modes near degeneracy, Nc = 1, sequential only!
+// for two modes near degeneracy only!
 // cross term; can't put this in ColumnDerivative because need both w[2] and c[2]
 
 	AssembleVec(dfR); AssembleVec(dfI);

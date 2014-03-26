@@ -230,7 +230,7 @@ double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton
 			ColumnDerivative(mi, mj, geo, dfR, dfI, vIpsi, vpsisq, ih);
 		}
 
-		if(Nm == 2 && GetSize()==1 && geo->Nc==1 && geo->gampar > 0.0){
+		if(Nm == 2 && geo->gampar > 0.0){
 			ColumnDerivativeCross(dfR, dfI, vIpsi, vhcross, ms, geo);
 		}
 
@@ -258,7 +258,7 @@ double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton
 					TensorDerivative(mi, mj, geo, jc, jr, dfR, vpsibra, vIpsi, ih);
 				}
 
-				if(Nm == 2 && GetSize()==1 && geo->Nc==1 && geo->gampar > 0.0)
+				if(Nm == 2 && geo->gampar > 0.0)
 					TensorDerivativeCross(ms, geo, jr, jh, dfR, vIpsi);
 				SetJacobian(geo, J, dfR, jc, jr, jh);
 			}
