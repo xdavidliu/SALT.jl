@@ -231,7 +231,7 @@ double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton
 		}
 
 		if(Nm == 2 && geo->gampar > 0.0){
-			ColumnDerivativeCross(dfR, dfI, vIpsi, vhcross, ms, geo);
+			ColumnDerivativeCross(dfR, dfI, vIpsi, vhcross, jh, ms, geo);
 		}
 
 		SetJacobian(geo, J, dfR, -1, 0, jh);

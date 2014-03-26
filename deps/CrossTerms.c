@@ -3,8 +3,7 @@ void ComputeHcross(Mode *ms, Geometry geo, Vec vIpsi0, Vec vIpsi1, Vec vhcross){
 	VecSet(vhcross, 0.0);
 	Vec vIpsi[2] = {vIpsi0, vIpsi1};
 	Complexfun psi[2];
-	double w[2], c[2], pval[2][2],
-		G12 = sqr(geo->gampar) / ( sqr(geo->gampar) + sqr(w[1] - w[0]) );
+	double w[2], c[2], pval[2][2];
 
 	int i, ih;
 	for(ih=0; ih<2; ih++){
@@ -13,6 +12,7 @@ void ComputeHcross(Mode *ms, Geometry geo, Vec vIpsi0, Vec vIpsi1, Vec vhcross){
 		TimesI(geo, ms[ih]->vpsi, vIpsi[ih]);
 		CreateComplexfun(&psi[ih], ms[ih]->vpsi, vIpsi[ih]);
 	}          
+	double G12 = sqr(geo->gampar) / ( sqr(geo->gampar) + sqr(w[1] - w[0]) );
 	Vecfun f, hcross;
 	CreateVecfun(&f, geo->vf);
 	CreateVecfun(&hcross, vhcross);
@@ -49,7 +49,7 @@ void TensorDerivativeCross(Mode *ms, Geometry geo, int jc, int jr, int jh, Vec d
 	
 	VecCopy(ms[(jh+1)%2]->vpsi, vpsibra);
 	Stamp(geo, vpsibra, jc, jr, geo->vMscratch[0]);
-
+	// todo: for consistency, have the other TensorDerivative function do the stamping inside too
 	Vecfun f, H, psibra;
 	CreateVecfun(&f, geo->vf);
 	CreateVecfun(&psibra, vpsibra);
@@ -74,9 +74,10 @@ void TensorDerivativeCross(Mode *ms, Geometry geo, int jc, int jr, int jh, Vec d
 	}
 	DestroyVecfun(&H);
 	DestroyVecfun(&f);
+	AssembleVec(df);
 }
 
-void ColumnDerivativeCross(Vec dfR, Vec dfI, Vec vIpsi, Vec vhcross, Mode *ms, Geometry geo){
+void ColumnDerivativeCross(Vec dfR, Vec dfI, Vec vIpsi, Vec vhcross, int jh, Mode *ms, Geometry geo){
 // for two modes near degeneracy only!
 // cross term; can't put this in ColumnDerivative because need both w[2] and c[2]
 
@@ -107,8 +108,8 @@ void ColumnDerivativeCross(Vec dfR, Vec dfI, Vec vIpsi, Vec vhcross, Mode *ms, G
 			dcomp ksqDfHsqhcross_ywpsi = sqr(w[ih])*geo->D * valr(&f, i) * sqr(valr(&H, i))
 				* valr(&hcross, i) * yw[ih] * valc(&psi, i);
 			dcomp dfdk_cross = 2.0 * ksqDfHsqhcross_ywpsi * 
-					(w[ih] - w[(ih+1)%2])/sqr(geo->gampar) * G12, 
-				dfdc_cross = -2.0 * ksqDfHsqhcross_ywpsi / c[ih];
+					(w[jh] - w[(jh+1)%2])/sqr(geo->gampar) * G12, 
+				dfdc_cross = -2.0 * ksqDfHsqhcross_ywpsi / c[jh];
 
 			int ir = i / Nxyzc(geo);
 			VecSetValue(dfR, ih*NJ(geo) + i, ir? cimag(dfdk_cross) : creal(dfdk_cross), ADD_VALUES);
