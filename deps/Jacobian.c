@@ -1,5 +1,4 @@
 #include "salt.h"
-#include "CrossTerms.c"
 
 void VecSetComplex(Vec vR, Vec vI, int i, int ir, dcomp val, InsertMode addv){
 	VecSetValue(vR, i, ir? cimag(val) : creal(val), addv );
@@ -160,14 +159,7 @@ double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton
 		ComputeGain(geo, ms, Nm); // do this before naming scratch vectors!
 	// ================== name scratch vectors ================== //
 	Vec vpsisq = geo->vscratch[3], // only form this later if needed
-		vIpsi = geo->vscratch[2],
-		vhcross = geo->vscratch[4];
-	if(Nm==2 && geo->gampar > 0.0){
-		ComputeHcross(ms, geo, vIpsi, vpsisq, vhcross);
-		// borrow vpsisq as the second vIpsi
-		AddCrossTerm(geo, vhcross);
-	}
-
+		vIpsi = geo->vscratch[2];
 	Vec dfR, dfI;
 	if(Nm == 1){
 		dfR = geo->vscratch[0];
@@ -227,9 +219,6 @@ double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton
 			ColumnDerivative(mi, mj, geo, dfR, dfI, vIpsi, vpsisq, ih);
 		}
 
-		if(Nm == 2 && geo->gampar > 0.0){
-			ColumnDerivativeCross(dfR, dfI, vIpsi, vhcross, jh, ms, geo);
-		}
 
 		SetJacobian(geo, J, dfR, -1, 0, jh);
 		SetJacobian(geo, J, dfI, -1, 1, jh);
@@ -255,8 +244,6 @@ double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton
 					TensorDerivative(mi, mj, geo, jc, jr, dfR, vpsibra, vIpsi, ih);
 				}
 
-				if(Nm == 2 && geo->gampar > 0.0)
-					TensorDerivativeCross(ms, geo, jc, jr, jh, dfR, vpsibra, vIpsi);
 				SetJacobian(geo, J, dfR, jc, jr, jh);
 			}
 		}
