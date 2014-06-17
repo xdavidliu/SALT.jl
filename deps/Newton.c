@@ -1,5 +1,11 @@
 #include "salt.h"
 
+// NOTE! as of 6/14, c has been redefined such that the hole burning term is 
+// 1 / (1 + c^2 |psi|^2), i.e. all the rest of the garbage has been removed.
+// Newton still works perfectly, because this amounts to a simple rescaling. For
+// printing of data, we use the old convention. However, for outputting
+// of c's to files, we're using the new convention. 
+
 double EdgeIntensity(Mode m, Geometry geo){
 // only works for sequential
 
@@ -86,11 +92,14 @@ void NewtonSolve(Mode *ms, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int 
 			if(! ms[ih]->lasing)
 				PetscPrintf(PETSC_COMM_WORLD, " + i(%g)", cimag(w) );
 			else
-				PetscPrintf(PETSC_COMM_WORLD, ", c = %g", get_c(ms[ih]) );
+				PetscPrintf(PETSC_COMM_WORLD, ", c = %g", get_c(ms[ih]) / cabs(gamma_w(ms[ih], geo)) );
+			// c in code redefined to absorb all the garbage multiplying the
+			// |E|^2 in the hole burning. This outputted c uses the older
+			// convention, on the other hand. -DL 6/14
 
 			if( GetSize() == 1 && ms[ih]->lasing && geo->LowerPML==0 
 			&& geo->gN.N[1] == 1 && geo->gN.N[2] == 1 && geo->Nc == 1)  
-				PetscPrintf(PETSC_COMM_WORLD, ", |psi|^2_edge = %g", EdgeIntensity(ms[ih], geo));
+				PetscPrintf(PETSC_COMM_WORLD, ", |psi|^2_edge = %g", EdgeIntensity(ms[ih], geo) / sqr(cabs(gamma_w(ms[ih], geo))) );
 
 			PetscPrintf(PETSC_COMM_WORLD, "\n");
 		}

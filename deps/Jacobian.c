@@ -47,7 +47,7 @@ void LinearDerivative(Mode m, Geometry geo, Vec dfR, Vec dfI, int ih){
 
 void TensorDerivative(Mode m, Mode mj, Geometry geo, int jc, int jr, Vec df, Vec vpsibra, Vec vIpsi, int ih){
 	double mjc = get_c(mj);
-	dcomp mw = get_w(m), yw = gamma_w(m, geo), yjw = gamma_w(mj, geo);
+	dcomp mw = get_w(m), yw = gamma_w(m, geo) ;
 
 	Vecfun f, H, psibra;
 	CreateVecfun(&f, geo->vf);
@@ -60,7 +60,7 @@ void TensorDerivative(Mode m, Mode mj, Geometry geo, int jc, int jr, Vec df, Vec
 	int i;
 	for(i=f.ns; i<f.ne; i++){
 		if( valr(&f, i) == 0.0) continue;		
-		dcomp ket_term = -csqr(mw ) * sqr(mjc) * sqr(cabs(yjw)) * 2.0
+		dcomp ket_term = -csqr(mw ) * sqr(mjc) * 2.0
 			* sqr(valr(&H, i) ) * geo->D * valr(&f, i) * yw * valc(&psi, i);	
 		double val = valr(&psibra, i) * (ir(geo, i)? cimag(ket_term) : creal(ket_term) );
 	
@@ -78,8 +78,7 @@ void ColumnDerivative(Mode m, Mode mj, Geometry geo, Vec dfR, Vec dfI, Vec vIpsi
 
 	// purposely don't set df = 0 here to allow multiple ih's
 	double mjc = get_c(mj);
-	dcomp mw = get_w(m), yw = gamma_w(m, geo),
-			mjw = get_w(mj), yjw = gamma_w(mj, geo);
+	dcomp mw = get_w(m), yw = gamma_w(m, geo);
 
 	Complexfun psi, eps;
 	CreateComplexfun(&psi,m->vpsi, vIpsi);
@@ -100,12 +99,11 @@ void ColumnDerivative(Mode m, Mode mj, Geometry geo, Vec dfR, Vec dfI, Vec vIpsi
 		// note: adding dcomp to a double ignores the imaginary part
 
 		if(m->lasing && valr(&f, i) != 0.0){
-			dcomp dHdk_term = -sqr(mjc) * -2.0*(mjw-geo->wa)
-			 /sqr(geo->y) * sqr(sqr(cabs(yjw)));
-			dHdk_term *= csqr(mw)*DfywHpsi * valr(&H, i) * valr(&psisq, i);
-			dfdk += dHdk_term;
+		
+			// dHdk removed; field simply rescaled -DL 6/15/14
+
 			dfdc = csqr(mw) * DfywHpsi * valr(&H, i);
-			dfdc *= (-2.0*mjc)*sqr(cabs(yjw)) * valr(&psisq, i);
+			dfdc *= (-2.0*mjc)*valr(&psisq, i);
 		}
 	
 		if( !m->lasing)
@@ -133,7 +131,6 @@ void ComputeGain(Geometry geo, Mode *ms, int Nh){
 	int i, ih;
 	for(ih=0; ih<Nh; ih++){
 		Mode m = ms[ih];
-		dcomp yw = gamma_w(m, geo);
 		double mc = get_c(m);
 
 		// do not change this from vscratch[3], or the hack below for single mode Column derivative will fail!
@@ -143,7 +140,7 @@ void ComputeGain(Geometry geo, Mode *ms, int Nh){
 		CreateVecfun(&psisq ,geo->vscratch[3]);
 		for(i=H.ns; i<H.ne; i++){
 			if(valr(&f, i) == 0.0) continue;
-			setr(&H, i, valr(&H, i) + sqr(cabs(yw)) *sqr(mc) * valr(&psisq, i) ) ;
+			setr(&H, i, valr(&H, i) + sqr(mc) * valr(&psisq, i) ) ;
 		}
 	}
 	
@@ -208,7 +205,7 @@ double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton
 	// no \n here to make room for timing printf statement immediately afterwards
 
 	if(Nm==2) //DEBUG
-		PetscPrintf(PETSC_COMM_WORLD, " DEBUG: c = (%g, %g)", get_c(ms[0]), get_c(ms[1]) );
+		PetscPrintf(PETSC_COMM_WORLD, " DEBUG: |yw|^2 c = (%g, %g)", get_c(ms[0]), get_c(ms[1]) );
 
 	if(fnorm < ftol )
 		return fnorm;   		// TODO: deleted old integral routine. Write new one here.
