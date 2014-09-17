@@ -161,7 +161,11 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 			Setup( ms[ih], geo);
 	}
     Vec f, dv;
-    MatGetVecs( ms[0]->J, &dv, &f);
+//    MatGetVecs( ms[0]->J, &dv, &f); 
+// 9/17/14: replaced MatGetVecs here with VecDuplicate. 2-mode lasing with 1-mode nonlasing no longer broken. Not sure why I didn't do this before.
+	VecDuplicate(geo->vscratch[0], &dv);
+	VecDuplicate(geo->vscratch[0], &f);
+
 	for(; geo->D <= Dmax; geo->D = (geo->D+dD < Dmax? geo->D+dD: Dmax)){
 	  	Nlasing = CreateFilter(ms, Nm, 1, &msh); // lasing sub-array
 	  	Vec vNh = ms[0]->vpsi, fNh = f, dvNh = dv;
@@ -197,6 +201,7 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 		Mode m = ms[ih];
 		if(m->lasing || m == mthreshold_nonlasing) continue;
 		double wi_old = cimag(get_w(m));
+
 		NewtonSolve(&m, geo,  m->vpsi, f, dv, ftol, printnewton);
 
 		double wi_new = cimag(get_w(m));
