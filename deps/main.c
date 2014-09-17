@@ -176,9 +176,10 @@ void mainPassive(){
 	int added;
 	Mode *ms = Passive(&added, bl, k, wreal, wimag, modenorm, nev, geo);
 	for(i = 0; i<added; i++){
-		if(added == 1)
-			sprintf(ms[i]->name, "%s", modeout);
-		else 
+//		if(added == 1)
+//			sprintf(ms[i]->name, "%s", modeout);
+//		else 
+//   9/17/14: removed this functionality, just confuses things.
 			sprintf(ms[i]->name, "%s%i", modeout, i);
 
 		Write(ms[i], geo);
