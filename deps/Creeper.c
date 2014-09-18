@@ -207,8 +207,9 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 		double wi_new = cimag(get_w(m));
 
 		if(wi_new > 0.0 && !m->lasing){
+
 			ThresholdSearch(  wi_old, wi_new, geo->D-dD, geo->D, 
-			msh, vNh, m, geo, f, dv, ftol, printnewton);
+			msh, vNh, fNh, dvNh, m, geo, f, dv, ftol, printnewton);
 			ih = -1; // reset to recalculate the rest of the lasing modes
 			mthreshold_nonlasing = m;
 

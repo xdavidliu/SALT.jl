@@ -106,7 +106,7 @@ void NewtonSolve(Mode *ms, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int 
 	}
 }
 
-void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, Mode *msh, Vec vNh, Mode m, Geometry geo, Vec f, Vec dv, double ftol, int printnewton){
+void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, Mode *msh, Vec vNh, Vec fNh, Vec dvNh, Mode m, Geometry geo, Vec f, Vec dv, double ftol, int printnewton){
 
 	dcomp mw = get_w(m);
 	SetLast2(m->vpsi, creal(mw), 0.0);
@@ -117,8 +117,13 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 		Nlasing = N / NJ(geo);
 	}
 
+		
 	// Threshold found if nonlasing residual with omega real is < ftol
-	if( FormJf(&m, geo, Nlasing > 1?vNh : m->vpsi, f, ftol, printnewton) < ftol ){
+
+	// 9/17/14, not sure why I had Nlasing > 1?vNh : m->vpsi for third argument here.
+	// this is nonlasing mode, so don't care what Nlasing is.
+
+	if( FormJf(&m, geo, m->vpsi, f, ftol, printnewton) < ftol ){
 		PetscPrintf(PETSC_COMM_WORLD, "\nThreshold found for mode \"%s\" at D = %1.10g\n", m->name, geo->D);
 		m->lasing = 1;
 		return;
@@ -126,13 +131,14 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 		SetLast2(m->vpsi, creal(mw), cimag(mw));
 	}
 
+
 	geo->D = D_lo - (D_hi - D_lo)/(wimag_hi - wimag_lo) * wimag_lo;
 
+
 	// set msh = NULL before calling ThresholdSearch if no lasing
-	if( msh ) NewtonSolve(msh, geo, vNh, f, dv, ftol, printnewton);
+	if( msh ) NewtonSolve(msh, geo, vNh, fNh, dvNh, ftol, printnewton);
 
 	NewtonSolve(&m, geo, m->vpsi, f, dv, ftol, printnewton);
-
 	mw = get_w(m);
 
 	if( wimag_lo*wimag_hi > 0){ // both on same side of threshold
@@ -146,5 +152,5 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 	if(printnewton)
 	PetscPrintf(PETSC_COMM_WORLD, 
 		"Searching... D=%g --> Im[w] = %g\n", geo->D, cimag(mw));
-	ThresholdSearch(wimag_lo, wimag_hi, D_lo, D_hi, msh, vNh, m, geo, f, dv, ftol, printnewton); 
+	ThresholdSearch(wimag_lo, wimag_hi, D_lo, D_hi, msh, vNh, fNh, dvNh, m, geo, f, dv, ftol, printnewton); 
 }

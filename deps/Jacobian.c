@@ -26,6 +26,7 @@ void Stamp(Geometry geo, Vec vN, int ic, int ir, Vec scratchM){
 }
 
 void LinearDerivative(Mode m, Geometry geo, Vec dfR, Vec dfI, int ih){
+
 	Complexfun eps;
 	CreateComplexfun(&eps, geo->veps, geo->vIeps);
 	Vecfun f, H;
@@ -39,9 +40,11 @@ void LinearDerivative(Mode m, Geometry geo, Vec dfR, Vec dfI, int ih){
 		dcomp val = csqr(mw) * (valc(&eps, i) + geo->D * yw * valr(&f, i) * valr(&H, i) );
 		VecSetComplex(dfR, dfI, i+offset(geo, ih), ir(geo, i), val, INSERT_VALUES);
 	}
+
 	DestroyVecfun(&f);
 	DestroyVecfun(&H);
 	DestroyComplexfun(&eps);
+
 }
 
 void TensorDerivative(Mode m, Mode mj, Geometry geo, int jc, int jr, Vec df, Vec vpsibra, Vec vIpsi, int ih){
@@ -177,10 +180,14 @@ double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton
 		m = ms[ih];
 		VecSet(dfR, 0.0);	
 		VecSet(dfI, 0.0);
+
+
+
 		LinearDerivative(m, geo, dfR, dfI, ih);
 	  	SetJacobian(geo, J, dfR, -2, 0, ih);
 		SetJacobian(geo, J, dfI, -2, 1, ih); 
 	}
+
 
 	// row derivatives already added in add placeholders!
 
