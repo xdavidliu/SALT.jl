@@ -67,7 +67,7 @@ void NewtonSolve(Mode *ms, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int 
 
 		gettimeofday(&t2, NULL);
 		KSPSolve(ksp, f, dv);
-		KSPSetOperators(ms[0]->ksp, ms[0]->J, ms[0]->J, SAME_PRECONDITIONER);
+		KSPSetOperators(ms[0]->ksp, ms[0]->J, ms[0]->J);
 
 		gettimeofday(&t3, NULL);
 
@@ -78,7 +78,7 @@ void NewtonSolve(Mode *ms, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int 
 
 		its++;
 		if(its > 6)
-			KSPSetOperators(ms[0]->ksp, ms[0]->J, ms[0]->J, SAME_NONZERO_PATTERN);
+			KSPSetOperators(ms[0]->ksp, ms[0]->J, ms[0]->J);
 		// refresh LU factorization. In next KSP solve, reset to SAME_PRECONDITIONER, do not need to worry about any other instances of KSPSolve
 	}
 
@@ -110,11 +110,9 @@ void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi,
 
 	dcomp mw = get_w(m);
 	SetLast2(m->vpsi, creal(mw), 0.0);
-	int Nlasing = 0;
 	if(msh){ // lasing mode array passed in
 		int N;
 		VecGetSize(vNh, &N); 
-		Nlasing = N / NJ(geo);
 	}
 
 		

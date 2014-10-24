@@ -82,7 +82,7 @@ PetscErrorCode Bundle(Mode *ms, int size, Geometry geo){
 	// don't forget to change this in Setup too.
 
 	KSPSetFromOptions(ksp);
-	KSPSetOperators(ksp, J, J, SAME_PRECONDITIONER);
+	KSPSetOperators(ksp, J, J);
 	// TODO: will probably want to merge all of this in with a generalized
 	// multimode version of Mode::Setup
 
