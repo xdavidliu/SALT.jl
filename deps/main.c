@@ -19,7 +19,12 @@ Mode ModeRead(const char *Name, Geometry geo, double *Dout){
 		MyError(w );
 	}
 
-   if(GetRank()==0){ fgets(w, PETSC_MAX_PATH_LEN, fp); } // "mode = ["
+	// skips to first line after "psi = ["
+	if(GetRank()==0){
+		while( strcmp(w, "psi = [\n") != 0 ){
+			fgets(w, PETSC_MAX_PATH_LEN, fp);
+		}		
+	}
 
 	ReadVectorC(fp, 2*Nxyzc(geo)+2, m->vpsi);
 
