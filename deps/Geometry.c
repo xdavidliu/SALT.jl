@@ -64,12 +64,11 @@ void TimesI(Geometry geo, Vec v, Vec Iv){
 	ScatterRange (v, Iv, 0, Nxyzc(geo), Nxyzc(geo));
 }
 
-void VecSqMedium(Geometry geo, Vec v, Vec vsq, Vec scratchM){
-	VecCopy(v, vsq);
-	VecPointwiseMult(vsq, vsq, vsq);
+void VecDotMedium(Geometry geo, Vec v1, Vec v2, Vec w, Vec scratchM){
+	VecPointwiseMult(w, v1, v2);
 
-	CollectVec(geo, vsq, scratchM);
-	InterpolateVec(geo, scratchM, vsq);
+	CollectVec(geo, w, scratchM);
+	InterpolateVec(geo, scratchM, w);
 }
 
 Geometry CreateGeometry(int N[3], double h[3], int Npml[3], int Nc, int LowerPML, double *eps, double *epsI, double *fprof, double wa, double y){
@@ -78,6 +77,7 @@ Geometry CreateGeometry(int N[3], double h[3], int Npml[3], int Nc, int LowerPML
         Geometry geo = (Geometry) malloc(sizeof(struct Geometry_s));
 	geo->Nc = Nc;
 	geo->LowerPML = LowerPML;
+	geo->interference = 0;
 
 	for(i=0; i<3; i++){
 		geo->h[i] = h[i];

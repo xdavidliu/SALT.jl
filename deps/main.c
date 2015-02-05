@@ -238,6 +238,10 @@ void mainCreeper(double Dmax){
 	Nm = i;
 	PetscOptionsGetInt(PETSC_NULL,"-printnewton", &printnewton,NULL);
 	geo = ReadCreateGeometry();
+
+	// by default, interference = 0
+	PetscOptionsGetInt(PETSC_NULL,"-interference", &geo->interference,NULL); 
+
 	Mode *ms = ReadModes(geo, namesin, namesout, Nm);
 
 	// hack, so that SALT.jl can access Creeper using just a pointer to modes.

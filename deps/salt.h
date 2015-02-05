@@ -53,7 +53,7 @@ int xyzcr(Point *p);
 #define SCRATCHNUM 5
 typedef struct Geometry_s{
 
-	int Npml[3], Nc, LowerPML;
+	int Npml[3], Nc, LowerPML, interference;
 	double h[3], gampar, G0; // last 2 not used in main interface, only for nearly degenerate modes
 	// G0 is Gamma_0, or the threshold |yk|^2 of the two modes. Saves having to consider annoying ineffectual terms in Jacobian from cross term.
 	Vec vepspml;
@@ -72,7 +72,7 @@ void InterpolateVec(Geometry geo, Vec vM, Vec vN);
 void CollectVec(Geometry geo, Vec vN, Vec vM);
 void Stamp(Geometry geo, Vec vN, int ic, int ir, Vec scratchM);
 void TimesI(Geometry geo, Vec v, Vec Iv);
-void VecSqMedium(Geometry geo, Vec v, Vec vsq, Vec scratchM);
+void VecDotMedium(Geometry geo, Vec v1, Vec v2, Vec w, Vec scratchM);
 int Last2(Geometry geo, int i);
 void SetJacobian(Geometry geo, Mat J, Vec v, int jc, int jr, int jh);
 

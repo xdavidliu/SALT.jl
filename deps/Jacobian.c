@@ -47,7 +47,7 @@ void LinearDerivative(Mode m, Geometry geo, Vec dfR, Vec dfI, int ih){
 
 }
 
-void TensorDerivative(Mode m, Mode mj, Geometry geo, int jc, int jr, Vec df, Vec vpsibra, Vec vIpsi, int ih){
+void TensorDerivative(Mode m, Mode mj, Geometry geo, Vec df, Vec vpsibra, Vec vIpsi, int ih){
 	double mjc = get_c(mj);
 	dcomp mw = get_w(m), yw = gamma_w(m, geo) ;
 
@@ -136,7 +136,7 @@ void ComputeGain(Geometry geo, Mode *ms, int Nh){
 		double mc = get_c(m);
 
 		// do not change this from vscratch[3], or the hack below for single mode Column derivative will fail!
-		VecSqMedium(geo, m->vpsi, geo->vscratch[3], geo->vMscratch[0]);
+		VecDotMedium(geo, m->vpsi, m->vpsi, geo->vscratch[3], geo->vMscratch[0]);
 
 		Vecfun psisq;
 		CreateVecfun(&psisq ,geo->vscratch[3]);
@@ -218,7 +218,7 @@ double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton
 		VecSet(dfI, 0.0);
 
 		if(Nm > 1)  // hack: only recompute vpsisq if ComputeGain didn't already do it, i.e. for multimode
-			VecSqMedium(geo, mj->vpsi, vpsisq, geo->vMscratch[0]);
+			VecDotMedium(geo, mj->vpsi, mj->vpsi, vpsisq, geo->vMscratch[0]);
 
 		for(ih=0; ih<Nm; ih++){
 			Mode mi = ms[ih];
@@ -248,13 +248,21 @@ double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton
 				for(ih=0; ih<Nm; ih++){
 					Mode mi = ms[ih];
 					TimesI(geo, mi->vpsi, vIpsi);
-					TensorDerivative(mi, mj, geo, jc, jr, dfR, vpsibra, vIpsi, ih);
+					TensorDerivative(mi, mj, geo, dfR, vpsibra, vIpsi, ih);
 				}
 
 				SetJacobian(geo, J, dfR, jc, jr, jh);
 			}
 		}
 	}
+
+	if(geo->interference == 1 && Nm == 2){
+
+
+
+		PetscPrintf(PETSC_COMM_WORLD, "DEBUG: interference code called\n");
+	}
+
 	AssembleMat(J);
 	return fnorm;
 }
