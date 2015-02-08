@@ -50,11 +50,11 @@ int xyz(Point *p);
 int xyzc(Point *p);
 int xyzcr(Point *p);
 
-#define SCRATCHNUM 5
+#define SCRATCHNUM 7
 typedef struct Geometry_s{
 
-	int Npml[3], Nc, LowerPML, interference;
-	double h[3], gampar, G0; // last 2 not used in main interface, only for nearly degenerate modes
+	int Npml[3], Nc, LowerPML;
+	double interference, h[3], gampar, G0; // last 2 not used in main interface, only for nearly degenerate modes
 	// G0 is Gamma_0, or the threshold |yk|^2 of the two modes. Saves having to consider annoying ineffectual terms in Jacobian from cross term.
 	Vec vepspml;
 

@@ -248,12 +248,3 @@ void DestroyComplexfun(Complexfun *fun){
 void DestroyVecfun(Vecfun *fun){
 	VecRestoreArray(fun->u, &fun->a);
 }
-
-/*
-double creal(dcomp z){ return z.real();}
-double cimag(dcomp z){ return z.imag();} // temp, DELETE!
-double cabs(dcomp z){ return std::abs(z);}
-dcomp cexp(dcomp z){ return std::exp(z);}
-dcomp csqrt(dcomp z){ return std::sqrt(z);}
-dcomp conj(dcomp z){ return std::conj(z);}
-*/

@@ -239,8 +239,11 @@ void mainCreeper(double Dmax){
 	PetscOptionsGetInt(PETSC_NULL,"-printnewton", &printnewton,NULL);
 	geo = ReadCreateGeometry();
 
-	// by default, interference = 0
-	PetscOptionsGetInt(PETSC_NULL,"-interference", &geo->interference,NULL); 
+	// Convention: interference = 0 means interference term off
+	// this is default value in CreateGeometry
+	// anything else means that the value of interference is the phase angle
+	// between modes 1 and 2
+	PetscOptionsGetReal(PETSC_NULL,"-interference", &geo->interference,NULL); 
 
 	Mode *ms = ReadModes(geo, namesin, namesout, Nm);
 
@@ -251,6 +254,8 @@ void mainCreeper(double Dmax){
 		VecDestroy(&(ms[ih]->vpsi) ); // J and ksp destroyed in Creeper
 		free(ms[ih]);
 	}
+
+
 	DestroyGeometry(geo);
 
 	for(i=0; i<Nm; i++){

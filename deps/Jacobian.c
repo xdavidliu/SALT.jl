@@ -39,6 +39,7 @@ void LinearDerivative(Mode m, Geometry geo, Vec dfR, Vec dfI, int ih){
 	for(i=eps.ns; i<eps.ne; i++){
 		dcomp val = csqr(mw) * (valc(&eps, i) + geo->D * yw * valr(&f, i) * valr(&H, i) );
 		VecSetComplex(dfR, dfI, i+offset(geo, ih), ir(geo, i), val, INSERT_VALUES);
+		// df is assembled in SetJacobian
 	}
 
 	DestroyVecfun(&f);
@@ -67,6 +68,7 @@ void TensorDerivative(Mode m, Mode mj, Geometry geo, Vec df, Vec vpsibra, Vec vI
 		double val = valr(&psibra, i) * (ir(geo, i)? cimag(ket_term) : creal(ket_term) );
 	
 		VecSetValue(df, i+offset(geo, ih), val, INSERT_VALUES);
+		// df is assembled in SetJacobian
 	}
 	DestroyVecfun(&f);
 	DestroyVecfun(&H);
@@ -77,6 +79,7 @@ void TensorDerivative(Mode m, Mode mj, Geometry geo, Vec df, Vec vpsibra, Vec vI
 void ColumnDerivative(Mode m, Mode mj, Geometry geo, Vec dfR, Vec dfI, Vec vIpsi, Vec vpsisq, int ih){
 	// vIpsi is for m, vpsisq is for mj
 	// use pointers so can check whether ih = jh
+
 
 	// purposely don't set df = 0 here to allow multiple ih's
 	double mjc = get_c(mj);
@@ -90,6 +93,7 @@ void ColumnDerivative(Mode m, Mode mj, Geometry geo, Vec dfR, Vec dfI, Vec vIpsi
 	CreateVecfun(&f, geo->vf);
 	CreateVecfun(&H, geo->vH);
 	CreateVecfun(&psisq, vpsisq);
+
 
 	int i;
 	for(i=psi.ns; i<psi.ne; i++){
@@ -113,8 +117,10 @@ void ColumnDerivative(Mode m, Mode mj, Geometry geo, Vec dfR, Vec dfI, Vec vIpsi
 		else{
 			VecSetValue(dfR, i+offset(geo, ih), ir(geo, i)? cimag(dfdk) : creal(dfdk), INSERT_VALUES );
 			VecSetValue(dfI, i+offset(geo, ih), ir(geo, i)? cimag(dfdc) : creal(dfdc), INSERT_VALUES );
+		// df is assembled in SetJacobian
 		}
 	}
+
 
 	DestroyComplexfun(&eps);
 	DestroyComplexfun(&psi);
@@ -146,10 +152,36 @@ void ComputeGain(Geometry geo, Mode *ms, int Nh){
 		}
 	}
 	
+	if(geo->interference != 0.0 && Nh == 2){
+		// does not affect single mode case
+		VecDotMedium(geo, ms[0]->vpsi, ms[1]->vpsi, geo->vscratch[3], geo->vMscratch[0]);
+
+		Vec Ipsi = geo->vscratch[5];
+		TimesI( geo, ms[0]->vpsi, Ipsi);
+		VecDotMedium(geo, ms[1]->vpsi, Ipsi, geo->vscratch[6], geo->vMscratch[0]);
+		// keep vscratch[6] for later use when calling ColumnDerivative
+
+		// 2 c1 c2 Re[ exp(i thet) psi1* x psi2) ]
+		// term in square bracket is (cos thet + i sin thet ) x 
+		// ( E1R . E2R + E1I . E2I ) + i ( E1R . E2I - E1I . E2R )
+
+		double mc[2] = {get_c(ms[0]), get_c(ms[1]) };
+		Vecfun psi_intR, psi_intI; // interference
+		CreateVecfun(&psi_intR ,geo->vscratch[3]);
+		CreateVecfun(&psi_intI ,geo->vscratch[6]);
+
+		for(i=H.ns; i<H.ne; i++){
+			if(valr(&f, i) == 0.0) continue;
+			dcomp z = cexp( ComplexI * geo->interference) * (valr(&psi_intR, i) + ComplexI * valr(&psi_intI, i) );
+			setr(&H, i, valr(&H, i) + 2*mc[0]*mc[1] * creal(z) ) ;
+		}
+	}
+
 	for(i=H.ns; i<H.ne; i++)
 		setr(&H, i, 1.0 / (1.0 + valr(&H, i) ) );
 	// for plotting purposes, don't check if valr(&f, i)==0 here
 	DestroyVecfun(&H);
+
 }
 
 double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton){
@@ -195,6 +227,7 @@ double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton
 	MatMult(J, v, f);
 	for(kh = 0; kh<Nm; kh++) for(ir=0; ir<2; ir++)
 		VecSetValue(f, kh*NJ(geo) + Nxyzcr(geo)+ir, 0.0, INSERT_VALUES);
+	// assume psi(ifix) = something + i 0. Note we do not explicitly assume what "something" is, so in principle psi can have any normalization, as long as Im psi(ifix) =0.	
 
 	AssembleVec(f);
 	double fnorm;
@@ -244,7 +277,6 @@ double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton
 				Stamp(geo, vpsibra, jc, jr, geo->vMscratch[0]);
 
 				VecSet(dfR, 0.0);
-				ih = 0;
 				for(ih=0; ih<Nm; ih++){
 					Mode mi = ms[ih];
 					TimesI(geo, mi->vpsi, vIpsi);
@@ -256,11 +288,62 @@ double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton
 		}
 	}
 
-	if(geo->interference == 1 && Nm == 2){
+	if(geo->interference != 0.0 && Nm == 2){
+		// column interference derivative
+		
+		for(jh=0; jh<Nm; jh++){
+			Mode mj = ms[jh];
+
+			VecSet(dfR, 0.0);
+			VecSet(dfI, 0.0);
+
+			for(ih=0; ih<Nm; ih++){
+				Mode mi = ms[ih];
+				TimesI(geo, mi->vpsi, vIpsi);
+				// assume vscratch[6] computed above in ComputeGain
+				ColumnDerivative(mi, mj, geo, dfR, dfI, vIpsi, geo->vscratch[6], ih);
+			}
+
+			double thisc = get_c(mj), otherc = get_c(ms[1-jh]);
+			AssembleVec(dfI); // hack, so VecScale can work. Usually SetJacobian does the assembling
+			VecScale( dfI, otherc / thisc); // factor of two already included
+
+			AssembleVec(dfR); 
+			// hack; this is usually called in SetJacobian, but here we are not setting the dfR part. If we don't assemble here, then ColumnDerivative will complain the next time we try to insert values into dfR.
+		
+			SetJacobian(geo, J, dfI, -1, 1, jh);
+		}
+
+		// tensor interference derivative
+/*		Vec vpsibra = vpsi_int; vpsi_int = 0;
+
+		for(jh=0; jh<Nm; jh++){
+			Mode mj = ms[1 -jh]; // want the other mode for interference
+
+			for(jr=0; jr<2; jr++) for(jc=0; jc< geo->gN.Nc; jc++){
+				VecCopy(mj->vpsi, vpsibra);
+				Stamp(geo, vpsibra, jc, jr, geo->vMscratch[0]);
+
+				// Literally adds the two modes together, i.e. E1 + E2. hence, interference term is just E1R . E2R + E1I . E2I
+
+				VecSet(dfR, 0.0);
+				for(ih=0; ih<Nm; ih++){
+					Mode mi = ms[ih];
+					TimesI(geo, mi->vpsi, vIpsi);
+					TensorDerivative(mi, mj, geo, dfR, vpsibra, vIpsi, ih);
+				}
+
+				AssembleVec(dfR); // hack: so VecScale works
+				double mjc = get_c(mj), notmjc = get_c( ms[jh]);
+				VecScale(dfR, notmjc / mjc ); // want c1 c2, not c(mj)^2
+				// factor of 2 already included
+				SetJacobian(geo, J, dfR, jc, jr, jh);
+			}
+		}
+*/
 
 
-
-		PetscPrintf(PETSC_COMM_WORLD, "DEBUG: interference code called\n");
+		PetscPrintf(PETSC_COMM_WORLD, "DEBUG: interference code called");
 	}
 
 	AssembleMat(J);

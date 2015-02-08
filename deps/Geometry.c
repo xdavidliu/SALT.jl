@@ -77,7 +77,7 @@ Geometry CreateGeometry(int N[3], double h[3], int Npml[3], int Nc, int LowerPML
         Geometry geo = (Geometry) malloc(sizeof(struct Geometry_s));
 	geo->Nc = Nc;
 	geo->LowerPML = LowerPML;
-	geo->interference = 0;
+	geo->interference = 0.0; // default no interference
 
 	for(i=0; i<3; i++){
 		geo->h[i] = h[i];
