@@ -129,8 +129,7 @@ void ColumnDerivative(Mode m, Mode mj, Geometry geo, Vec dfR, Vec dfI, Vec vIpsi
 	DestroyVecfun(&psisq);
 }
 
-void ComputeGain(Geometry geo, Mode *ms, int Nh){
-	// TODO: skip points where fprof[i] = 0, saves some time	
+void ComputeGain(Geometry geo, Mode *ms, int Nh){	
 
 	VecSet(geo->vH, 0.0);
 	Vecfun H, f;
@@ -150,6 +149,7 @@ void ComputeGain(Geometry geo, Mode *ms, int Nh){
 			if(valr(&f, i) == 0.0) continue;
 			setr(&H, i, valr(&H, i) + sqr(mc) * valr(&psisq, i) ) ;
 		}
+		DestroyVecfun(&psisq);
 	}
 	
 	if(geo->interference != 0.0 && Nh == 2){
@@ -159,28 +159,33 @@ void ComputeGain(Geometry geo, Mode *ms, int Nh){
 		Vec Ipsi = geo->vscratch[5];
 		TimesI( geo, ms[0]->vpsi, Ipsi);
 		VecDotMedium(geo, ms[1]->vpsi, Ipsi, geo->vscratch[6], geo->vMscratch[0]);
-		// keep vscratch[6] for later use when calling ColumnDerivative
 
 		// 2 c1 c2 Re[ exp(i thet) psi1* x psi2) ]
 		// term in square bracket is (cos thet + i sin thet ) x 
 		// ( E1R . E2R + E1I . E2I ) + i ( E1R . E2I - E1I . E2R )
+		
+		// vscratch[3] and vscratch[6] are the real and imaginary parts of this last line
+		double costh = cos(geo->interference), sinth = sin(geo->interference);
+		VecScale(geo->vscratch[6], -sinth);
+		VecAXPY( geo->vscratch[6], costh, geo->vscratch[3]);
+		// now vscratch[6] = Re[ ... ]
 
 		double mc[2] = {get_c(ms[0]), get_c(ms[1]) };
-		Vecfun psi_intR, psi_intI; // interference
-		CreateVecfun(&psi_intR ,geo->vscratch[3]);
-		CreateVecfun(&psi_intI ,geo->vscratch[6]);
+		Vecfun psi_int;
+		CreateVecfun(&psi_int ,geo->vscratch[6]);
 
 		for(i=H.ns; i<H.ne; i++){
 			if(valr(&f, i) == 0.0) continue;
-			dcomp z = cexp( ComplexI * geo->interference) * (valr(&psi_intR, i) + ComplexI * valr(&psi_intI, i) );
-			setr(&H, i, valr(&H, i) + 2*mc[0]*mc[1] * creal(z) ) ;
+			setr(&H, i, valr(&H, i) + 2.0*mc[0]*mc[1] * valr(&psi_int, i) ) ;
 		}
+		DestroyVecfun(&psi_int);
 	}
 
 	for(i=H.ns; i<H.ne; i++)
 		setr(&H, i, 1.0 / (1.0 + valr(&H, i) ) );
 	// for plotting purposes, don't check if valr(&f, i)==0 here
 	DestroyVecfun(&H);
+	DestroyVecfun(&f);
 
 }
 
@@ -237,7 +242,7 @@ double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton
 	// no \n here to make room for timing printf statement immediately afterwards
 
 	if(Nm==2) //DEBUG
-		PetscPrintf(PETSC_COMM_WORLD, " DEBUG: |yw|^2 c = (%g, %g)", get_c(ms[0]), get_c(ms[1]) );
+		PetscPrintf(PETSC_COMM_WORLD, " DEBUG: |yw| c = (%g, %g)", get_c(ms[0]), get_c(ms[1]) );
 
 	if(fnorm < ftol )
 		return fnorm;   		// TODO: deleted old integral routine. Write new one here.
@@ -288,9 +293,11 @@ double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton
 		}
 	}
 
+
 	if(geo->interference != 0.0 && Nm == 2){
 		// column interference derivative
-		
+	
+
 		for(jh=0; jh<Nm; jh++){
 			Mode mj = ms[jh];
 
@@ -315,32 +322,48 @@ double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton
 		}
 
 		// tensor interference derivative
-/*		Vec vpsibra = vpsi_int; vpsi_int = 0;
 
-		for(jh=0; jh<Nm; jh++){
-			Mode mj = ms[1 -jh]; // want the other mode for interference
+		for(jc=0; jc< geo->gN.Nc; jc++){  // shifted order of loops around for convenience, but this is actually unnecessary
+			Vec vpsibra = geo->vscratch[3], 
+			    vcos = geo->vscratch[4], vsin = geo->vscratch[5];
 
-			for(jr=0; jr<2; jr++) for(jc=0; jc< geo->gN.Nc; jc++){
-				VecCopy(mj->vpsi, vpsibra);
-				Stamp(geo, vpsibra, jc, jr, geo->vMscratch[0]);
+			for(jh=0; jh<Nm; jh++) for(jr=0; jr<2; jr++) {	
+				VecCopy( ms[1-jh]->vpsi, vcos);
+				Stamp(geo, vcos, jc, jr, geo->vMscratch[0]);
+				VecCopy( ms[1-jh]->vpsi, vsin);
+				Stamp(geo, vsin, jc, 1-jr, geo->vMscratch[0]);
 
-				// Literally adds the two modes together, i.e. E1 + E2. hence, interference term is just E1R . E2R + E1I . E2I
+
+
+	//d/dE1R = cos E2R - sin E2I
+	//d/dE1I = cos E2I + sin E2R
+
+	//the other two are (1 <-> 2, sin <-> -sin) 
+
+
+				double sign = (jh == jr ? -1.0 : 1.0);
+				double costh = cos(geo->interference), sinth = sin(geo->interference);
+				VecScale( vsin, sign * sinth);
+				VecWAXPY( vpsibra, costh, vcos, vsin); // this function has awkward syntax, and VecAXPBY is even worse
 
 				VecSet(dfR, 0.0);
 				for(ih=0; ih<Nm; ih++){
 					Mode mi = ms[ih];
 					TimesI(geo, mi->vpsi, vIpsi);
-					TensorDerivative(mi, mj, geo, dfR, vpsibra, vIpsi, ih);
-				}
+					TensorDerivative(mi, ms[0], geo, dfR, vpsibra, vIpsi, ih);
+				} // will have factor of c[0]^2
 
-				AssembleVec(dfR); // hack: so VecScale works
-				double mjc = get_c(mj), notmjc = get_c( ms[jh]);
-				VecScale(dfR, notmjc / mjc ); // want c1 c2, not c(mj)^2
-				// factor of 2 already included
+				double thisc = get_c(ms[0]), otherc = get_c(ms[1]);
+				AssembleVec(dfR); // same hack. see above
+				VecScale( dfR, otherc / thisc); // factor of two already included				
+
 				SetJacobian(geo, J, dfR, jc, jr, jh);
+
 			}
 		}
-*/
+
+		
+
 
 
 		PetscPrintf(PETSC_COMM_WORLD, "DEBUG: interference code called");
