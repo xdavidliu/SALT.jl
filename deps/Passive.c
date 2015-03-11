@@ -145,6 +145,13 @@ Mode *Passive(int *added, int *bl, double *k, double wreal, double wimag, double
 	if(*added == 0) msp = NULL;
 
 	EPSDestroy(&evps);
+
+
+//	PetscPrintf(PETSC_COMM_WORLD, "DEBUG: outputting matrix\n");
+//	OutputMat(Mop, "Mop", "M");
+//	OutputMat(Bop, "Bop", "B");
+
+
 	MatDestroy(&Mop);
 	MatDestroy(&Bop);
 	VecDestroy(&v);	VecDestroy(&vi);

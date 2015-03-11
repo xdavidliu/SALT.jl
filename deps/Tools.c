@@ -16,7 +16,7 @@ dcomp csqr(dcomp a){ return a*a;}
 void AssembleVec(Vec x){ VecAssemblyBegin(x); VecAssemblyEnd(x); }
 void AssembleMat(Mat M){ MatAssemblyBegin(M, MAT_FINAL_ASSEMBLY); MatAssemblyEnd(M, MAT_FINAL_ASSEMBLY);}
 
-void View(Vec x, PetscViewer viewer){ VecView(x, viewer); }
+
 
 void ScatterRange (Vec x, Vec y, int ix, int iy, int N){
 	int ns, ne;
@@ -135,7 +135,19 @@ void Output(Vec A, const char* name, const char* variable_name){
 	PetscViewerASCIIOpen(PETSC_COMM_WORLD, filename, &viewer);
 	PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);
 	PetscObjectSetName((PetscObject) A, strncmp(variable_name, "", PETSC_MAX_PATH_LEN) ?variable_name : name);
-	View(A, viewer);
+	VecView(A, viewer);
+	PetscViewerDestroy(&viewer);
+}
+
+void OutputMat(Mat A, const char* name, const char* variable_name){
+	char filename[PETSC_MAX_PATH_LEN];
+	sprintf(filename, "%s%s", name, Output_Suffix);
+
+	PetscViewer viewer;
+	PetscViewerASCIIOpen(PETSC_COMM_WORLD, filename, &viewer);
+	PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);
+	PetscObjectSetName((PetscObject) A, strncmp(variable_name, "", PETSC_MAX_PATH_LEN) ?variable_name : name);
+	MatView(A, viewer);
 	PetscViewerDestroy(&viewer);
 }
 

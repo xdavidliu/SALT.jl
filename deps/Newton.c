@@ -88,7 +88,7 @@ void NewtonSolve(Mode *ms, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int 
 		PetscPrintf(PETSC_COMM_WORLD, "\nconverged!\n" );
 		for(ih=0; ih<Nm; ih++){
 			dcomp w = get_w(ms[ih]);
-			PetscPrintf(PETSC_COMM_WORLD, "%s at D = %g: w = %g", ms[ih]->name,  geo->D, creal(w));
+			PetscPrintf(PETSC_COMM_WORLD, "%s at D = %g: w = %1.10g", ms[ih]->name,  geo->D, creal(w));
 			if(! ms[ih]->lasing)
 				PetscPrintf(PETSC_COMM_WORLD, " + i(%g)", cimag(w) );
 			else

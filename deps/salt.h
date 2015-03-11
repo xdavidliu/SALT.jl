@@ -115,9 +115,9 @@ void ReadVectorC(FILE *fp, int N, Vec v);
 PetscErrorCode MyError(const char* message);
 double sqr(const double a);
 dcomp csqr(dcomp a);
-void View(Vec x, PetscViewer viewer);
 
 void Output(Vec A, const char* name, const char* variable_name);
+void OutputMat(Mat A, const char* name, const char* variable_name);
 
 void NewtonSolve(Mode *ms, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int printnewton);
 void ThresholdSearch(double wimag_lo, double wimag_hi, double D_lo, double D_hi, Mode *msh, Vec vNh, Vec fNh, Vec dvNh, Mode m, Geometry geo, Vec f, Vec dv, double ftol, int printnewton);

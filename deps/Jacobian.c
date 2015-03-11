@@ -242,7 +242,8 @@ double FormJf(Mode* ms, Geometry geo, Vec v, Vec f, double ftol, int printnewton
 	// no \n here to make room for timing printf statement immediately afterwards
 
 	if(Nm==2) //DEBUG
-		PetscPrintf(PETSC_COMM_WORLD, " DEBUG: |yw| c = (%g, %g)", get_c(ms[0]), get_c(ms[1]) );
+		PetscPrintf(PETSC_COMM_WORLD, " DEBUG: |yw| c = (%g, %g)", get_c(ms[0]) / cabs(gamma_w(ms[0], geo)), get_c(ms[1]) / cabs(gamma_w(ms[1], geo)) );
+		// see note under "%s at D = %g:" print statement in Newton.c
 
 	if(fnorm < ftol )
 		return fnorm;   		// TODO: deleted old integral routine. Write new one here.

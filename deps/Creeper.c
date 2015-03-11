@@ -228,6 +228,10 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 	}
 
 
+	PetscPrintf(PETSC_COMM_WORLD, "DEBUG: outputting H vector\n");
+	Output(geo->vH, "Hvec", "H");
+
+
 	VecDestroy(&f);
 	VecDestroy(&dv);
 
