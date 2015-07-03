@@ -160,7 +160,8 @@ void Setup(Mode m, Geometry geo){
   	PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);
 	// don't forget to change this in Bundle too
 
-	KSPSetOperators(m->ksp, m->J, m->J);
+	KSPSetOperators(m->ksp, m->J, m->J); 
+	// SAME_PRECONDITIONER for petsc 3.4 and before
 
 		// VV COMMENT BELOW OBSELETE after petsc 3.5.2 removed last argument of KSPSetOperators
 		// this will only be called the first time KSPSolve is called. SAME_PRECONDITIONER makes this

@@ -82,7 +82,10 @@ PetscErrorCode Bundle(Mode *ms, int size, Geometry geo){
 	// don't forget to change this in Setup too.
 
 	KSPSetFromOptions(ksp);
-	KSPSetOperators(ksp, J, J);
+	KSPSetOperators(ksp, J, J); 
+	// for petsc 3.4 and before, put SAME_PRECONDITIONER as fourth argument
+	// for 3.5 and above, have only 3 arguments
+
 	// TODO: will probably want to merge all of this in with a generalized
 	// multimode version of Mode::Setup
 
@@ -227,6 +230,14 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 	  if(geo->D==Dmax || (Dmax == hugeval && mthreshold_nonlasing != 0) ) break;
 	}
 
+	// 070315: hack: output deps using perturbation theory and quadratic
+	// programming method
+	int output_deps = 0;
+	PetscOptionsGetInt(PETSC_NULL,"-output_deps", &output_deps,NULL);
+	if( output_deps == 1){
+		PetscPrintf(PETSC_COMM_WORLD, "DEBUG: output_deps called!\n");
+	}
+	//=======================
 
 	PetscPrintf(PETSC_COMM_WORLD, "DEBUG: outputting H vector\n");
 	Output(geo->vH, "Hvec", "H");

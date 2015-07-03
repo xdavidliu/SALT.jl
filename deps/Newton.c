@@ -68,6 +68,7 @@ void NewtonSolve(Mode *ms, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int 
 		gettimeofday(&t2, NULL);
 		KSPSolve(ksp, f, dv);
 		KSPSetOperators(ms[0]->ksp, ms[0]->J, ms[0]->J);
+		// SAME_PRECONDITIONER for petsc 3.4 and before
 
 		gettimeofday(&t3, NULL);
 
@@ -79,6 +80,7 @@ void NewtonSolve(Mode *ms, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int 
 		its++;
 		if(its > 6)
 			KSPSetOperators(ms[0]->ksp, ms[0]->J, ms[0]->J);
+		// SAME_NONZERO_PATTERN for petsc 3.4 and before
 		// refresh LU factorization. In next KSP solve, reset to SAME_PRECONDITIONER, do not need to worry about any other instances of KSPSolve
 	}
 
