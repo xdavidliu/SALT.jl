@@ -413,22 +413,31 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 		AssembleMat(Mqp);
 		OutputMat(Mqp, "Matqp", "Mqp");
 
-		/*
+		Vec bqp, yqp; // RHS and LHS for linear solve
+		MatGetVecs(Mqp, &bqp, &yqp);
+		VecSet(bqp, 0.0);
+		double w1minusw2 = creal(get_w(ms[0]) - get_w(ms[1]));
+		VecSetValue(bqp, Nxyzcr(geo)-1+1, w1minusw2, INSERT_VALUES);		
+		// no need to assemble afterwards, this is done w/ all procs
 
-	
-		// construct bqp (right hand side), which is just all zeros except for a single element w2 - w1 or something
-		// create KSP and solve linear system,
-		// scatter range the deps (which is a Nxyzcr+3 vector) to a scratch vector;
-		// shift scratch vector by geo->veps, then output it as the new eps
-		// DONE! 
+		KSP ksp;
+		KSPCreate(PETSC_COMM_WORLD,&ksp);
+		PC pc;
+		KSPGetPC(ksp,&pc);
+		PCSetType(pc,PCLU);
+		PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);
 
-		*/
+		KSPSetFromOptions(ksp);
+		KSPSetOperators(ksp, Mqp, Mqp); // SAME_PRECONDITIONER here (doesn't really matter; I'm only solving once) 
 
+		KSPSolve( ksp, bqp, yqp);
+		KSPDestroy( &ksp);
+
+//		Output(yqp, "Vecyqp", "yqp");
+
+		VecDestroy(&bqp);
+		VecDestroy(&yqp);
 		MatDestroy(&Mqp);
-	
-
-		Output(pQP[0], "pvec0", "p0");
-		Output(pQP[1], "pvec1", "p1");
 	}
 
 	
