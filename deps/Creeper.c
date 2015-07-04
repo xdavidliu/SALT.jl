@@ -147,6 +147,36 @@ int FindModeAtThreshold(Mode *ms, int size){
 	return n;
 }
 
+void ComplexScale( Vec w, dcomp a, Vec scratch, Geometry geo){
+
+	TimesI(geo, w, scratch);
+	VecScale(w, creal(a));
+	VecAXPY(w, cimag(a), scratch);
+
+}
+
+void ComplexPointwiseMult(Vec w, Vec u, Vec v, Vec scratch0, Vec scratch1, Geometry geo){
+// w = u .* v
+// i.e. wR = uR vR - uI vI
+// wI = uR vI + uI vR
+
+	int Nxyzc = xyzcGrid(&geo->gN);
+	VecCopy(u, scratch0);
+	ScatterRange(u, scratch0, 0, Nxyzc, Nxyzc );
+	VecPointwiseMult(scratch0, scratch0, v);
+	// scratch0 is now [uR vR; uR vI]
+	
+	VecCopy(u, scratch1);
+	ScatterRange(u, scratch1, Nxyzc, 0, Nxyzc );
+	// scratch1 is now [uI; uI]
+	
+	TimesI(geo, v, w);
+	VecPointwiseMult(w, w, scratch1);
+	// w is now [ -uI vI; uI vR]
+	VecAXPY(w, 1.0, scratch0); 
+
+}
+
 // everything after Nm copied directly from ReadMode
 int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int Nm, Geometry geo){
 	
@@ -232,16 +262,33 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 
 	// 070315: hack: output deps using perturbation theory and quadratic
 	// programming method
+	/*
 	int output_deps = 0;
 	PetscOptionsGetInt(PETSC_NULL,"-output_deps", &output_deps,NULL);
 	if( output_deps == 1){
 		PetscPrintf(PETSC_COMM_WORLD, "DEBUG: output_deps called!\n");
+
+		ComplexPointwiseMult(geo->vscratch[0], ms[0]->vpsi, ms[1]->vpsi, geo->vscratch[1], geo->vscratch[2], geo);
+
+		Output(geo->vscratch[0], "vpsi0psi1", "psi0psi1");
+
+		VecCopy( ms[0]->vpsi, geo->vscratch[0]);
+		ComplexScale( geo->vscratch[0], 2.0 - 3.0*ComplexI, geo->vscratch[1], geo);
+		Output(geo->vscratch[0], "vpsi0a", "psi0a");
+
+		Output(ms[0]->vpsi, "vpsi0", "psi0");
+		Output(ms[1]->vpsi, "vpsi1", "psi1");
+
+		// last two elements will be nonsensical, but no worries
 	}
+	*/
 	//=======================
 
 	PetscPrintf(PETSC_COMM_WORLD, "DEBUG: outputting H vector\n");
 	Output(geo->vH, "Hvec", "H");
 
+	PetscPrintf(PETSC_COMM_WORLD, "DEBUG: outputting eps vector\n");
+	Output(geo->veps, "Epsvec", "Eps");	
 
 	VecDestroy(&f);
 	VecDestroy(&dv);
