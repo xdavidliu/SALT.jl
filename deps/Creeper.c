@@ -155,6 +155,7 @@ void ComplexScale( Vec w, dcomp a, Vec scratch, Geometry geo){
 
 }
 
+/*
 void ComplexPointwiseMult(Vec w, Vec u, Vec v, Vec scratch0, Vec scratch1, Geometry geo){
 // w = u .* v
 // i.e. wR = uR vR - uI vI
@@ -176,6 +177,37 @@ void ComplexPointwiseMult(Vec w, Vec u, Vec v, Vec scratch0, Vec scratch1, Geome
 	VecAXPY(w, 1.0, scratch0); 
 
 }
+*/
+
+void ComplexPointwiseMult(Vec w, Vec u, Vec v, Vec scratch0, Vec scratch1, Geometry geo){
+// w = u .* v
+// i.e. wR = uR vR - uI vI
+// wI = uR vI + uI vR
+
+	int Nxyzc = xyzcGrid(&geo->gN);
+
+	VecCopy(u, scratch1);
+	ScatterRange(u, scratch1, Nxyzc, 0, Nxyzc );
+	// scratch1 is now [uI; uI]
+	
+	TimesI(geo, v, scratch0);
+	VecPointwiseMult(scratch1, scratch0, scratch1);
+	// scratch1 is now [ -uI vI; uI vR]
+
+	// intricate shuffling of scratch0 and scratch1 here is necessary to allow for the case that w = v (w = u I haven't tested yet, but it should work)
+	VecCopy(u, scratch0);
+	ScatterRange(u, scratch0, 0, Nxyzc, Nxyzc );
+	VecPointwiseMult(scratch0, scratch0, v);
+	// scratch0 is now [uR vR; uR vI]
+
+	VecAXPY(scratch1, 1.0, scratch0); 
+	VecCopy(scratch1, w);
+	
+}
+
+
+
+
 
 // everything after Nm copied directly from ReadMode
 int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int Nm, Geometry geo){
@@ -262,33 +294,59 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 
 	// 070315: hack: output deps using perturbation theory and quadratic
 	// programming method
-	/*
+	
 	int output_deps = 0;
 	PetscOptionsGetInt(PETSC_NULL,"-output_deps", &output_deps,NULL);
-	if( output_deps == 1){
+	if( output_deps == 1 && Nm == 2){
 		PetscPrintf(PETSC_COMM_WORLD, "DEBUG: output_deps called!\n");
 
-		ComplexPointwiseMult(geo->vscratch[0], ms[0]->vpsi, ms[1]->vpsi, geo->vscratch[1], geo->vscratch[2], geo);
+		VecCopy(geo->vH, geo->vscratch[4]);
+		VecSet(geo->vscratch[0], 0.0);
+		int Nxyzc = xyzcGrid(&geo->gN);
+		ScatterRange(geo->vscratch[0], geo->vscratch[4], Nxyzc, Nxyzc, Nxyzc );
+		// H is [HR; HR]. Make it [HR, 0] so can use ComplexPointwiseMult with it
 
-		Output(geo->vscratch[0], "vpsi0psi1", "psi0psi1");
+		dcomp A[2];
+		
+		for(i=0; i<2; i++){ 
 
-		VecCopy( ms[0]->vpsi, geo->vscratch[0]);
-		ComplexScale( geo->vscratch[0], 2.0 - 3.0*ComplexI, geo->vscratch[1], geo);
-		Output(geo->vscratch[0], "vpsi0a", "psi0a");
+			VecCopy(geo->vscratch[4], geo->vscratch[1]);
+			dcomp yw = gamma_w(ms[i], geo), ywprime = -csqr(yw) / geo->y;
+			dcomp a = geo->D*(2.0*yw + get_w(ms[i])*ywprime );
+			// no issue with geo->D != Dmax here...
 
-		Output(ms[0]->vpsi, "vpsi0", "psi0");
-		Output(ms[1]->vpsi, "vpsi1", "psi1");
+			ComplexScale( geo->vscratch[1], a, geo->vscratch[2], geo);
+			VecAXPY( geo->vscratch[1], 2.0, geo->veps);
+			// 2 Ep + 2 D yw H + w D yw' H
 
-		// last two elements will be nonsensical, but no worries
+			
+
+			int k;
+			for(k=0; k<2; k++){ // do it twice to get the psi.^2
+				ComplexPointwiseMult(geo->vscratch[1], ms[i]->vpsi, geo->vscratch[1], geo->vscratch[2], geo->vscratch[3], geo);
+			}
+
+			double AR, AI;
+			VecSet(geo->vscratch[0], 0.0);
+			ScatterRange(geo->vscratch[1], geo->vscratch[0], 0, 0, Nxyzc );
+			VecSum(geo->vscratch[0], &AR);
+						
+			VecSet(geo->vscratch[0], 0.0);
+			ScatterRange(geo->vscratch[1], geo->vscratch[0], Nxyzc, Nxyzc, Nxyzc );
+			VecSum(geo->vscratch[0], &AI);
+
+			A[i] = AR + ComplexI*AI;
+			PetscPrintf(PETSC_COMM_WORLD, "DEBUG: A[%i] = %1.8g + i %1.8g \n", i, AR, AI);			
+		}
 	}
-	*/
+	
+	
 	//=======================
 
+/*
 	PetscPrintf(PETSC_COMM_WORLD, "DEBUG: outputting H vector\n");
 	Output(geo->vH, "Hvec", "H");
-
-	PetscPrintf(PETSC_COMM_WORLD, "DEBUG: outputting eps vector\n");
-	Output(geo->veps, "Epsvec", "Eps");	
+*/
 
 	VecDestroy(&f);
 	VecDestroy(&dv);
