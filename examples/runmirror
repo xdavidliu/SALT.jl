@@ -6,7 +6,7 @@
 COMMAND=$1;
 MPI=mpirun;
 #MPI=${PETSC_DIR}/${PETSC_ARCH}/bin/mpiexec;
-RUN="${MPI} -n 1 ../deps/SaltOut"; 
+RUN="${MPI} -n 3 ../deps/SaltOut"; 
 # for kraken, should be "time aprun -n 12"
 # for valgrind, put valgrind after -n 2
 

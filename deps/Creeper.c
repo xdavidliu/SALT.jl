@@ -393,17 +393,17 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 			else row = i - Nxyzc;
 			// the RI blocks are switched in Mqp; i.e. [PI; PR]	
 
-			double qval = p1array[i] - p0array[i];
+			double qval = p1array[i-ns] - p0array[i-ns];
 			if( ir(geo,i)==1) qval *= -1.0; // insert qR and -qI (see notes)
 
-			MatSetValue(Mqp, row, column, p1array[i], INSERT_VALUES); // p1 comes first
-			MatSetValue(Mqp, row, column+1, p0array[i], INSERT_VALUES);
+			MatSetValue(Mqp, row, column, p1array[i-ns], INSERT_VALUES); // p1 comes first
+			MatSetValue(Mqp, row, column+1, p0array[i-ns], INSERT_VALUES);
 			MatSetValue(Mqp, i, column-1, qval, INSERT_VALUES);
 			// qval's row block not switched
 
 			// Mqp is symmetric, so add the transposed elements
-			MatSetValue(Mqp, column, row, p1array[i], INSERT_VALUES);
-			MatSetValue(Mqp, column+1, row, p0array[i], INSERT_VALUES);
+			MatSetValue(Mqp, column, row, p1array[i-ns], INSERT_VALUES);
+			MatSetValue(Mqp, column+1, row, p0array[i-ns], INSERT_VALUES);
 			MatSetValue(Mqp, column-1, i, qval, INSERT_VALUES);
 		}
 
@@ -411,7 +411,10 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 		VecRestoreArrayRead(pQP[1], &p1array);
 
 		AssembleMat(Mqp);
-		OutputMat(Mqp, "Matqp", "Mqp");
+//		OutputMat(Mqp, "Matqp", "Mqp");
+
+//		Output(pQP[0], "Vecp0", "p0");
+//		Output(pQP[1], "Vecp1", "p1");
 
 		Vec bqp, yqp; // RHS and LHS for linear solve
 		MatGetVecs(Mqp, &bqp, &yqp);
@@ -430,10 +433,13 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 		KSPSetFromOptions(ksp);
 		KSPSetOperators(ksp, Mqp, Mqp); // SAME_PRECONDITIONER here (doesn't really matter; I'm only solving once) 
 
+		AssembleVec(bqp);
+		AssembleVec(yqp); // KSP is picky about assembling vectors
+
 		KSPSolve( ksp, bqp, yqp);
 		KSPDestroy( &ksp);
 
-//		Output(yqp, "Vecyqp", "yqp");
+		Output(yqp, "Vecyqp", "yqp");
 
 		VecDestroy(&bqp);
 		VecDestroy(&yqp);
