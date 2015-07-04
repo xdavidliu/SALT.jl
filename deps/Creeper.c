@@ -300,17 +300,21 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 	if( output_deps == 1 && Nm == 2){
 		PetscPrintf(PETSC_COMM_WORLD, "DEBUG: output_deps called!\n");
 
-		VecCopy(geo->vH, geo->vscratch[4]);
-		VecSet(geo->vscratch[0], 0.0);
+
 		int Nxyzc = xyzcGrid(&geo->gN);
-		ScatterRange(geo->vscratch[0], geo->vscratch[4], Nxyzc, Nxyzc, Nxyzc );
-		// H is [HR; HR]. Make it [HR, 0] so can use ComplexPointwiseMult with it
+
 
 		dcomp A[2];
-		
-		for(i=0; i<2; i++){ 
+		Vec pQP[2] = { geo->vscratch[4], geo->vscratch[5] };
+		// the p vector in quadratic programming
+		// DON'T USE scratch4 and scratch5 after this!!
 
-			VecCopy(geo->vscratch[4], geo->vscratch[1]);
+		for(i=0; i<2; i++){ 
+		
+			VecCopy(geo->vH, geo->vscratch[1]);
+			VecSet(geo->vscratch[0], 0.0);
+			ScatterRange(geo->vscratch[0], geo->vscratch[1], Nxyzc, Nxyzc, Nxyzc );
+			// H is [HR; HR]. Make it [HR, 0] so can use ComplexPointwiseMult with it
 			dcomp yw = gamma_w(ms[i], geo), ywprime = -csqr(yw) / geo->y;
 			dcomp a = geo->D*(2.0*yw + get_w(ms[i])*ywprime );
 			// no issue with geo->D != Dmax here...
@@ -319,12 +323,10 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 			VecAXPY( geo->vscratch[1], 2.0, geo->veps);
 			// 2 Ep + 2 D yw H + w D yw' H
 
-			
+			ComplexPointwiseMult( pQP[i], ms[i]->vpsi, ms[i]->vpsi, geo->vscratch[2], geo->vscratch[3], geo);
+			// now p[i] = psi[i].^2
 
-			int k;
-			for(k=0; k<2; k++){ // do it twice to get the psi.^2
-				ComplexPointwiseMult(geo->vscratch[1], ms[i]->vpsi, geo->vscratch[1], geo->vscratch[2], geo->vscratch[3], geo);
-			}
+			ComplexPointwiseMult(geo->vscratch[1], pQP[i], geo->vscratch[1], geo->vscratch[2], geo->vscratch[3], geo);
 
 			double AR, AI;
 			VecSet(geo->vscratch[0], 0.0);
@@ -337,16 +339,21 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 
 			A[i] = AR + ComplexI*AI;
 			PetscPrintf(PETSC_COMM_WORLD, "DEBUG: A[%i] = %1.8g + i %1.8g \n", i, AR, AI);			
+
+			ComplexScale( pQP[i], get_w(ms[i]) / A[i], geo->vscratch[2], geo);
+			// now p[i] is the true p vector in Quadratic programming
 		}
+	//	Output(pQP[0], "pvec0", "p0");
+	//	Output(pQP[1], "pvec1", "p1");
 	}
-	
+
 	
 	//=======================
 
-/*
+
 	PetscPrintf(PETSC_COMM_WORLD, "DEBUG: outputting H vector\n");
 	Output(geo->vH, "Hvec", "H");
-*/
+
 
 	VecDestroy(&f);
 	VecDestroy(&dv);
