@@ -92,11 +92,19 @@ Geometry CreateGeometry(int N[3], double h[3], int Npml[3], int Nc, int LowerPML
 	Vecfun pml;
 	CreateVecfun(&pml,geo->vepspml);
 
+	int manual_epspml = 0;
+	PetscOptionsGetInt(PETSC_NULL,"-manual_epspml", &manual_epspml, NULL);
+
 	for(i=pml.ns; i<pml.ne; i++){
 		Point p;
 		CreatePoint_i(&p, i, &geo->gN);
 		project(&p, 3);
-		dcomp eps_geoal = pmlval(xyzc(&p), N, geo->Npml, geo->h, geo->LowerPML, 0);
+		dcomp eps_geoal;
+		if(manual_epspml == 0)
+			eps_geoal = pmlval(xyzc(&p), N, geo->Npml, geo->h, geo->LowerPML, 0);
+		else
+			eps_geoal = 1.0; // sabotage epspml if manual_epspml on
+
 		setr(&pml, i, p.ir? cimag(eps_geoal) : creal(eps_geoal) );
 	}
 	DestroyVecfun(&pml);
@@ -125,6 +133,8 @@ Geometry CreateGeometry(int N[3], double h[3], int Npml[3], int Nc, int LowerPML
 
 	VecShift(geo->vMscratch[0], -1.0); //hack, for background dielectric
 	InterpolateVec(geo, geo->vMscratch[0], geo->vscratch[1]);
+
+
 	VecShift(geo->vscratch[1], 1.0);
 	VecPointwiseMult(geo->veps, geo->vscratch[1], geo->vepspml);
 
@@ -137,10 +147,11 @@ Geometry CreateGeometry(int N[3], double h[3], int Npml[3], int Nc, int LowerPML
 
 		InterpolateVec(geo, geo->vMscratch[0], geo->vscratch[1]);
 		VecPointwiseMult(geo->vscratch[1], geo->vscratch[1], geo->vepspml);
-		TimesI(geo, geo->vscratch[1], geo->vscratch[2]);
 
+		TimesI(geo, geo->vscratch[1], geo->vscratch[2]);
 		VecAXPY(geo->veps, 1.0, geo->vscratch[2]);
 	}
+
 
 	TimesI(geo, geo->veps, geo->vIeps); // vIeps for convenience only, make sure to update it later if eps ever changes!
 
