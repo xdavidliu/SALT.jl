@@ -343,17 +343,96 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 			ComplexScale( pQP[i], get_w(ms[i]) / A[i], geo->vscratch[2], geo);
 			// now p[i] is the true p vector in Quadratic programming
 		}
-	//	Output(pQP[0], "pvec0", "p0");
-	//	Output(pQP[1], "pvec1", "p1");
+
+		Mat Mqp; // matrix for linear problem for QP
+		CreateSquareMatrix( Nxyzcr(geo)+3, 0, &Mqp);
+		int Ns, Ne;
+		MatGetOwnershipRange(Mqp, &Ns, &Ne);
+		int range = Ne - Ns;
+		int 	*nnzd = malloc( range*sizeof(int) ),
+			*nnzo = malloc( range*sizeof(int) );
+
+		for(i=0; i<range; i++){
+			nnzd[i] = 4;
+			nnzo[i] = 4;
+			//3 columns on right, a single element for the identity matrix
+			//and 4 for both on proc and off proc to be conservative
+		}
+
+		if(LastProcess()){ for(i=0; i<3; i++){
+			nnzd[range-1-i] = range;
+			nnzo[range-1-i] = Nxyzcr(geo)+3-range;
+		}} // set last three rows have full nonzeros
+
+		if(GetSize() > 1) MatMPIAIJSetPreallocation(Mqp, 0, nnzd, 0, nnzo);
+		else MatSeqAIJSetPreallocation(Mqp, 0, nnzd);
+		free(nnzd); free(nnzo);
+
+		for(i=Ns; i<Ne && i < Nxyzcr(geo); i++){
+			MatSetValue(Mqp, i, i, 1.0, INSERT_VALUES);
+		} // add the 1's to diagonal, except last three
+		
+		int ns, ne; // lowercase for Nxyzcr+2, upper case for +3
+		VecGetOwnershipRange(pQP[0], &ns, &ne);
+		
+		const double *p0array, *p1array;
+
+VecGetArrayRead(pQP[0], &p0array);
+VecGetArrayRead(pQP[1], &p1array);
+
+// see notes around 070215 for precise locations of p vectors in M matrix
+for(i=ns; i<ne && i < Nxyzcr(geo); i++){
+
+	int row, column;
+	column = Nxyzcr(geo)+1; 
+	// second out of the three columns
+	// constant, but put code here for clarity
+	// technically should use static or const here but whatever
+
+	if( ir(geo, i)==0 ) row = i + Nxyzc;
+	else row = i - Nxyzc;
+	// the RI blocks are switched in Mqp; i.e. [PI; PR]	
+
+	MatSetValue(Mqp, row, column, p1array[i], INSERT_VALUES); // p1 comes first
+	MatSetValue(Mqp, row, column+1, p0array[i], INSERT_VALUES);
+
+	// Mqp is symmetric, so add the transposed elements
+	MatSetValue(Mqp, column, row, p1array[i], INSERT_VALUES);
+	MatSetValue(Mqp, column+1, row, p0array[i], INSERT_VALUES);
+}
+
+VecRestoreArrayRead(pQP[0], &p0array);
+VecRestoreArrayRead(pQP[1], &p1array);
+
+AssembleMat(Mqp);
+OutputMat(Mqp, "Matqp", "Mqp");
+
+		/*
+
+		// add qR and qI to matrix
+	
+		// construct bqp (right hand side), which is just all zeros except for a single element w2 - w1 or something
+		// create KSP and solve linear system,
+		// scatter range the deps (which is a Nxyzcr+3 vector) to a scratch vector;
+		// shift scratch vector by geo->veps, then output it as the new eps
+		// DONE! 
+
+		*/
+
+		MatDestroy(&Mqp);
+	
+
+		Output(pQP[0], "pvec0", "p0");
+		Output(pQP[1], "pvec1", "p1");
 	}
 
 	
 	//=======================
 
 
-	PetscPrintf(PETSC_COMM_WORLD, "DEBUG: outputting H vector\n");
+	PetscPrintf(PETSC_COMM_WORLD, "DEBUG: outputting H vector (possibly among others)\n");
 	Output(geo->vH, "Hvec", "H");
-
+	Output(geo->veps, "Epsvec", "Eps");
 
 	VecDestroy(&f);
 	VecDestroy(&dv);

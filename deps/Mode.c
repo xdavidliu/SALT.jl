@@ -104,6 +104,10 @@ void AllocateJacobian(Mat J, Geometry geo){
 	else MatSeqAIJSetPreallocation(J, nnz, NULL);
 	// same number for diagonal and off diagonal. Assume N >> size.
 
+	// note! Row derivatives are all sparse! There are no dense rows!
+	// this is because the normalization condition is psiR( ifix) =1,
+	// not psi^T psi = 1!!
+
 	//================== Adding placeholders ================
 
         int i, jh, j, jr, jc;
