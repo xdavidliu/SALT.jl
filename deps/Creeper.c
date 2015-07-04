@@ -377,39 +377,44 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 		
 		const double *p0array, *p1array;
 
-VecGetArrayRead(pQP[0], &p0array);
-VecGetArrayRead(pQP[1], &p1array);
+		VecGetArrayRead(pQP[0], &p0array);
+		VecGetArrayRead(pQP[1], &p1array);
 
-// see notes around 070215 for precise locations of p vectors in M matrix
-for(i=ns; i<ne && i < Nxyzcr(geo); i++){
+		// see notes around 070215 for precise locations of p vectors in M matrix
+		for(i=ns; i<ne && i < Nxyzcr(geo); i++){
 
-	int row, column;
-	column = Nxyzcr(geo)+1; 
-	// second out of the three columns
-	// constant, but put code here for clarity
-	// technically should use static or const here but whatever
+			int row, column;
+			column = Nxyzcr(geo)+1; 
+			// second out of the three columns
+			// constant, but put code here for clarity
+			// technically should use static or const here but whatever
 
-	if( ir(geo, i)==0 ) row = i + Nxyzc;
-	else row = i - Nxyzc;
-	// the RI blocks are switched in Mqp; i.e. [PI; PR]	
+			if( ir(geo, i)==0 ) row = i + Nxyzc;
+			else row = i - Nxyzc;
+			// the RI blocks are switched in Mqp; i.e. [PI; PR]	
 
-	MatSetValue(Mqp, row, column, p1array[i], INSERT_VALUES); // p1 comes first
-	MatSetValue(Mqp, row, column+1, p0array[i], INSERT_VALUES);
+			double qval = p1array[i] - p0array[i];
+			if( ir(geo,i)==1) qval *= -1.0; // insert qR and -qI (see notes)
 
-	// Mqp is symmetric, so add the transposed elements
-	MatSetValue(Mqp, column, row, p1array[i], INSERT_VALUES);
-	MatSetValue(Mqp, column+1, row, p0array[i], INSERT_VALUES);
-}
+			MatSetValue(Mqp, row, column, p1array[i], INSERT_VALUES); // p1 comes first
+			MatSetValue(Mqp, row, column+1, p0array[i], INSERT_VALUES);
+			MatSetValue(Mqp, i, column-1, qval, INSERT_VALUES);
+			// qval's row block not switched
 
-VecRestoreArrayRead(pQP[0], &p0array);
-VecRestoreArrayRead(pQP[1], &p1array);
+			// Mqp is symmetric, so add the transposed elements
+			MatSetValue(Mqp, column, row, p1array[i], INSERT_VALUES);
+			MatSetValue(Mqp, column+1, row, p0array[i], INSERT_VALUES);
+			MatSetValue(Mqp, column-1, i, qval, INSERT_VALUES);
+		}
 
-AssembleMat(Mqp);
-OutputMat(Mqp, "Matqp", "Mqp");
+		VecRestoreArrayRead(pQP[0], &p0array);
+		VecRestoreArrayRead(pQP[1], &p1array);
+
+		AssembleMat(Mqp);
+		OutputMat(Mqp, "Matqp", "Mqp");
 
 		/*
 
-		// add qR and qI to matrix
 	
 		// construct bqp (right hand side), which is just all zeros except for a single element w2 - w1 or something
 		// create KSP and solve linear system,
