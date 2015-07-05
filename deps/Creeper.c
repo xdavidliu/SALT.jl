@@ -211,9 +211,6 @@ void ComplexPointwiseMult(Vec w, Vec u, Vec v, Vec scratch0, Vec scratch1, Geome
 
 // everything after Nm copied directly from ReadMode
 int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int Nm, Geometry geo){
-	
-	PetscPrintf(PETSC_COMM_WORLD, "DEBUG: outputting geo->veps at beginning\n");
-	Output(geo->veps, "Vepsbegin", "epsbegin");
 
 	double hugeval = 1.0e20;
 	if(Dmax < 0.0) Dmax = hugeval; // hack, to instruct Creeper to stop upon threshold
@@ -376,13 +373,14 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 
 		for(i=ns; i<ne && i < Nxyzcr; i++){
 
-			double val[2] = {qarray[i-ns], qarray[i-ns]};
+			double val[2] = {qarray[i-ns] / creal(Dw), qarray[i-ns] / cimag(Dw) };
+			// trick for keeping condition number of matrix low. RHS elements always normalized to 1.
 			int row[2], column[2] = {Nxyzcr, Nxyzcr+1};
 
 			// block to right of identity is [ qR, qI; -qI, qR]			
 			row[0] = i;
 			if( ir(geo, i) == 0){
-				row[1] = i + Nxyzc; 
+				row[1] = i + Nxyzc;
 			}else{
 				row[1] = i - Nxyzc;
 				val[0] *= -1.0;
@@ -398,15 +396,15 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 		VecRestoreArrayRead(qvec, &qarray);
 
 		AssembleMat(Mqp);
-		
-		OutputMat(Mqp, "MatMqp", "Mpetsc");
-/*
+	
+
 		Vec bqp, yqp; // RHS and LHS for linear solve
 		MatGetVecs(Mqp, &bqp, &yqp);
 		VecSet(bqp, 0.0);
-		double w2minusw1 = creal(get_w(ms[1]) - get_w(ms[0]));
-		VecSetValue(bqp, Nxyzcr-1+1, w2minusw1, INSERT_VALUES);		
-		// no need to assemble afterwards, this is done w/ all procs
+
+		VecSetValue(bqp, Nxyzcr, 1.0, INSERT_VALUES);		
+		VecSetValue(bqp, Nxyzcr+1, 1.0, INSERT_VALUES);		
+		// RHS normalized for better conditioned problem when w2 very close to w1
 
 		KSP ksp;
 		KSPCreate(PETSC_COMM_WORLD,&ksp);
@@ -424,14 +422,12 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 		KSPSolve( ksp, bqp, yqp);
 		KSPDestroy( &ksp);
 
-		ScatterRange(yqp, geo->vscratch[0], 0, 0, Nxyzcr );
 		VecCopy( geo->veps, geo->vscratch[1]);
-		VecAXPY( geo->vscratch[1], 1.0,  geo->vscratch[0]);
+		VecAXPY( geo->vscratch[1], 1.0,  yqp);
 		Output(geo->vscratch[1], "VecEpsNew", "EpsNew");
 
 		VecDestroy(&bqp);
 		VecDestroy(&yqp);
-*/
 		MatDestroy(&Mqp);
 		
 	}
@@ -439,10 +435,11 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 	
 	//=======================
 
-
+/*
 	PetscPrintf(PETSC_COMM_WORLD, "DEBUG: outputting H vector (possibly among others)\n");
 	Output(geo->vH, "Hvec", "H");
 	Output(geo->veps, "Epsvec", "Eps");
+*/
 
 	VecDestroy(&f);
 	VecDestroy(&dv);
