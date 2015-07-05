@@ -414,16 +414,12 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 		VecRestoreArrayRead(pQP[1], &p1array);
 
 		AssembleMat(Mqp);
-//		OutputMat(Mqp, "Matqp", "Mqp");
-
-//		Output(pQP[0], "Vecp0", "p0");
-//		Output(pQP[1], "Vecp1", "p1");
 
 		Vec bqp, yqp; // RHS and LHS for linear solve
 		MatGetVecs(Mqp, &bqp, &yqp);
 		VecSet(bqp, 0.0);
-		double w1minusw2 = creal(get_w(ms[0]) - get_w(ms[1]));
-		VecSetValue(bqp, Nxyzcr(geo)-1+1, w1minusw2, INSERT_VALUES);		
+		double w2minusw1 = creal(get_w(ms[1]) - get_w(ms[0]));
+		VecSetValue(bqp, Nxyzcr(geo)-1+1, w2minusw1, INSERT_VALUES);		
 		// no need to assemble afterwards, this is done w/ all procs
 
 		KSP ksp;
@@ -442,7 +438,10 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 		KSPSolve( ksp, bqp, yqp);
 		KSPDestroy( &ksp);
 
-		Output(yqp, "Vecyqp", "yqp");
+		ScatterRange(yqp, geo->vscratch[0], 0, 0, Nxyzcr(geo) );
+		VecCopy( geo->veps, geo->vscratch[1]);
+		VecAXPY( geo->vscratch[1], 1.0,  geo->vscratch[0]);
+		Output(geo->vscratch[1], "VecEpsNew", "EpsNew");
 
 		VecDestroy(&bqp);
 		VecDestroy(&yqp);
