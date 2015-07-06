@@ -212,9 +212,6 @@ void ComplexPointwiseMult(Vec w, Vec u, Vec v, Vec scratch0, Vec scratch1, Geome
 // everything after Nm copied directly from ReadMode
 int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int Nm, Geometry geo){
 	
-	PetscPrintf(PETSC_COMM_WORLD, "DEBUG: outputting geo->veps at beginning\n");
-	Output(geo->veps, "Vepsbegin", "epsbegin");
-
 	double hugeval = 1.0e20;
 	if(Dmax < 0.0) Dmax = hugeval; // hack, to instruct Creeper to stop upon threshold
 	Mode *msh; // lasing mode subarray
@@ -451,10 +448,6 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 	
 	//=======================
 
-
-	PetscPrintf(PETSC_COMM_WORLD, "DEBUG: outputting H vector (possibly among others)\n");
-	Output(geo->vH, "Hvec", "H");
-	Output(geo->veps, "Epsvec", "Eps");
 
 	VecDestroy(&f);
 	VecDestroy(&dv);
