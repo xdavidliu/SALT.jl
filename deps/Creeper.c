@@ -380,6 +380,8 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 		VecGetArrayRead(pQP[0], &p0array);
 		VecGetArrayRead(pQP[1], &p1array);
 
+		double w2minusw1 = creal(get_w(ms[1]) - get_w(ms[0]));
+
 		// see notes around 070215 for precise locations of p vectors in M matrix
 		for(i=ns; i<ne && i < Nxyzcr(geo); i++){
 
@@ -393,7 +395,7 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 			else row = i - Nxyzc;
 			// the RI blocks are switched in Mqp; i.e. [PI; PR]	
 
-			double qval = p1array[i-ns] - p0array[i-ns];
+			double qval = (p1array[i-ns] - p0array[i-ns]) / w2minusw1; // normalized
 			if( ir(geo,i)==1) qval *= -1.0; // insert qR and -qI (see notes)
 
 			MatSetValue(Mqp, row, column, p1array[i-ns], INSERT_VALUES); // p1 comes first
@@ -415,9 +417,9 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 		Vec bqp, yqp; // RHS and LHS for linear solve
 		MatGetVecs(Mqp, &bqp, &yqp);
 		VecSet(bqp, 0.0);
-		double w2minusw1 = creal(get_w(ms[1]) - get_w(ms[0]));
-		VecSetValue(bqp, Nxyzcr(geo)-1+1, w2minusw1, INSERT_VALUES);		
-		// no need to assemble afterwards, this is done w/ all procs
+		
+		VecSetValue(bqp, Nxyzcr(geo)-1+1, 1.0, INSERT_VALUES);		
+		// set to 1.0 because normalized. w2-w1 divided in the matrix. This keeps things well-conditioned for the case that w2 is very close to w1
 
 		KSP ksp;
 		KSPCreate(PETSC_COMM_WORLD,&ksp);
