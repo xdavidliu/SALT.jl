@@ -210,8 +210,8 @@ void OutputDEps( Geometry geo, Mode *ms){
 	PetscPrintf(PETSC_COMM_WORLD, "DEBUG: output_deps called!\n");
 
 
-	int i, Nxyzc = xyzcGrid(&geo->gN);
-
+	int i, Nxyzc = xyzcGrid(&geo->gN), lasing = ms[0]->lasing;
+	// QP procedure different for lasing and non-lasing modes
 
 	dcomp A[2];
 	Vec pQP[2] = { geo->vscratch[4], geo->vscratch[5] };
@@ -253,8 +253,10 @@ void OutputDEps( Geometry geo, Mode *ms){
 		// now p[i] is the true p vector in Quadratic programming
 	}
 
+	int extra = lasing ? 3 : 2;
+
 	Mat Mqp; // matrix for linear problem for QP
-	CreateSquareMatrix( Nxyzcr(geo)+3, 0, &Mqp);
+	CreateSquareMatrix( Nxyzcr(geo)+extra, 0, &Mqp);
 	int Ns, Ne;
 	MatGetOwnershipRange(Mqp, &Ns, &Ne);
 	int range = Ne - Ns;
@@ -262,15 +264,15 @@ void OutputDEps( Geometry geo, Mode *ms){
 		*nnzo = malloc( range*sizeof(int) );
 
 	for(i=0; i<range; i++){
-		nnzd[i] = 4;
-		nnzo[i] = 4;
-		//3 columns on right, a single element for the identity matrix
-		//and 4 for both on proc and off proc to be conservative
+		nnzd[i] = extra+1;
+		nnzo[i] = extra+1;
+		//"extra" columns on right, a single element for the identity matrix
+		//and extra + 1 for both on proc and off proc to be conservative
 	}
 
-	if(LastProcess()){ for(i=0; i<3; i++){
+	if(LastProcess()){ for(i=0; i<extra; i++){
 		nnzd[range-1-i] = range;
-		nnzo[range-1-i] = Nxyzcr(geo)+3-range;
+		nnzo[range-1-i] = Nxyzcr(geo)+extra-range;
 	}} // set last three rows have full nonzeros
 
 	if(GetSize() > 1) MatMPIAIJSetPreallocation(Mqp, 0, nnzd, 0, nnzo);
@@ -281,7 +283,7 @@ void OutputDEps( Geometry geo, Mode *ms){
 		MatSetValue(Mqp, i, i, 1.0, INSERT_VALUES);
 	} // add the 1's to diagonal, except last three
 	
-	int ns, ne; // lowercase for Nxyzcr+2, upper case for +3
+	int ns, ne; // lowercase for Nxyzcr+2, upper case for +extra
 	VecGetOwnershipRange(pQP[0], &ns, &ne);
 	
 	const double *p0array, *p1array;
@@ -289,14 +291,15 @@ void OutputDEps( Geometry geo, Mode *ms){
 	VecGetArrayRead(pQP[0], &p0array);
 	VecGetArrayRead(pQP[1], &p1array);
 
-	double w2minusw1 = creal(get_w(ms[1]) - get_w(ms[0]));
+	double w2minusw1R = creal(get_w(ms[1]) - get_w(ms[0])),
+		w2minusw1I = cimag(get_w(ms[1]) - get_w(ms[0]));
 
 	// see notes around 070215 for precise locations of p vectors in M matrix
 	for(i=ns; i<ne && i < Nxyzcr(geo); i++){
 
 		int row, column;
-		column = Nxyzcr(geo)+1; 
-		// second out of the three columns
+		column = Nxyzcr(geo); 
+		// first out of the three columns
 		// constant, but put code here for clarity
 		// technically should use static or const here but whatever
 
@@ -304,18 +307,33 @@ void OutputDEps( Geometry geo, Mode *ms){
 		else row = i - Nxyzc;
 		// the RI blocks are switched in Mqp; i.e. [PI; PR]	
 
-		double qval = (p1array[i-ns] - p0array[i-ns]) / w2minusw1; // normalized
+		double qval = (p1array[i-ns] - p0array[i-ns]) / w2minusw1R; // normalized
 		if( ir(geo,i)==1) qval *= -1.0; // insert qR and -qI (see notes)
 
-		MatSetValue(Mqp, row, column, p1array[i-ns], INSERT_VALUES); // p1 comes first
-		MatSetValue(Mqp, row, column+1, p0array[i-ns], INSERT_VALUES);
-		MatSetValue(Mqp, i, column-1, qval, INSERT_VALUES);
+		MatSetValue(Mqp, i, column, qval, INSERT_VALUES);
+		MatSetValue(Mqp, column, i, qval, INSERT_VALUES);
 		// qval's row block not switched
 
+		if(!lasing){
+
+			double qval2 = (p1array[i-ns] - p0array[i-ns]) / w2minusw1I; 
+			// second column of qvals has dwI instead of dwR in denominator
+			// also no factor of -1, and use switched row, not i
+			MatSetValue(Mqp, row, column+1, qval2, INSERT_VALUES);
+			MatSetValue(Mqp, column+1, row, qval2, INSERT_VALUES);
+
+		}
+
+
 		// Mqp is symmetric, so add the transposed elements
-		MatSetValue(Mqp, column, row, p1array[i-ns], INSERT_VALUES);
-		MatSetValue(Mqp, column+1, row, p0array[i-ns], INSERT_VALUES);
-		MatSetValue(Mqp, column-1, i, qval, INSERT_VALUES);
+		if(lasing){
+			MatSetValue(Mqp, row, column+1, p0array[i-ns], INSERT_VALUES); 
+			MatSetValue(Mqp, row, column+2, p1array[i-ns], INSERT_VALUES);
+
+			MatSetValue(Mqp, column+1, row, p0array[i-ns], INSERT_VALUES);
+			MatSetValue(Mqp, column+2, row, p1array[i-ns], INSERT_VALUES);
+		}
+
 	}
 
 	VecRestoreArrayRead(pQP[0], &p0array);
@@ -328,6 +346,10 @@ void OutputDEps( Geometry geo, Mode *ms){
 	VecSet(bqp, 0.0);
 	
 	VecSetValue(bqp, Nxyzcr(geo)-1+1, 1.0, INSERT_VALUES);		
+
+	if(!lasing){
+		VecSetValue(bqp, Nxyzcr(geo)-1+2, 1.0, INSERT_VALUES);
+	}
 	// set to 1.0 because normalized. w2-w1 divided in the matrix. This keeps things well-conditioned for the case that w2 is very close to w1
 
 	KSP ksp;
