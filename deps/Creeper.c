@@ -205,6 +205,158 @@ void ComplexPointwiseMult(Vec w, Vec u, Vec v, Vec scratch0, Vec scratch1, Geome
 	
 }
 
+void OutputDEps( Geometry geo, Mode *ms){
+
+	PetscPrintf(PETSC_COMM_WORLD, "DEBUG: output_deps called!\n");
+
+
+	int i, Nxyzc = xyzcGrid(&geo->gN);
+
+
+	dcomp A[2];
+	Vec pQP[2] = { geo->vscratch[4], geo->vscratch[5] };
+	// the p vector in quadratic programming
+	// DON'T USE scratch4 and scratch5 after this!!
+
+	for(i=0; i<2; i++){ 
+	
+		VecCopy(geo->vH, geo->vscratch[1]);
+		VecSet(geo->vscratch[0], 0.0);
+		ScatterRange(geo->vscratch[0], geo->vscratch[1], Nxyzc, Nxyzc, Nxyzc );
+		// H is [HR; HR]. Make it [HR, 0] so can use ComplexPointwiseMult with it
+		dcomp yw = gamma_w(ms[i], geo), ywprime = -csqr(yw) / geo->y;
+		dcomp a = geo->D*(2.0*yw + get_w(ms[i])*ywprime );
+		// no issue with geo->D != Dmax here...
+
+		ComplexScale( geo->vscratch[1], a, geo->vscratch[2], geo);
+		VecAXPY( geo->vscratch[1], 2.0, geo->veps);
+		// 2 Ep + 2 D yw H + w D yw' H
+
+		ComplexPointwiseMult( pQP[i], ms[i]->vpsi, ms[i]->vpsi, geo->vscratch[2], geo->vscratch[3], geo);
+		// now p[i] = psi[i].^2
+
+		ComplexPointwiseMult(geo->vscratch[1], pQP[i], geo->vscratch[1], geo->vscratch[2], geo->vscratch[3], geo);
+
+		double AR, AI;
+		VecSet(geo->vscratch[0], 0.0);
+		ScatterRange(geo->vscratch[1], geo->vscratch[0], 0, 0, Nxyzc );
+		VecSum(geo->vscratch[0], &AR);
+					
+		VecSet(geo->vscratch[0], 0.0);
+		ScatterRange(geo->vscratch[1], geo->vscratch[0], Nxyzc, Nxyzc, Nxyzc );
+		VecSum(geo->vscratch[0], &AI);
+
+		A[i] = AR + ComplexI*AI;
+		PetscPrintf(PETSC_COMM_WORLD, "DEBUG: A[%i] = %1.8g + i %1.8g \n", i, AR, AI);			
+
+		ComplexScale( pQP[i], get_w(ms[i]) / A[i], geo->vscratch[2], geo);
+		// now p[i] is the true p vector in Quadratic programming
+	}
+
+	Mat Mqp; // matrix for linear problem for QP
+	CreateSquareMatrix( Nxyzcr(geo)+3, 0, &Mqp);
+	int Ns, Ne;
+	MatGetOwnershipRange(Mqp, &Ns, &Ne);
+	int range = Ne - Ns;
+	int 	*nnzd = malloc( range*sizeof(int) ),
+		*nnzo = malloc( range*sizeof(int) );
+
+	for(i=0; i<range; i++){
+		nnzd[i] = 4;
+		nnzo[i] = 4;
+		//3 columns on right, a single element for the identity matrix
+		//and 4 for both on proc and off proc to be conservative
+	}
+
+	if(LastProcess()){ for(i=0; i<3; i++){
+		nnzd[range-1-i] = range;
+		nnzo[range-1-i] = Nxyzcr(geo)+3-range;
+	}} // set last three rows have full nonzeros
+
+	if(GetSize() > 1) MatMPIAIJSetPreallocation(Mqp, 0, nnzd, 0, nnzo);
+	else MatSeqAIJSetPreallocation(Mqp, 0, nnzd);
+	free(nnzd); free(nnzo);
+
+	for(i=Ns; i<Ne && i < Nxyzcr(geo); i++){
+		MatSetValue(Mqp, i, i, 1.0, INSERT_VALUES);
+	} // add the 1's to diagonal, except last three
+	
+	int ns, ne; // lowercase for Nxyzcr+2, upper case for +3
+	VecGetOwnershipRange(pQP[0], &ns, &ne);
+	
+	const double *p0array, *p1array;
+
+	VecGetArrayRead(pQP[0], &p0array);
+	VecGetArrayRead(pQP[1], &p1array);
+
+	double w2minusw1 = creal(get_w(ms[1]) - get_w(ms[0]));
+
+	// see notes around 070215 for precise locations of p vectors in M matrix
+	for(i=ns; i<ne && i < Nxyzcr(geo); i++){
+
+		int row, column;
+		column = Nxyzcr(geo)+1; 
+		// second out of the three columns
+		// constant, but put code here for clarity
+		// technically should use static or const here but whatever
+
+		if( ir(geo, i)==0 ) row = i + Nxyzc;
+		else row = i - Nxyzc;
+		// the RI blocks are switched in Mqp; i.e. [PI; PR]	
+
+		double qval = (p1array[i-ns] - p0array[i-ns]) / w2minusw1; // normalized
+		if( ir(geo,i)==1) qval *= -1.0; // insert qR and -qI (see notes)
+
+		MatSetValue(Mqp, row, column, p1array[i-ns], INSERT_VALUES); // p1 comes first
+		MatSetValue(Mqp, row, column+1, p0array[i-ns], INSERT_VALUES);
+		MatSetValue(Mqp, i, column-1, qval, INSERT_VALUES);
+		// qval's row block not switched
+
+		// Mqp is symmetric, so add the transposed elements
+		MatSetValue(Mqp, column, row, p1array[i-ns], INSERT_VALUES);
+		MatSetValue(Mqp, column+1, row, p0array[i-ns], INSERT_VALUES);
+		MatSetValue(Mqp, column-1, i, qval, INSERT_VALUES);
+	}
+
+	VecRestoreArrayRead(pQP[0], &p0array);
+	VecRestoreArrayRead(pQP[1], &p1array);
+
+	AssembleMat(Mqp);
+
+	Vec bqp, yqp; // RHS and LHS for linear solve
+	MatGetVecs(Mqp, &bqp, &yqp);
+	VecSet(bqp, 0.0);
+	
+	VecSetValue(bqp, Nxyzcr(geo)-1+1, 1.0, INSERT_VALUES);		
+	// set to 1.0 because normalized. w2-w1 divided in the matrix. This keeps things well-conditioned for the case that w2 is very close to w1
+
+	KSP ksp;
+	KSPCreate(PETSC_COMM_WORLD,&ksp);
+	PC pc;
+	KSPGetPC(ksp,&pc);
+	PCSetType(pc,PCLU);
+	PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);
+
+	KSPSetFromOptions(ksp);
+	KSPSetOperators(ksp, Mqp, Mqp); // SAME_PRECONDITIONER here (doesn't really matter; I'm only solving once) 
+
+	AssembleVec(bqp);
+	AssembleVec(yqp); // KSP is picky about assembling vectors
+
+	KSPSolve( ksp, bqp, yqp);
+	KSPDestroy( &ksp);
+
+	ScatterRange(yqp, geo->vscratch[0], 0, 0, Nxyzcr(geo) );
+	VecCopy( geo->veps, geo->vscratch[1]);
+	VecAXPY( geo->vscratch[1], 1.0,  geo->vscratch[0]);
+	Output(geo->vscratch[1], "VecEpsNew", "EpsNew");
+
+	VecDestroy(&bqp);
+	VecDestroy(&yqp);
+	MatDestroy(&Mqp);
+
+
+}
 
 
 
@@ -298,156 +450,12 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 	int output_deps = 0;
 	PetscOptionsGetInt(PETSC_NULL,"-output_deps", &output_deps,NULL);
 	if( output_deps == 1 && Nm == 2){
-		PetscPrintf(PETSC_COMM_WORLD, "DEBUG: output_deps called!\n");
-
-
-		int Nxyzc = xyzcGrid(&geo->gN);
-
-
-		dcomp A[2];
-		Vec pQP[2] = { geo->vscratch[4], geo->vscratch[5] };
-		// the p vector in quadratic programming
-		// DON'T USE scratch4 and scratch5 after this!!
-
-		for(i=0; i<2; i++){ 
-		
-			VecCopy(geo->vH, geo->vscratch[1]);
-			VecSet(geo->vscratch[0], 0.0);
-			ScatterRange(geo->vscratch[0], geo->vscratch[1], Nxyzc, Nxyzc, Nxyzc );
-			// H is [HR; HR]. Make it [HR, 0] so can use ComplexPointwiseMult with it
-			dcomp yw = gamma_w(ms[i], geo), ywprime = -csqr(yw) / geo->y;
-			dcomp a = geo->D*(2.0*yw + get_w(ms[i])*ywprime );
-			// no issue with geo->D != Dmax here...
-
-			ComplexScale( geo->vscratch[1], a, geo->vscratch[2], geo);
-			VecAXPY( geo->vscratch[1], 2.0, geo->veps);
-			// 2 Ep + 2 D yw H + w D yw' H
-
-			ComplexPointwiseMult( pQP[i], ms[i]->vpsi, ms[i]->vpsi, geo->vscratch[2], geo->vscratch[3], geo);
-			// now p[i] = psi[i].^2
-
-			ComplexPointwiseMult(geo->vscratch[1], pQP[i], geo->vscratch[1], geo->vscratch[2], geo->vscratch[3], geo);
-
-			double AR, AI;
-			VecSet(geo->vscratch[0], 0.0);
-			ScatterRange(geo->vscratch[1], geo->vscratch[0], 0, 0, Nxyzc );
-			VecSum(geo->vscratch[0], &AR);
-						
-			VecSet(geo->vscratch[0], 0.0);
-			ScatterRange(geo->vscratch[1], geo->vscratch[0], Nxyzc, Nxyzc, Nxyzc );
-			VecSum(geo->vscratch[0], &AI);
-
-			A[i] = AR + ComplexI*AI;
-			PetscPrintf(PETSC_COMM_WORLD, "DEBUG: A[%i] = %1.8g + i %1.8g \n", i, AR, AI);			
-
-			ComplexScale( pQP[i], get_w(ms[i]) / A[i], geo->vscratch[2], geo);
-			// now p[i] is the true p vector in Quadratic programming
-		}
-
-		Mat Mqp; // matrix for linear problem for QP
-		CreateSquareMatrix( Nxyzcr(geo)+3, 0, &Mqp);
-		int Ns, Ne;
-		MatGetOwnershipRange(Mqp, &Ns, &Ne);
-		int range = Ne - Ns;
-		int 	*nnzd = malloc( range*sizeof(int) ),
-			*nnzo = malloc( range*sizeof(int) );
-
-		for(i=0; i<range; i++){
-			nnzd[i] = 4;
-			nnzo[i] = 4;
-			//3 columns on right, a single element for the identity matrix
-			//and 4 for both on proc and off proc to be conservative
-		}
-
-		if(LastProcess()){ for(i=0; i<3; i++){
-			nnzd[range-1-i] = range;
-			nnzo[range-1-i] = Nxyzcr(geo)+3-range;
-		}} // set last three rows have full nonzeros
-
-		if(GetSize() > 1) MatMPIAIJSetPreallocation(Mqp, 0, nnzd, 0, nnzo);
-		else MatSeqAIJSetPreallocation(Mqp, 0, nnzd);
-		free(nnzd); free(nnzo);
-
-		for(i=Ns; i<Ne && i < Nxyzcr(geo); i++){
-			MatSetValue(Mqp, i, i, 1.0, INSERT_VALUES);
-		} // add the 1's to diagonal, except last three
-		
-		int ns, ne; // lowercase for Nxyzcr+2, upper case for +3
-		VecGetOwnershipRange(pQP[0], &ns, &ne);
-		
-		const double *p0array, *p1array;
-
-		VecGetArrayRead(pQP[0], &p0array);
-		VecGetArrayRead(pQP[1], &p1array);
-
-		double w2minusw1 = creal(get_w(ms[1]) - get_w(ms[0]));
-
-		// see notes around 070215 for precise locations of p vectors in M matrix
-		for(i=ns; i<ne && i < Nxyzcr(geo); i++){
-
-			int row, column;
-			column = Nxyzcr(geo)+1; 
-			// second out of the three columns
-			// constant, but put code here for clarity
-			// technically should use static or const here but whatever
-
-			if( ir(geo, i)==0 ) row = i + Nxyzc;
-			else row = i - Nxyzc;
-			// the RI blocks are switched in Mqp; i.e. [PI; PR]	
-
-			double qval = (p1array[i-ns] - p0array[i-ns]) / w2minusw1; // normalized
-			if( ir(geo,i)==1) qval *= -1.0; // insert qR and -qI (see notes)
-
-			MatSetValue(Mqp, row, column, p1array[i-ns], INSERT_VALUES); // p1 comes first
-			MatSetValue(Mqp, row, column+1, p0array[i-ns], INSERT_VALUES);
-			MatSetValue(Mqp, i, column-1, qval, INSERT_VALUES);
-			// qval's row block not switched
-
-			// Mqp is symmetric, so add the transposed elements
-			MatSetValue(Mqp, column, row, p1array[i-ns], INSERT_VALUES);
-			MatSetValue(Mqp, column+1, row, p0array[i-ns], INSERT_VALUES);
-			MatSetValue(Mqp, column-1, i, qval, INSERT_VALUES);
-		}
-
-		VecRestoreArrayRead(pQP[0], &p0array);
-		VecRestoreArrayRead(pQP[1], &p1array);
-
-		AssembleMat(Mqp);
-
-		Vec bqp, yqp; // RHS and LHS for linear solve
-		MatGetVecs(Mqp, &bqp, &yqp);
-		VecSet(bqp, 0.0);
-		
-		VecSetValue(bqp, Nxyzcr(geo)-1+1, 1.0, INSERT_VALUES);		
-		// set to 1.0 because normalized. w2-w1 divided in the matrix. This keeps things well-conditioned for the case that w2 is very close to w1
-
-		KSP ksp;
-		KSPCreate(PETSC_COMM_WORLD,&ksp);
-		PC pc;
-		KSPGetPC(ksp,&pc);
-		PCSetType(pc,PCLU);
-		PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);
-
-		KSPSetFromOptions(ksp);
-		KSPSetOperators(ksp, Mqp, Mqp); // SAME_PRECONDITIONER here (doesn't really matter; I'm only solving once) 
-
-		AssembleVec(bqp);
-		AssembleVec(yqp); // KSP is picky about assembling vectors
-
-		KSPSolve( ksp, bqp, yqp);
-		KSPDestroy( &ksp);
-
-		ScatterRange(yqp, geo->vscratch[0], 0, 0, Nxyzcr(geo) );
-		VecCopy( geo->veps, geo->vscratch[1]);
-		VecAXPY( geo->vscratch[1], 1.0,  geo->vscratch[0]);
-		Output(geo->vscratch[1], "VecEpsNew", "EpsNew");
-
-		VecDestroy(&bqp);
-		VecDestroy(&yqp);
-		MatDestroy(&Mqp);
+		OutputDEps( geo, ms);
 	}
 
-	
+	PetscPrintf(PETSC_COMM_WORLD, "DEBUG: outputting old Eps vector\n");
+	Output(geo->veps, "VecEps", "Eps");
+
 	//=======================
 
 
