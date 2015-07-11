@@ -89,25 +89,22 @@ Geometry CreateGeometry(int N[3], double h[3], int Npml[3], int Nc, int LowerPML
 
 	CreateVec(2*Nxyzc(geo)+2, &geo->vepspml);
 
-	Vecfun pml;
-	CreateVecfun(&pml,geo->vepspml);
-
 	int manual_epspml = 0;
 	PetscOptionsGetInt(PETSC_NULL,"-manual_epspml", &manual_epspml, NULL);
 
-	for(i=pml.ns; i<pml.ne; i++){
-		Point p;
-		CreatePoint_i(&p, i, &geo->gN);
-		project(&p, 3);
-		dcomp eps_geoal;
-		if(manual_epspml == 0)
+	if(manual_epspml == 0){
+		Vecfun pml;
+		CreateVecfun(&pml,geo->vepspml);
+		for(i=pml.ns; i<pml.ne; i++){
+			Point p;
+			CreatePoint_i(&p, i, &geo->gN);
+			project(&p, 3);
+			dcomp eps_geoal;
 			eps_geoal = pmlval(xyzc(&p), N, geo->Npml, geo->h, geo->LowerPML, 0);
-		else
-			eps_geoal = 1.0; // sabotage epspml if manual_epspml on
-
-		setr(&pml, i, p.ir? cimag(eps_geoal) : creal(eps_geoal) );
+			setr(&pml, i, p.ir? cimag(eps_geoal) : creal(eps_geoal) );
+		}
+		DestroyVecfun(&pml);
 	}
-	DestroyVecfun(&pml);
 
 	CreateVec(Mxyz(geo), &geo->vMscratch[0]);
 
@@ -120,50 +117,57 @@ Geometry CreateGeometry(int N[3], double h[3], int Npml[3], int Nc, int LowerPML
 	int ms, me;
 	VecGetOwnershipRange(geo->vMscratch[0], &ms, &me);
 
-	VecGetArray(geo->vMscratch[0], &scratch);
-	for(i=ms; i<me;i++)
-		scratch[i-ms] = eps[i-ms];
-	VecRestoreArray(geo->vMscratch[0], &scratch);
-	
+	if( !manual_epspml){
+		VecGetArray(geo->vMscratch[0], &scratch);
+		for(i=ms; i<me;i++)
+			scratch[i-ms] = eps[i-ms];
+		VecRestoreArray(geo->vMscratch[0], &scratch);
+	}	
+
 	CreateVec(2*Nxyzc(geo)+2, &geo->vH);
 	VecDuplicate(geo->vH, &geo->veps);
 	VecDuplicate(geo->vH, &geo->vIeps);
 	for(i=0; i<SCRATCHNUM; i++) VecDuplicate(geo->vH, &geo->vscratch[i]);
 	VecSet(geo->vH, 1.0);
 
-	VecShift(geo->vMscratch[0], -1.0); //hack, for background dielectric
-	InterpolateVec(geo, geo->vMscratch[0], geo->vscratch[1]);
-
-
-	VecShift(geo->vscratch[1], 1.0);
-	VecPointwiseMult(geo->veps, geo->vscratch[1], geo->vepspml);
-
-	if(epsI != NULL){ // imaginary part of passive dielectric
-		VecGetArray(geo->vMscratch[0], &scratch);
-		for(i=ms; i<me; i++){
-			scratch[i-ms] = epsI[i-ms];
-		}
-		VecRestoreArray(geo->vMscratch[0], &scratch);
-
+	if( !manual_epspml){
+		VecShift(geo->vMscratch[0], -1.0); //hack, for background dielectric
 		InterpolateVec(geo, geo->vMscratch[0], geo->vscratch[1]);
-		VecPointwiseMult(geo->vscratch[1], geo->vscratch[1], geo->vepspml);
 
-		TimesI(geo, geo->vscratch[1], geo->vscratch[2]);
-		VecAXPY(geo->veps, 1.0, geo->vscratch[2]);
+		VecShift(geo->vscratch[1], 1.0);
+		VecPointwiseMult(geo->veps, geo->vscratch[1], geo->vepspml);
+
+		if(epsI != NULL){ // imaginary part of passive dielectric
+			VecGetArray(geo->vMscratch[0], &scratch);
+			for(i=ms; i<me; i++){
+				scratch[i-ms] = epsI[i-ms];
+			}
+			VecRestoreArray(geo->vMscratch[0], &scratch);
+
+			InterpolateVec(geo, geo->vMscratch[0], geo->vscratch[1]);
+			VecPointwiseMult(geo->vscratch[1], geo->vscratch[1], geo->vepspml);
+
+			TimesI(geo, geo->vscratch[1], geo->vscratch[2]);
+			VecAXPY(geo->veps, 1.0, geo->vscratch[2]);
+		}
 	}
 
+	if(manual_epspml){
+		char epsManualfile[PETSC_MAX_PATH_LEN];
+		PetscOptionsGetString(PETSC_NULL,"-epsManualfile", epsManualfile, PETSC_MAX_PATH_LEN, NULL);
+		FILE *fp = fopen(epsManualfile, "r");
+		ReadVectorC(fp, 2*Nxyzc(geo)+2, geo->veps);
+		// 07/11/15: if manual_epspml, then directly read in the Nxyzcr+2 vector
+		fclose(fp);
+	}
 
-	TimesI(geo, geo->veps, geo->vIeps); // vIeps for convenience only, make sure to update it later if eps ever changes!
+	TimesI(geo, geo->veps, geo->vIeps); 
+	// vIeps for convenience only, make sure to update it later if eps ever changes!
 
 	geo->D = 0.0;
 	geo->wa = wa;
 	geo->y = y;
 
-	geo->G0 = 0.0;
-	geo->gampar = -1.0; // use negative numbers to indicate no near-degenerate cross term
-	PetscOptionsGetReal(PETSC_NULL,"-G0", &geo->G0,NULL); 
-	PetscOptionsGetReal(PETSC_NULL,"-gampar", &geo->gampar,NULL); 
-	// hack, 032414. cross term not incorporated in main interface yet.
 
 	VecDuplicate(geo->veps, &geo->vf);
 	VecDuplicate(geo->vMscratch[0], &geo->vfM);

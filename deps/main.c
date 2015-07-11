@@ -135,14 +135,17 @@ Geometry ReadCreateGeometry(){
 	PetscOptionsGetString(PETSC_NULL,"-epsfile", epsfile, PETSC_MAX_PATH_LEN, NULL); 
 	PetscOptionsGetString(PETSC_NULL,"-fproffile", fproffile, PETSC_MAX_PATH_LEN, NULL); 
 
+	int manual_epspml = 0;
+	PetscOptionsGetInt(PETSC_NULL,"-manual_epspml", &manual_epspml, NULL);
+
 	double *eps, *fprof, *epsI;
-	eps = ReadVecToArray(N[0]*N[1]*N[2], epsfile);
+	eps = ReadVecToArray(N[0]*N[1]*N[2] * (manual_epspml? Nc : 1), epsfile);
 	fprof = ReadVecToArray(N[0]*N[1]*N[2], fproffile);
 	
 	PetscBool exists_epsIfile;
 	PetscOptionsGetString(PETSC_NULL,"-epsIfile", epsIfile, PETSC_MAX_PATH_LEN, &exists_epsIfile); 
 	if(exists_epsIfile){
-		epsI = ReadVecToArray(N[0]*N[1]*N[2], epsIfile);
+		epsI = ReadVecToArray(N[0]*N[1]*N[2] * (manual_epspml? Nc : 1), epsIfile);
 	}else{
 		epsI = NULL;
 	}
