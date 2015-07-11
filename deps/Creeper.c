@@ -224,13 +224,15 @@ void OutputDEps( Geometry geo, Mode *ms){
 		VecSet(geo->vscratch[0], 0.0);
 		ScatterRange(geo->vscratch[0], geo->vscratch[1], Nxyzc, Nxyzc, Nxyzc );
 		// H is [HR; HR]. Make it [HR, 0] so can use ComplexPointwiseMult with it
+		VecPointwiseMult(geo->vscratch[1], geo->vf, geo->vscratch[1]);
+
 		dcomp yw = gamma_w(ms[i], geo), ywprime = -csqr(yw) / geo->y;
 		dcomp a = geo->D*(2.0*yw + get_w(ms[i])*ywprime );
 		// no issue with geo->D != Dmax here...
 
 		ComplexScale( geo->vscratch[1], a, geo->vscratch[2], geo);
 		VecAXPY( geo->vscratch[1], 2.0, geo->veps);
-		// 2 Ep + 2 D yw H + w D yw' H
+		// 2 Ep + 2 D yw H F + w D yw' H F
 
 		ComplexPointwiseMult( pQP[i], ms[i]->vpsi, ms[i]->vpsi, geo->vscratch[2], geo->vscratch[3], geo);
 		// now p[i] = psi[i].^2
@@ -247,8 +249,6 @@ void OutputDEps( Geometry geo, Mode *ms){
 		VecSum(geo->vscratch[0], &AI);
 
 		A[i] = AR + ComplexI*AI;
-		PetscPrintf(PETSC_COMM_WORLD, "DEBUG: A[%i] = %1.8g + i %1.8g \n", i, AR, AI);			
-
 		ComplexScale( pQP[i], get_w(ms[i]) / A[i], geo->vscratch[2], geo);
 		// now p[i] is the true p vector in Quadratic programming
 	}
@@ -475,8 +475,14 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 		OutputDEps( geo, ms);
 	}
 
+/*
 	PetscPrintf(PETSC_COMM_WORLD, "DEBUG: outputting old Eps vector\n");
 	Output(geo->veps, "VecEps", "Eps");
+
+	PetscPrintf(PETSC_COMM_WORLD, "DEBUG: outputting Fprof vector\n");
+	Output(geo->vf, "VecFprof", "Fprof");
+*/
+
 
 	//=======================
 
