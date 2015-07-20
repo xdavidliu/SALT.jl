@@ -466,14 +466,8 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 	  if(geo->D==Dmax || (Dmax == hugeval && mthreshold_nonlasing != 0) ) break;
 	}
 
-	// 070315: hack: output deps using perturbation theory and quadratic
-	// programming method
+
 	
-	int output_deps = 0;
-	PetscOptionsGetInt(PETSC_NULL,"-output_deps", &output_deps,NULL);
-	if( output_deps == 1 && Nm == 2){
-		OutputDEps( geo, ms);
-	}
 
 /*
 	PetscPrintf(PETSC_COMM_WORLD, "DEBUG: outputting old Eps vector\n");
@@ -506,6 +500,21 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 		ms[i]->J = 0;
 		ms[i]->ksp = 0;
 	}
+
+
+	// 070315: output deps using perturbation theory and quadratic
+	// programming method	
+	// 071915: do this AFTER destroying KSP objects, don't want to carry around TWO LU factorized matrices! Too much of a memory hog.
+
+	int output_deps = 0;
+	PetscOptionsGetInt(PETSC_NULL,"-output_deps", &output_deps,NULL);
+	if( output_deps == 1 && Nm == 2){
+		OutputDEps( geo, ms);
+	}
+
+
+
+
 
 	for(i=0; i<SCRATCHNUM; i++){ // cleanup
 		VecSet( geo->vH, 1.0);
