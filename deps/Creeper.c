@@ -205,6 +205,26 @@ void ComplexPointwiseMult(Vec w, Vec u, Vec v, Vec scratch0, Vec scratch1, Geome
 	
 }
 
+void ComponentStamp(Vec p, Vec scratch, Geometry geo){
+//"stamp" the component blocks to say ExEx + EyEy + EzEz, rather than ExEx and EyEy separately. Don't touch the real and imaginary blocks though.
+// start with [xR; yR; xI; yI], end with [xR + yR; xR + yR; xI + yI; xI + yI]
+	
+	int ic, ir, Nxyz = xyzGrid(&geo->gN), Nxyzc = xyzcGrid(&geo->gN);
+	
+	// scatter all non-ic==0 components to scratch vector, add it back to ic=0 block
+	for(ir=0; ir<2; ir++) for(ic = 1; ic< geo->Nc; ic++){
+		VecSet(scratch, 0.0);
+		ScatterRange(p, scratch, ir*Nxyzc + ic*Nxyz, ir*Nxyzc, Nxyz);
+		VecAXPY(p, 1.0, scratch);
+	}
+	
+	// stamp ic=0 block to ic!=0 blocks
+	for(ir=0; ir<2; ir++) for(ic = 1; ic< geo->Nc; ic++){
+		ScatterRange(p, p, ir*Nxyzc, ir*Nxyzc + ic*Nxyz, Nxyz);
+	}	
+
+}
+
 void OutputDEps( Geometry geo, Mode *ms){
 
 	PetscPrintf(PETSC_COMM_WORLD, "DEBUG: output_deps called!\n");
@@ -234,8 +254,12 @@ void OutputDEps( Geometry geo, Mode *ms){
 		VecAXPY( geo->vscratch[1], 2.0, geo->veps);
 		// 2 Ep + 2 D yw H F + w D yw' H F
 
+
+		// 07/20/15: note: I think even though eps is a diagonal tensor, this code should be correct for the case Nc >1; i.e. complex pointwisemult should handle it correctly. I.e. integral of E . eps . E is same as sum of E .* E .* "epsvec", where epsvec is a vector of [ epsxxR; epsyyR; epsxxI; epsyyI ]. The complexpointwise mult correctly takes care of this.
+		
 		ComplexPointwiseMult( pQP[i], ms[i]->vpsi, ms[i]->vpsi, geo->vscratch[2], geo->vscratch[3], geo);
 		// now p[i] = psi[i].^2
+		// 7/20/15: note ExEx and EyEy are in separate blocks. Eventually we will want the blocks to both have ExEx + EyEy; though the real and imaginary parts should still be in separate blocks, because we will allow the scalar deps to be real and imaginary.
 
 		ComplexPointwiseMult(geo->vscratch[1], pQP[i], geo->vscratch[1], geo->vscratch[2], geo->vscratch[3], geo);
 
@@ -251,6 +275,20 @@ void OutputDEps( Geometry geo, Mode *ms){
 		A[i] = AR + ComplexI*AI;
 		ComplexScale( pQP[i], get_w(ms[i]) / A[i], geo->vscratch[2], geo);
 		// now p[i] is the true p vector in Quadratic programming
+
+		if(i==0){
+			PetscPrintf(PETSC_COMM_WORLD, "DEBUG: outputting VecP\n");
+			Output(pQP[0], "VecPbefore", "P0before");
+		}
+
+		// 7/20/15: to correctly compute E dot E
+		if(geo->Nc >1){ 		
+			ComponentStamp(pQP[i], geo->vscratch[2], geo);
+		}
+		if(i==0){
+			PetscPrintf(PETSC_COMM_WORLD, "DEBUG: outputting VecP\n");
+			Output(pQP[0], "VecPafter", "P0after");
+		}
 	}
 
 	int extra = lasing ? 3 : 2;
