@@ -405,6 +405,8 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 	VecDuplicate(geo->vscratch[0], &dv);
 	VecDuplicate(geo->vscratch[0], &f);
 
+	PetscPrintf(PETSC_COMM_WORLD, "DEBUG: only ThresholdSearching when Dmax < 0. If mode gets outputted, it will be treated as lasing when read!\n");
+
 	for(; geo->D <= Dmax; geo->D = (geo->D+dD < Dmax? geo->D+dD: Dmax)){
 	  	Nlasing = CreateFilter(ms, Nm, 1, &msh); // lasing sub-array
 	  	Vec vNh = ms[0]->vpsi, fNh = f, dvNh = dv;
@@ -445,7 +447,8 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 
 		double wi_new = cimag(get_w(m));
 
-		if(wi_new > 0.0 && !m->lasing){
+		// recall that for Dmax < 0 specified, we set Dmax to hugeval before
+		if(wi_new > 0.0 && !m->lasing && Dmax == hugeval){
 
 			ThresholdSearch(  wi_old, wi_new, geo->D-dD, geo->D, 
 			msh, vNh, fNh, dvNh, m, geo, f, dv, ftol, printnewton);
