@@ -184,11 +184,11 @@ void ComplexPointwiseMult(Vec w, Vec u, Vec v, Vec scratch0, Vec scratch1, Geome
 
 void OutputDEps( Geometry geo, Mode *ms){
 
-	PetscPrintf(PETSC_COMM_WORLD, "DEBUG: output_deps called!\n");
-
 
 	int i, Nxyzc = xyzcGrid(&geo->gN), lasing = ms[0]->lasing && !(ms[1]->lasing);
 	// 8/5/15: two possibilities: both lasing -> forces poles together. one lasing one not -> forces real parts together, prevents Im w0 (of lasing mode) from moving from zero and forcing nonlasing to real axis.
+
+	PetscPrintf(PETSC_COMM_WORLD, "DEBUG: output_deps called!, lasing = %i\n", lasing);
 
 	dcomp A[2];
 	Vec pQP[2] = { geo->vscratch[4], geo->vscratch[5] };
@@ -310,11 +310,13 @@ void OutputDEps( Geometry geo, Mode *ms){
 		// Mqp is symmetric, so add the transposed elements
 		if(lasing){
 			MatSetValue(Mqp, row, column+1, -1.0*p0array[i-ns], INSERT_VALUES); 
-			MatSetValue(Mqp, row, column+2, -1.0*p1array[i-ns] / w1I, INSERT_VALUES);
-			// first column prevents lasing mode from leaving real axis (may also result conveniently in dH = 0; since spatial hole burning term's job is to do this), and second column forces second mode to real axis.
+			MatSetValue(Mqp, row, column+2, 1.0*p1array[i-ns] / w1I, INSERT_VALUES);
+			// second column prevents lasing mode from leaving real axis (may also result conveniently in dH = 0; since spatial hole burning term's job is to do this), and third column forces second mode to real axis.
+			// second column says -( p0^T deps)_I = 0
+			// third column says (p1^T deps)_I = w1I
 
 			MatSetValue(Mqp, column+1, row, -1.0*p0array[i-ns], INSERT_VALUES);
-			MatSetValue(Mqp, column+2, row, -1.0*p1array[i-ns] / w1I, INSERT_VALUES);
+			MatSetValue(Mqp, column+2, row, 1.0*p1array[i-ns] / w1I, INSERT_VALUES);
 			// matrix is symmetric, so must add transposed elements of course
 		}
 
@@ -328,15 +330,16 @@ void OutputDEps( Geometry geo, Mode *ms){
 	Vec bqp, yqp; // RHS and LHS for linear solve
 	MatGetVecs(Mqp, &bqp, &yqp);
 	VecSet(bqp, 0.0);
-	
+
+	// set to 1.0 because normalized. w2-w1 divided in the matrix. This keeps things well-conditioned for the case that w2 is very close to w1	
 	VecSetValue(bqp, Nxyzcr(geo)-1+1, 1.0, INSERT_VALUES);		
-	VecSetValue(bqp, Nxyzcr(geo)-1+2, 1.0, INSERT_VALUES);
-	// set to 1.0 because normalized. w2-w1 divided in the matrix. This keeps things well-conditioned for the case that w2 is very close to w1
 
 	if(lasing){
 		VecSetValue(bqp, Nxyzcr(geo)-1+3, 1.0, INSERT_VALUES);
+	}else{
+		VecSetValue(bqp, Nxyzcr(geo)-1+2, 1.0, INSERT_VALUES);
 	}
-
+	// if lasing, second of the extra elements is zero
 
 	KSP ksp;
 	KSPCreate(PETSC_COMM_WORLD,&ksp);
