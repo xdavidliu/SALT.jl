@@ -155,29 +155,6 @@ void ComplexScale( Vec w, dcomp a, Vec scratch, Geometry geo){
 
 }
 
-/*
-void ComplexPointwiseMult(Vec w, Vec u, Vec v, Vec scratch0, Vec scratch1, Geometry geo){
-// w = u .* v
-// i.e. wR = uR vR - uI vI
-// wI = uR vI + uI vR
-
-	int Nxyzc = xyzcGrid(&geo->gN);
-	VecCopy(u, scratch0);
-	ScatterRange(u, scratch0, 0, Nxyzc, Nxyzc );
-	VecPointwiseMult(scratch0, scratch0, v);
-	// scratch0 is now [uR vR; uR vI]
-	
-	VecCopy(u, scratch1);
-	ScatterRange(u, scratch1, Nxyzc, 0, Nxyzc );
-	// scratch1 is now [uI; uI]
-	
-	TimesI(geo, v, w);
-	VecPointwiseMult(w, w, scratch1);
-	// w is now [ -uI vI; uI vR]
-	VecAXPY(w, 1.0, scratch0); 
-
-}
-*/
 
 void ComplexPointwiseMult(Vec w, Vec u, Vec v, Vec scratch0, Vec scratch1, Geometry geo){
 // w = u .* v
@@ -513,6 +490,30 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 	PetscOptionsGetInt(PETSC_NULL,"-output_deps", &output_deps,NULL);
 	if( output_deps == 1 && Nm == 2){
 		OutputDEps( geo, ms);
+	}
+
+	// 8/3/15: recoding EpsTilde; forgot to commit it first time
+	// for looking at "passive" poles with single lasing mode on to determine stability of that lasing mode
+	int output_epstilde = 0;
+	PetscOptionsGetInt(PETSC_NULL,"-output_epstilde", &output_epstilde,NULL);
+	if( output_epstilde == 1){
+		
+		int Nxyzc = xyzcGrid(&geo->gN);
+		VecCopy(geo->vH, geo->vscratch[1]);
+		VecSet(geo->vscratch[0], 0.0);
+		ScatterRange(geo->vscratch[0], geo->vscratch[1], Nxyzc, Nxyzc, Nxyzc );
+		// H is [HR; HR]. Make it [HR, 0] so can use ComplexPointwiseMult with it
+		VecPointwiseMult(geo->vscratch[1], geo->vf, geo->vscratch[1]);
+
+		dcomp yw = gamma_w(ms[0], geo);
+
+		ComplexScale( geo->vscratch[1], geo->D * yw, geo->vscratch[2], geo);
+		// no issue with geo->D != Dmax here...
+		VecAXPY( geo->vscratch[1], 1.0, geo->veps);
+		// Ep + D yw H F
+
+		PetscPrintf(PETSC_COMM_WORLD, "Outputting EpsTilde...\n");
+		Output(geo->vscratch[1], "VecEpsTilde", "EpsTilde");
 	}
 
 
