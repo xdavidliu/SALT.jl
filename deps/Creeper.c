@@ -187,8 +187,8 @@ void OutputDEps( Geometry geo, Mode *ms){
 	PetscPrintf(PETSC_COMM_WORLD, "DEBUG: output_deps called!\n");
 
 
-	int i, Nxyzc = xyzcGrid(&geo->gN), lasing = ms[0]->lasing;
-	// QP procedure different for lasing and non-lasing modes
+	int i, Nxyzc = xyzcGrid(&geo->gN), lasing = ms[0]->lasing && !(ms[1]->lasing);
+	// 8/5/15: two possibilities: both lasing -> forces poles together. one lasing one not -> forces real parts together, prevents Im w0 (of lasing mode) from moving from zero and forcing nonlasing to real axis.
 
 	dcomp A[2];
 	Vec pQP[2] = { geo->vscratch[4], geo->vscratch[5] };
@@ -228,6 +228,9 @@ void OutputDEps( Geometry geo, Mode *ms){
 		A[i] = AR + ComplexI*AI;
 		ComplexScale( pQP[i], get_w(ms[i]) / A[i], geo->vscratch[2], geo);
 		// now p[i] is the true p vector in Quadratic programming
+		// the factor of w is consistent. p is  +psi.^2 / integral[ psi.^2 ( 2 eps / w + ddw eps ) ]
+		// hence dw = -p^T deps
+
 	}
 
 	int extra = lasing ? 3 : 2;
@@ -268,32 +271,34 @@ void OutputDEps( Geometry geo, Mode *ms){
 	VecGetArrayRead(pQP[0], &p0array);
 	VecGetArrayRead(pQP[1], &p1array);
 
-	double w2minusw1R = creal(get_w(ms[1]) - get_w(ms[0])),
-		w2minusw1I = cimag(get_w(ms[1]) - get_w(ms[0]));
+	dcomp w0 = get_w(ms[0]), w1 = get_w(ms[1]);
+	double w1minusw0R = creal(  w1 - w0  ),
+		w1minusw0I = cimag(  w1 - w0  ),
+		w1I = cimag( w1 ); // for use in lasing version
 
-	// see notes around 070215 for precise locations of p vectors in M matrix
 	for(i=ns; i<ne && i < Nxyzcr(geo); i++){
 
 		int row, column;
 		column = Nxyzcr(geo); 
-		// first out of the three columns
+		// first out of the two or three columns
 		// constant, but put code here for clarity
 		// technically should use static or const here but whatever
 
 		if( ir(geo, i)==0 ) row = i + Nxyzc;
 		else row = i - Nxyzc;
-		// the RI blocks are switched in Mqp; i.e. [PI; PR]	
+		// for second column, RI blocks are switched: 4 columns look like [qR, qI; -qI, qR]
 
-		double qval = (p1array[i-ns] - p0array[i-ns]) / w2minusw1R; // normalized
+		double qval = (p1array[i-ns] - p0array[i-ns]) / w1minusw0R; // normalized
 		if( ir(geo,i)==1) qval *= -1.0; // insert qR and -qI (see notes)
 
 		MatSetValue(Mqp, i, column, qval, INSERT_VALUES);
 		MatSetValue(Mqp, column, i, qval, INSERT_VALUES);
 		// qval's row block not switched
+		// this row says qR depsR - qI depsI = w1R - w0R
 
 		if(!lasing){
 
-			double qval2 = (p1array[i-ns] - p0array[i-ns]) / w2minusw1I; 
+			double qval2 = (p1array[i-ns] - p0array[i-ns]) / w1minusw0I; 
 			// second column of qvals has dwI instead of dwR in denominator
 			// also no factor of -1, and use switched row, not i
 			MatSetValue(Mqp, row, column+1, qval2, INSERT_VALUES);
@@ -304,11 +309,13 @@ void OutputDEps( Geometry geo, Mode *ms){
 
 		// Mqp is symmetric, so add the transposed elements
 		if(lasing){
-			MatSetValue(Mqp, row, column+1, p0array[i-ns], INSERT_VALUES); 
-			MatSetValue(Mqp, row, column+2, p1array[i-ns], INSERT_VALUES);
+			MatSetValue(Mqp, row, column+1, -1.0*p0array[i-ns], INSERT_VALUES); 
+			MatSetValue(Mqp, row, column+2, -1.0*p1array[i-ns] / w1I, INSERT_VALUES);
+			// first column prevents lasing mode from leaving real axis (may also result conveniently in dH = 0; since spatial hole burning term's job is to do this), and second column forces second mode to real axis.
 
-			MatSetValue(Mqp, column+1, row, p0array[i-ns], INSERT_VALUES);
-			MatSetValue(Mqp, column+2, row, p1array[i-ns], INSERT_VALUES);
+			MatSetValue(Mqp, column+1, row, -1.0*p0array[i-ns], INSERT_VALUES);
+			MatSetValue(Mqp, column+2, row, -1.0*p1array[i-ns] / w1I, INSERT_VALUES);
+			// matrix is symmetric, so must add transposed elements of course
 		}
 
 	}
@@ -323,11 +330,13 @@ void OutputDEps( Geometry geo, Mode *ms){
 	VecSet(bqp, 0.0);
 	
 	VecSetValue(bqp, Nxyzcr(geo)-1+1, 1.0, INSERT_VALUES);		
-
-	if(!lasing){
-		VecSetValue(bqp, Nxyzcr(geo)-1+2, 1.0, INSERT_VALUES);
-	}
+	VecSetValue(bqp, Nxyzcr(geo)-1+2, 1.0, INSERT_VALUES);
 	// set to 1.0 because normalized. w2-w1 divided in the matrix. This keeps things well-conditioned for the case that w2 is very close to w1
+
+	if(lasing){
+		VecSetValue(bqp, Nxyzcr(geo)-1+3, 1.0, INSERT_VALUES);
+	}
+
 
 	KSP ksp;
 	KSPCreate(PETSC_COMM_WORLD,&ksp);
@@ -345,6 +354,7 @@ void OutputDEps( Geometry geo, Mode *ms){
 	KSPSolve( ksp, bqp, yqp);
 	KSPDestroy( &ksp);
 
+	// remove last "extra" elements; works for both lasing (extra = 3) and nonlasing (extra = 2)
 	ScatterRange(yqp, geo->vscratch[0], 0, 0, Nxyzcr(geo) );
 	VecCopy( geo->veps, geo->vscratch[1]);
 	VecAXPY( geo->vscratch[1], 1.0,  geo->vscratch[0]);
