@@ -304,19 +304,18 @@ void OutputDEps( Geometry geo, Mode *ms){
 			MatSetValue(Mqp, row, column+1, qval2, INSERT_VALUES);
 			MatSetValue(Mqp, column+1, row, qval2, INSERT_VALUES);
 
-		}
+		}else{
+			MatSetValue(Mqp, row, column+1, 1.0*p1array[i-ns] / w1I, INSERT_VALUES);
+			MatSetValue(Mqp, row, column+2, -1.0*p0array[i-ns], INSERT_VALUES); 
+			
+			// third column prevents lasing mode from leaving real axis (may also result conveniently in dH = 0; since spatial hole burning term's job is to do this), and second column forces second mode to real axis.
+			// second column says (p1^T deps)_I = w1I
+			// third column says -( p0^T deps)_I = 0
+			// columns in reverse order so bqp easier to construct
 
 
-		// Mqp is symmetric, so add the transposed elements
-		if(lasing){
-			MatSetValue(Mqp, row, column+1, -1.0*p0array[i-ns], INSERT_VALUES); 
-			MatSetValue(Mqp, row, column+2, 1.0*p1array[i-ns] / w1I, INSERT_VALUES);
-			// second column prevents lasing mode from leaving real axis (may also result conveniently in dH = 0; since spatial hole burning term's job is to do this), and third column forces second mode to real axis.
-			// second column says -( p0^T deps)_I = 0
-			// third column says (p1^T deps)_I = w1I
-
-			MatSetValue(Mqp, column+1, row, -1.0*p0array[i-ns], INSERT_VALUES);
-			MatSetValue(Mqp, column+2, row, 1.0*p1array[i-ns] / w1I, INSERT_VALUES);
+			MatSetValue(Mqp, column+1, row, 1.0*p1array[i-ns] / w1I, INSERT_VALUES);
+			MatSetValue(Mqp, column+2, row, -1.0*p0array[i-ns], INSERT_VALUES);
 			// matrix is symmetric, so must add transposed elements of course
 		}
 
@@ -333,13 +332,8 @@ void OutputDEps( Geometry geo, Mode *ms){
 
 	// set to 1.0 because normalized. w2-w1 divided in the matrix. This keeps things well-conditioned for the case that w2 is very close to w1	
 	VecSetValue(bqp, Nxyzcr(geo)-1+1, 1.0, INSERT_VALUES);		
-
-	if(lasing){
-		VecSetValue(bqp, Nxyzcr(geo)-1+3, 1.0, INSERT_VALUES);
-	}else{
-		VecSetValue(bqp, Nxyzcr(geo)-1+2, 1.0, INSERT_VALUES);
-	}
-	// if lasing, second of the extra elements is zero
+	VecSetValue(bqp, Nxyzcr(geo)-1+2, 1.0, INSERT_VALUES);
+	// works for both lasing and non-lasing; for lasing 3rd element is zero.
 
 	KSP ksp;
 	KSPCreate(PETSC_COMM_WORLD,&ksp);
