@@ -47,6 +47,9 @@ void NewtonSolve(Mode *ms, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int 
 	tv t1, t2, t3;
 	KSP ksp = ms[0]->ksp;
 
+	int reuse_lu = 0;
+	PetscOptionsGetInt(PETSC_NULL,"-reuse_lu", &reuse_lu, NULL);
+
 	VecSet(dv, 0.0);
 	while(1){
 
@@ -68,7 +71,7 @@ void NewtonSolve(Mode *ms, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int 
 		gettimeofday(&t2, NULL);
 		KSPSolve(ksp, f, dv);
 		KSPSetOperators(ksp, ms[0]->J, ms[0]->J);
-		KSPSetReusePreconditioner(ksp, PETSC_TRUE);
+		if(reuse_lu){  KSPSetReusePreconditioner(ksp, PETSC_TRUE); }
 
 		gettimeofday(&t3, NULL);
 
