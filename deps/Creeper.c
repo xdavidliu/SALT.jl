@@ -75,12 +75,6 @@ PetscErrorCode Bundle(Mode *ms, int size, Geometry geo){
 	AllocateJacobian(J, geo);
 
 	KSPCreate(PETSC_COMM_WORLD,&ksp);
-	PC pc;
-	KSPGetPC(ksp,&pc);
- 	PCSetType(pc,PCLU);
-  	PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);
-	// don't forget to change this in Setup too.
-
 	KSPSetFromOptions(ksp);
 	KSPSetOperators(ksp, J, J); 
 	// for petsc 3.4 and before, put SAME_PRECONDITIONER as fourth argument
@@ -337,11 +331,6 @@ void OutputDEps( Geometry geo, Mode *ms){
 
 	KSP ksp;
 	KSPCreate(PETSC_COMM_WORLD,&ksp);
-	PC pc;
-	KSPGetPC(ksp,&pc);
-	PCSetType(pc,PCLU);
-	PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);
-
 	KSPSetFromOptions(ksp);
 	KSPSetOperators(ksp, Mqp, Mqp); // SAME_PRECONDITIONER here (doesn't really matter; I'm only solving once) 
 

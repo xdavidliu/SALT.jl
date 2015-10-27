@@ -158,12 +158,6 @@ void Setup(Mode m, Geometry geo){
 	MatStoreValues(m->J); 
 
 	KSPSetFromOptions(m->ksp);
-	PC pc;
-	KSPGetPC(m->ksp,&pc);
- 	PCSetType(pc,PCLU);
-  	PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);
-	// don't forget to change this in Bundle too
-
 	KSPSetOperators(m->ksp, m->J, m->J); 
 	// SAME_PRECONDITIONER for petsc 3.4 and before
 

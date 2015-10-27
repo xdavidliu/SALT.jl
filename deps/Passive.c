@@ -73,13 +73,6 @@ Mode *Passive(int *added, int *bl, double *k, double wreal, double wimag, double
 	EPSGetST(evps, &st);
 	STSetType(st, STSINVERT);
 
-	KSP ksp;
-	STGetKSP(st, &ksp);
-	PC pc;
-	KSPGetPC(ksp,&pc);
- 	PCSetType(pc,PCLU);
-  	PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);    
-
 	gettimeofday(&t2, NULL);
         EPSSolve(evps);
 
