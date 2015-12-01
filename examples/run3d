@@ -1,0 +1,31 @@
+#!/bin/bash
+COMMAND=$1;
+MPI=mpirun;
+RUN="${MPI} -n 4 ../deps/SaltOut"; 
+
+GEO="-Nc 3 -Nx 60 -Ny 60 -Nz 1 
+-Npmlx 3 -Npmly 3 -Npmlz 0 -LowerPML 1
+-hx 0.101694915254237 -hy 0.101694915254237 -hz 0.101694915254237
+-epsfile "eps3d.txt" -fproffile "f3d.txt"
+-wa 1.7 -gamma 0.5 -manual_epspml 0 -output_epstilde 0";
+
+PASSIVE="-wreal 1.68 -wimag -0.02
+-bx 1 -by -1 -bz 1
+-kx 0 -ky 0 -kz 0 -norm 0.01
+-passiveout pass3d
+-nev 15";
+
+CREEPER="-in0 aboveA
+-out0 lastA
+-dD 0.001 -Dmax 0.06 -output_deps 0
+-newtonf_tol 1e-8 -reuse_lu 0";
+
+SOLVER="-printnewton 1";
+
+if [[ $COMMAND = "passive" ]]; then
+$RUN $GEO $PASSIVE -Dmax 0.0;
+elif [[ $COMMAND = "creeper" ]]; then
+$RUN $GEO $CREEPER $SOLVER;
+elif [[ $COMMAND = "test" ]]; then
+mpirun -n 1 ./TestOut;
+fi
