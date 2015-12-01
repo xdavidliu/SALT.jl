@@ -3,6 +3,7 @@ COMMAND=$1;
 MPI=mpirun;
 RUN="${MPI} -n 4 ../deps/SaltOut"; 
 
+
 GEO="-Nc 3 -Nx 60 -Ny 60 -Nz 1 
 -Npmlx 3 -Npmly 3 -Npmlz 0 -LowerPML 1
 -hx 0.101694915254237 -hy 0.101694915254237 -hz 0.101694915254237
