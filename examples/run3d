@@ -16,15 +16,16 @@ PASSIVE="-wreal 1.68 -wimag -0.02
 -passiveout pass3d
 -nev 15";
 
-CREEPER="-in0 aboveA
--out0 lastA
--dD 0.001 -Dmax 0.06 -output_deps 0
+CREEPER="-in0 threshA
+-out0 aboveA
+-dD 0.001 -Dmax 0.055 -output_deps 0
 -newtonf_tol 1e-8 -reuse_lu 0";
 
-SOLVER="-printnewton 1";
+SOLVER="-printnewton 1 -ksp_type preonly 
+-pc_type lu -pc_factor_mat_solver_package mumps";
 
 if [[ $COMMAND = "passive" ]]; then
-$RUN $GEO $PASSIVE -Dmax 0.0;
+$RUN $GEO $PASSIVE $SOLVER -Dmax 0.0;
 elif [[ $COMMAND = "creeper" ]]; then
 $RUN $GEO $CREEPER $SOLVER;
 elif [[ $COMMAND = "test" ]]; then
