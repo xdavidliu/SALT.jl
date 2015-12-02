@@ -47,7 +47,7 @@ void FirstStep(Mode *ms, Mode m, Geometry geo, Vec vNh, Vec f, Vec dv, double c,
 
 	double dc = -GetValue(dv, offset(geo, nh)+Nxyzcr(geo)+1 );
 
-	if( cabs(dc)/c < 0.5){
+	if( fabs(dc)/c < 0.5){
 		VecAXPY(vNh, -1.0, dv);
 
 		if(vNh != m->vpsi){ // update vpsi's from v
