@@ -1,31 +1,30 @@
 #!/bin/bash
 COMMAND=$1;
 MPI=mpirun;
-RUN="${MPI} -n 4 ../deps/SaltOut"; 
+RUN="${MPI} -n 2 ../deps/SaltOut"; 
 
-
-GEO="-Nc 3 -Nx 60 -Ny 60 -Nz 5
--Npmlx 3 -Npmly 3 -Npmlz 0 -LowerPML 1
--hx 0.101694915254237 -hy 0.101694915254237 -hz 0.101694915254237
--epsfile "eps3d_block.txt" -fproffile "f3d_block.txt"
+GEO="-Nc 2 -Nx 70 -Ny 70 -Nz 1
+-Npmlx 5 -Npmly 5 -Npmlz 0 -LowerPML 1
+-hx 8.695652173913043e-02 -hy 8.695652173913043e-02 -hz 8.695652173913043e-02
+-epsfile "eps3d.txt" -fproffile "f3d.txt"
 -wa 1.7 -gamma 0.5 -manual_epspml 0 -output_epstilde 0";
 
-PASSIVE="-wreal 1.68 -wimag -0.02
+PASSIVE="-wreal 1.69 -wimag -0.005
 -bx 1 -by -1 -bz 1
 -kx 0 -ky 0 -kz 1e-15 -norm 0.01
--passiveout pass3d
--nev 15";
+-passiveout pass3d -nev 5 -st_type sinvert
+-st_ksp_type preonly -st_pc_type lu -st_pc_factor_mat_solver_package mumps";
 
-CREEPER="-in0 aboveA3d
--out0 lastA3d
--dD 0.001 -Dmax 0.056 -output_deps 0
--newtonf_tol 1e-8 -reuse_lu 0";
+CREEPER="-in0 pass3d0
+-out0 after3d0
+-dD 0.001 -Dmax 0.001 -output_deps 0
+-newtonf_tol 1e-8 -reuse_lu 0 -printnewton 1";
 
-SOLVER="-printnewton 1 -ksp_type preonly 
+SOLVER="-ksp_type preonly 
 -pc_type lu -pc_factor_mat_solver_package mumps";
 
 if [[ $COMMAND = "passive" ]]; then
-$RUN $GEO $PASSIVE $SOLVER -Dmax 0.0;
+$RUN $GEO $PASSIVE -Dmax 0.0;
 elif [[ $COMMAND = "creeper" ]]; then
 $RUN $GEO $CREEPER $SOLVER;
 elif [[ $COMMAND = "test" ]]; then
