@@ -69,9 +69,20 @@ Mode *Passive(int *added, int *bl, double *k, double wreal, double wimag, double
 
         EPSSetFromOptions(evps);
 
+	// replace with -st_type sinvert at command line; for some reason do not need to call
+	// STSetFromOptions
+
+/*
 	ST st; // doing this in case using Julia interface and cannot provide solver from command line arguments
 	EPSGetST(evps, &st);
 	STSetType(st, STSINVERT);
+	KSP ksp;
+	STGetKSP(st, &ksp);
+	PC pc;
+	KSPGetPC(ksp,&pc);
+ 	PCSetType(pc,PCLU);
+  	PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS); 
+*/
 
 	gettimeofday(&t2, NULL);
         EPSSolve(evps);
