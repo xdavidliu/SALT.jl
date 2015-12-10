@@ -1,5 +1,6 @@
-filename = 'pass3d2_file.m'
-Npml = [6, 6, 0]
+#!/usr/bin/python
+filename = 'pass3d1_file.m'
+Npml = [12, 12, 0]
 import numpy as np
 
 s = open(filename).read()
@@ -35,4 +36,4 @@ if Nc == 2 and N[2] == 1: # 2d TM
 	from matplotlib import pyplot as plt
 	plt.pcolor(np.real(curlEin), cmap='RdBu')
 	plt.axis('equal')
-	plt.show()
+	plt.savefig('pcolor.pdf')

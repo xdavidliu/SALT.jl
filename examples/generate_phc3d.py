@@ -1,5 +1,5 @@
 #!/usr/bin/python
-N, Nz = 60, 25
+N, Nz = 120, 3
 L, Lframe = 6., 100. 
 h = L / (N-1.)
 print('h = %.15e' % h)
@@ -13,8 +13,8 @@ betaz = 100
 # just set betaz to really high number
 # if want slab, set betaz to less than Lz / 2
 
-epsfilename = 'eps3d_py.txt'
-ffilename = 'f3d_py.txt'
+epsfilename = 'eps3d.txt'
+ffilename = 'f3d.txt'
 
 betaeps = 100 # basically infinite
 
@@ -28,7 +28,9 @@ else: pslice = p
 
 eps = (n_index - 1)*p + 1
 epsfile = open(epsfilename, 'w')
-epsC = eps.transpose([2, 1, 0]) # convert from fortran order to C order
+if Nz > 1:
+	epsC = eps.transpose([2, 1, 0]) # convert from fortran order to C order
+else: epsC = eps
 epsC.tofile(epsfile, sep="\n", format="%.15e")
 epsfile.close()
 
@@ -48,7 +50,9 @@ if Nz > 1:
 else: fslice = 1-f
 
 ffile = open(ffilename, 'w')
-fprofC = fprof.transpose([2, 1, 0]) # convert from fortran order to C order
+if Nz > 1:
+	fprofC = fprof.transpose([2, 1, 0]) # convert from fortran order to C order
+else: fprofC = fprof
 fprofC.tofile(ffile, sep="\n", format="%.15e")
 ffile.close()
 
