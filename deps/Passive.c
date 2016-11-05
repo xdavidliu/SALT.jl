@@ -93,7 +93,7 @@ Mode *Passive(int *added, int *bl, double *k, double wreal, double wimag, double
 	dcomp w; 
 
         Vec v, vi;
-        MatGetVecs(Mop, &v, &vi);
+        MatCreateVecs(Mop, &v, &vi);
 
 	*added = 0;
 	Mode *msp;

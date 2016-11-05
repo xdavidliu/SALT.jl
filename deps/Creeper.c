@@ -86,7 +86,7 @@ PetscErrorCode Bundle(Mode *ms, int size, Geometry geo){
 	for(i=0; i<SCRATCHNUM; i++){
 		if(geo->vNhscratch[i])
 			VecDestroy(&geo->vNhscratch[i]);
-		MatGetVecs(J, &geo->vNhscratch[i], NULL);
+		MatCreateVecs(J, &geo->vNhscratch[i], NULL);
 	}
 
 	// when Bundle is called in the middle of Creeper, the modes
@@ -321,7 +321,7 @@ void OutputDEps( Geometry geo, Mode *ms){
 	AssembleMat(Mqp);
 
 	Vec bqp, yqp; // RHS and LHS for linear solve
-	MatGetVecs(Mqp, &bqp, &yqp);
+	MatCreateVecs(Mqp, &bqp, &yqp);
 	VecSet(bqp, 0.0);
 
 	// set to 1.0 because normalized. w2-w1 divided in the matrix. This keeps things well-conditioned for the case that w2 is very close to w1	
@@ -373,8 +373,8 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 			Setup( ms[ih], geo);
 	}
     Vec f, dv;
-//    MatGetVecs( ms[0]->J, &dv, &f); 
-// 9/17/14: replaced MatGetVecs here with VecDuplicate. 2-mode lasing with 1-mode nonlasing no longer broken. Not sure why I didn't do this before.
+//    MatCreateVecs( ms[0]->J, &dv, &f); 
+// 9/17/14: replaced MatCreateVecs here with VecDuplicate. 2-mode lasing with 1-mode nonlasing no longer broken. Not sure why I didn't do this before.
 	VecDuplicate(geo->vscratch[0], &dv);
 	VecDuplicate(geo->vscratch[0], &f);
 
@@ -483,7 +483,7 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 	// 071915: do this AFTER destroying KSP objects, don't want to carry around TWO LU factorized matrices! Too much of a memory hog.
 
 	int output_deps = 0;
-	PetscOptionsGetInt(PETSC_NULL,"-output_deps", &output_deps,NULL);
+	PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-output_deps", &output_deps,NULL);
 	if( output_deps == 1 && Nm == 2){
 		OutputDEps( geo, ms);
 	}
@@ -491,7 +491,7 @@ int Creeper(double dD, double Dmax, double ftol, Mode *ms, int printnewton, int 
 	// 8/3/15: recoding EpsTilde; forgot to commit it first time
 	// for looking at "passive" poles with single lasing mode on to determine stability of that lasing mode
 	int output_epstilde = 0;
-	PetscOptionsGetInt(PETSC_NULL,"-output_epstilde", &output_epstilde,NULL);
+	PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-output_epstilde", &output_epstilde,NULL);
 	if( output_epstilde == 1){
 		
 		int Nxyzc = xyzcGrid(&geo->gN);

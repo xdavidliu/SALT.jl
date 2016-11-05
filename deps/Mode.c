@@ -129,7 +129,7 @@ void AllocateJacobian(Mat J, Geometry geo){
 
 	/*    // this works, just disabling for interface reasons
 	char solver[PETSC_MAX_PATH_LEN];
-	OptionsGetString("-pc_factor_mat_solver_package", solver);
+	OptionsGetString(PETSC_NULL,"-pc_factor_mat_solver_package", solver);
 	if( 0==strcmp(solver, "pastix" ) ){
 		PetscPrintf(PETSC_COMM_WORLD, "pastix detected, symmetrizing nonzero pattern...\n");
 

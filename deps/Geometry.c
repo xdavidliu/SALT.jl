@@ -90,7 +90,7 @@ Geometry CreateGeometry(int N[3], double h[3], int Npml[3], int Nc, int LowerPML
 	CreateVec(2*Nxyzc(geo)+2, &geo->vepspml);
 
 	int manual_epspml = 0;
-	PetscOptionsGetInt(PETSC_NULL,"-manual_epspml", &manual_epspml, NULL);
+	PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-manual_epspml", &manual_epspml, NULL);
 
 	if(manual_epspml == 0){
 		Vecfun pml;
@@ -154,7 +154,7 @@ Geometry CreateGeometry(int N[3], double h[3], int Npml[3], int Nc, int LowerPML
 
 	if(manual_epspml){
 		char epsManualfile[PETSC_MAX_PATH_LEN];
-		PetscOptionsGetString(PETSC_NULL,"-epsManualfile", epsManualfile, PETSC_MAX_PATH_LEN, NULL);
+		PetscOptionsGetString(PETSC_NULL,PETSC_NULL,"-epsManualfile", epsManualfile, PETSC_MAX_PATH_LEN, NULL);
 		FILE *fp = fopen(epsManualfile, "r");
 		ReadVectorC(fp, 2*Nxyzc(geo)+2, geo->veps);
 		// 07/11/15: if manual_epspml, then directly read in the Nxyzcr+2 vector

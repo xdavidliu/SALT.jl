@@ -48,7 +48,7 @@ void NewtonSolve(Mode *ms, Geometry geo, Vec v, Vec f, Vec dv, double ftol, int 
 	KSP ksp = ms[0]->ksp;
 
 	int reuse_lu = 0;
-	PetscOptionsGetInt(PETSC_NULL,"-reuse_lu", &reuse_lu, NULL);
+	PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-reuse_lu", &reuse_lu, NULL);
 
 	VecSet(dv, 0.0);
 	while(1){

@@ -119,31 +119,31 @@ Geometry ReadCreateGeometry(){
 
 	for(i=0; i<3; i++){
 		sprintf(option, "%s%c", "-N", x[i]);
-		PetscOptionsGetInt(PETSC_NULL,option, &N[i], NULL);
+		PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,option, &N[i], NULL);
 		sprintf(option, "%s%c", "-Npml", x[i]);
-		PetscOptionsGetInt(PETSC_NULL,option, &Npml[i], NULL);
+		PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,option, &Npml[i], NULL);
 		sprintf(option, "%s%c", "-h", x[i]);
-		PetscOptionsGetReal(PETSC_NULL,option, &h[i], NULL);
+		PetscOptionsGetReal(PETSC_NULL,PETSC_NULL,option, &h[i], NULL);
 
-		PetscOptionsGetInt(PETSC_NULL,"-Nc", &Nc,NULL);
-		PetscOptionsGetInt(PETSC_NULL,"-LowerPML", &LowerPML,NULL);
-		PetscOptionsGetReal(PETSC_NULL,"-wa", &wa,NULL); 
-		PetscOptionsGetReal(PETSC_NULL,"-gamma", &y,NULL); 
+		PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-Nc", &Nc,NULL);
+		PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-LowerPML", &LowerPML,NULL);
+		PetscOptionsGetReal(PETSC_NULL,PETSC_NULL,"-wa", &wa,NULL); 
+		PetscOptionsGetReal(PETSC_NULL,PETSC_NULL,"-gamma", &y,NULL); 
 	}
 
 	char epsfile[PETSC_MAX_PATH_LEN], fproffile[PETSC_MAX_PATH_LEN], epsIfile[PETSC_MAX_PATH_LEN];
-	PetscOptionsGetString(PETSC_NULL,"-epsfile", epsfile, PETSC_MAX_PATH_LEN, NULL); 
-	PetscOptionsGetString(PETSC_NULL,"-fproffile", fproffile, PETSC_MAX_PATH_LEN, NULL); 
+	PetscOptionsGetString(PETSC_NULL,PETSC_NULL,"-epsfile", epsfile, PETSC_MAX_PATH_LEN, NULL); 
+	PetscOptionsGetString(PETSC_NULL,PETSC_NULL,"-fproffile", fproffile, PETSC_MAX_PATH_LEN, NULL); 
 
 	int manual_epspml = 0;
-	PetscOptionsGetInt(PETSC_NULL,"-manual_epspml", &manual_epspml, NULL);
+	PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-manual_epspml", &manual_epspml, NULL);
 
 	double *eps, *fprof, *epsI;
 	eps = ReadVecToArray(N[0]*N[1]*N[2] * (manual_epspml? Nc : 1), epsfile);
 	fprof = ReadVecToArray(N[0]*N[1]*N[2], fproffile);
 	
 	PetscBool exists_epsIfile;
-	PetscOptionsGetString(PETSC_NULL,"-epsIfile", epsIfile, PETSC_MAX_PATH_LEN, &exists_epsIfile); 
+	PetscOptionsGetString(PETSC_NULL,PETSC_NULL,"-epsIfile", epsIfile, PETSC_MAX_PATH_LEN, &exists_epsIfile); 
 	if(exists_epsIfile){
 		epsI = ReadVecToArray(N[0]*N[1]*N[2] * (manual_epspml? Nc : 1), epsIfile);
 	}else{
@@ -167,17 +167,17 @@ void mainPassive(){
 
 	for(i=0; i<3; i++){
 		sprintf(option, "%s%c", "-b", x[i]);
-		PetscOptionsGetInt(PETSC_NULL,option, &bl[i], NULL);
+		PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,option, &bl[i], NULL);
 
 		sprintf(option, "%s%c", "-k", x[i]);
-		PetscOptionsGetReal(PETSC_NULL,option, &k[i], NULL);
+		PetscOptionsGetReal(PETSC_NULL,PETSC_NULL,option, &k[i], NULL);
 	}
 	char modeout[PETSC_MAX_PATH_LEN] = "";
-	PetscOptionsGetReal(PETSC_NULL,"-norm", &modenorm,NULL); 
-	PetscOptionsGetReal(PETSC_NULL,"-wreal", &wreal,NULL); 
-	PetscOptionsGetReal(PETSC_NULL,"-wimag", &wimag,NULL); 
-	PetscOptionsGetInt(PETSC_NULL,"-nev", &nev,NULL);
-	PetscOptionsGetString(PETSC_NULL,"-passiveout", modeout, PETSC_MAX_PATH_LEN, NULL); 
+	PetscOptionsGetReal(PETSC_NULL,PETSC_NULL,"-norm", &modenorm,NULL); 
+	PetscOptionsGetReal(PETSC_NULL,PETSC_NULL,"-wreal", &wreal,NULL); 
+	PetscOptionsGetReal(PETSC_NULL,PETSC_NULL,"-wimag", &wimag,NULL); 
+	PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-nev", &nev,NULL);
+	PetscOptionsGetString(PETSC_NULL,PETSC_NULL,"-passiveout", modeout, PETSC_MAX_PATH_LEN, NULL); 
 
 	Geometry geo = ReadCreateGeometry();
 	
@@ -203,8 +203,8 @@ void mainCreeper(double Dmax){
 	double dD = 0.0, ftol = 0.0;
 
 	Geometry geo;
-	PetscOptionsGetReal(PETSC_NULL,"-dD", &dD,NULL); 
-	PetscOptionsGetReal(PETSC_NULL,"-newtonf_tol", &ftol,NULL); 
+	PetscOptionsGetReal(PETSC_NULL,PETSC_NULL,"-dD", &dD,NULL); 
+	PetscOptionsGetReal(PETSC_NULL,PETSC_NULL,"-newtonf_tol", &ftol,NULL); 
 
 	char optionin[PETSC_MAX_PATH_LEN] = "-in0",
 		 optionout[PETSC_MAX_PATH_LEN] = "-out0",
@@ -214,10 +214,10 @@ void mainCreeper(double Dmax){
 	i=0;
 	while(1){
 		PetscBool flg;
-		PetscOptionsGetString(PETSC_NULL,optionin, name, PETSC_MAX_PATH_LEN, &flg); 
+		PetscOptionsGetString(PETSC_NULL,PETSC_NULL,optionin, name, PETSC_MAX_PATH_LEN, &flg); 
 		if( !flg ) break;
 
-		PetscOptionsGetString(PETSC_NULL,optionout, name2, PETSC_MAX_PATH_LEN, &flg); 
+		PetscOptionsGetString(PETSC_NULL,PETSC_NULL,optionout, name2, PETSC_MAX_PATH_LEN, &flg); 
 		if( !flg )
 			MyError("number of -out less than number of -in!");
 
@@ -239,14 +239,14 @@ void mainCreeper(double Dmax){
 		sprintf(optionout, "-out%i", i);
 	}
 	Nm = i;
-	PetscOptionsGetInt(PETSC_NULL,"-printnewton", &printnewton,NULL);
+	PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-printnewton", &printnewton,NULL);
 	geo = ReadCreateGeometry();
 
 	// Convention: interference = 0 means interference term off
 	// this is default value in CreateGeometry
 	// anything else means that the value of interference is the phase angle
 	// between modes 1 and 2
-	PetscOptionsGetReal(PETSC_NULL,"-interference", &geo->interference,NULL); 
+	PetscOptionsGetReal(PETSC_NULL,PETSC_NULL,"-interference", &geo->interference,NULL); 
 
 	Mode *ms = ReadModes(geo, namesin, namesout, Nm);
 
@@ -272,7 +272,7 @@ void mainCreeper(double Dmax){
 int main(int argc, char** argv){ 
 	SlepcInitialize(&argc, &argv, PETSC_NULL, PETSC_NULL); 
 	double Dmax;
-	PetscOptionsGetReal(PETSC_NULL,"-Dmax", &Dmax,NULL); 
+	PetscOptionsGetReal(PETSC_NULL,PETSC_NULL,"-Dmax", &Dmax,NULL); 
 
 	if(Dmax == 0.0){ // Passive
 		mainPassive();

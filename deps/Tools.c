@@ -133,9 +133,10 @@ void Output(Vec A, const char* name, const char* variable_name){
 
 	PetscViewer viewer;
 	PetscViewerASCIIOpen(PETSC_COMM_WORLD, filename, &viewer);
-	PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);
+	PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);
 	PetscObjectSetName((PetscObject) A, strncmp(variable_name, "", PETSC_MAX_PATH_LEN) ?variable_name : name);
 	VecView(A, viewer);
+	PetscViewerPopFormat(viewer);
 	PetscViewerDestroy(&viewer);
 }
 
@@ -145,9 +146,10 @@ void OutputMat(Mat A, const char* name, const char* variable_name){
 
 	PetscViewer viewer;
 	PetscViewerASCIIOpen(PETSC_COMM_WORLD, filename, &viewer);
-	PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);
+	PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);
 	PetscObjectSetName((PetscObject) A, strncmp(variable_name, "", PETSC_MAX_PATH_LEN) ?variable_name : name);
 	MatView(A, viewer);
+	PetscViewerPopFormat(viewer);
 	PetscViewerDestroy(&viewer);
 }
 
