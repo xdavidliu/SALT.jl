@@ -14,9 +14,9 @@ PASSIVE="-wreal 6.2 -wimag -0.6
 -kx 1e-15 -ky 0 -kz 0 -norm 0.01
 -passiveout pass_ring -nev 2 -st_type sinvert";
 
-CREEPER="-in0 pass_ring0
--out0 thresh_ring
--dD 0.07 -Dmax -0.001 -output_deps 0
+CREEPER="-in0 thresh_ring
+-out0 lasing_ring
+-dD 0.07 -Dmax 0.4 -output_deps 0
 -newtonf_tol 1e-8 -reuse_lu 0 -printnewton 1";
 
 SOLVER="-ksp_type preonly 
