@@ -10,6 +10,12 @@ It was originally written as a standalone C program, but we are
 currently in the process of connecting it to a scripting front end in
 the [Julia language](http://julialang.org/).
 
+## Prerequisites
+
+The code requires both [PETSc](https://www.mcs.anl.gov/petsc/download/index.html) and [SLEPc](http://slepc.upv.es/) to be installed. The version for both should be at least 3.7. In addition, the MUMPS solver must be downloaded when installing PETSc. Running PETSc programs also requires a working distribution of MPI to be installed. To take care of these requirements automatically, we recommend configuring PETSc, once it has been downloaded and before compilation, with a command such as
+
+    ./configure --download-fblaslapack --download-parmetis --download-metis --download-mumps --download-scalapack --download-openmpi
+
 ## Example
 
 Here is an example of a simple, 1d ring laser with uniform dielectric and
