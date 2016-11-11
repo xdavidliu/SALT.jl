@@ -1,0 +1,31 @@
+#!/bin/bash
+COMMAND=$1;
+MPI=${PETSC_DIR}/bin/petscmpiexec;
+RUN="${MPI} -n 1 ../deps/SaltOut"; 
+
+GEO="-Nc 1 -Nx 100 -Ny 1 -Nz 1
+-Npmlx 0 -Npmly 0 -Npmlz 0 -LowerPML 1
+-hx 0.01 -hy 0.1 -hz 0.1
+-epsfile "eps_ring.txt" -epsIfile "epsI_ring.txt" -fproffile "f_ring.txt"
+-wa 6.3 -gamma 1.0 -manual_epspml 0 -output_epstilde 0";
+
+PASSIVE="-wreal 6.2 -wimag -0.6
+-bx 1 -by -1 -bz 1
+-kx 1e-15 -ky 0 -kz 0 -norm 0.01
+-passiveout pass_ring -nev 2 -st_type sinvert";
+
+CREEPER="-in0 pass_ring0
+-out0 thresh_ring
+-dD 0.07 -Dmax -0.001 -output_deps 0
+-newtonf_tol 1e-8 -reuse_lu 0 -printnewton 1";
+
+SOLVER="-ksp_type preonly 
+-pc_type lu -pc_factor_mat_solver_package mumps";
+
+if [[ $COMMAND = "passive" ]]; then
+$RUN $GEO $PASSIVE $SOLVER -Dmax 0.0;
+elif [[ $COMMAND = "creeper" ]]; then
+$RUN $GEO $CREEPER $SOLVER;
+elif [[ $COMMAND = "test" ]]; then
+mpirun -n 1 ./TestOut;
+fi
