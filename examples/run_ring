@@ -1,7 +1,6 @@
 #!/bin/bash
 COMMAND=$1;
-MPI=${PETSC_DIR}/bin/petscmpiexec;
-RUN="${MPI} -n 1 ../deps/SaltOut"; 
+RUN="mpiexec -n 1 ../deps/SaltOut"; 
 
 GEO="-Nc 1 -Nx 100 -Ny 1 -Nz 1
 -Npmlx 0 -Npmly 0 -Npmlz 0 -LowerPML 1
