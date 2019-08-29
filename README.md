@@ -12,9 +12,26 @@ the [Julia language](http://julialang.org/).
 
 ## Prerequisites
 
-The code requires both [PETSc](https://www.mcs.anl.gov/petsc/download/index.html) and [SLEPc](http://slepc.upv.es/) to be installed. The version for both should be at least 3.7. In addition, the MUMPS solver must be downloaded when installing PETSc. Running PETSc programs also requires a working distribution of MPI to be installed. To take care of these requirements automatically, we recommend configuring PETSc, once it has been downloaded and before compilation, with a command such as
+The code requires both [PETSc](https://www.mcs.anl.gov/petsc/download/index.html) and [SLEPc](http://slepc.upv.es/) to be installed. The version for both should be at least 3.7, and the MUMPS solver is used. To easily satisfy these on an Ubuntu PC, simply do 
+
+    sudo apt install petsc-dev
+    sudo apt install slepc-dev
+
+and then add the following to your `~/.bashrc`:
+
+    export PETSC_DIR=/usr/lib/petscdir/petsc3.10/x86_64-linux-gnu-real
+    export SLEPC_DIR=/usr/lib/slepcdir/slepc3.10/x86_64-linux-gnu-real
+
+On macOS, Homebrew has a PETSc formula but it doesn't come with the MUMPS solver. One option is to build PETSc from source, as described in their homepage. We need to build with MUMPS, so use the following configure command:
 
     ./configure --download-fblaslapack --download-parmetis --download-metis --download-mumps --download-scalapack --download-openmpi
+
+And then follow the instructions that the configure script prints to install. Also build SLEPc from source, and then finally set the `PETSC_DIR` and `SLEPC_DIR` environmental variables to the respective top-level build directories.
+
+Now to build the SALT solver source files:
+
+    cd SALT.jl/deps
+    make all
 
 ## Example
 
