@@ -1,7 +1,6 @@
 #!/bin/bash
 COMMAND=$1;
-MPI=mpirun;
-RUN="${MPI} -n 2 ../deps/SaltOut"; 
+RUN="mpiexec -n 2 ../deps/SaltOut"; 
 
 GEO="-Nc 2 -Nx 70 -Ny 70 -Nz 1
 -Npmlx 5 -Npmly 5 -Npmlz 0 -LowerPML 1
