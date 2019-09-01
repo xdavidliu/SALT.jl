@@ -46,7 +46,7 @@ the passive pole with frequency 6.3, simply do
 
     ./run_ring passive
 
-Then make sure the `CREEPER` variable is set as
+Then make sure the `run_ring` file's section with the `CREEPER` variable is set as
 
     CREEPER="-in0 pass_ring0
     -out0 thresh_ring
