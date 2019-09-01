@@ -12,7 +12,7 @@ the [Julia language](http://julialang.org/).
 
 ## Prerequisites
 
-The code requires both [PETSc](https://www.mcs.anl.gov/petsc/download/index.html) and [SLEPc](http://slepc.upv.es/) to be installed. The version for both should be at least 3.7, and the MUMPS solver is used. To easily satisfy these on an Ubuntu PC, simply do 
+The code requires both [PETSc](https://www.mcs.anl.gov/petsc/download/index.html) and [SLEPc](http://slepc.upv.es/) to be installed. The version for both should be at least 3.7, and the MUMPS solver is used. To easily satisfy these on an Ubuntu 19.04, simply do 
 
     sudo apt install petsc-dev
     sudo apt install slepc-dev
@@ -21,6 +21,8 @@ and then add the following to your `~/.bashrc`:
 
     export PETSC_DIR=/usr/lib/petscdir/petsc3.10/x86_64-linux-gnu-real
     export SLEPC_DIR=/usr/lib/slepcdir/slepc3.10/x86_64-linux-gnu-real
+
+Note if you are using Ubuntu 18.04, the installed directories are different and the maintainer of that package chose C++ instead of C as the PETSc compiler language. Due to a limitation, this breaks compatibility of the complex.h header file, so if this is the case, please build PETSc from source, as described below.
 
 On macOS, Homebrew has a PETSc formula but it doesn't come with the MUMPS solver. One option is to build PETSc from source, as described in their homepage. We need to build with MUMPS, so use the following configure command:
 
@@ -32,6 +34,8 @@ Now to build the SALT solver source files:
 
     cd SALT.jl/deps
     make all
+    
+If the first line of output begins with `mpicc`, then everything should work. If `mpicxx`, then PETSc was built incorrectly, and one must rebuild PETSc from source, with C as the language instead of C++.
 
 ## Example
 
